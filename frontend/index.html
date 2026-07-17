@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Avalúo Inmobiliario SHF/INDAABIN</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+      form { display: grid; gap: 0.8rem; max-width: 720px; }
+      input, textarea, button { padding: 0.6rem; }
+      button { width: fit-content; }
+    </style>
+  </head>
+  <body>
+    <h1>Avalúo Inmobiliario</h1>
+    <p>Formulario base para captura de datos y cálculo de homologación.</p>
+    <form id="valuation-form">
+      <input name="solicitante" placeholder="Nombre del solicitante" />
+      <input name="cuentaPredial" placeholder="Cuenta predial" />
+      <input name="claveCatastral" placeholder="Clave catastral" />
+      <input name="calle" placeholder="Calle" />
+      <textarea name="observaciones" placeholder="Observaciones"></textarea>
+      <button type="submit">Calcular</button>
+    </form>
+    <pre id="result"></pre>
+    <script>
+      document.getElementById('valuation-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const payload = {
+          subject: { surface: 120 },
+          comparableSales: [
+            { id: 1, address: 'A', salePrice: 1000000, zoneFactor: 1.05, locationFactor: 1.02, terrainFactor: 1.01, ageFactor: 0.98, shapeFactor: 1.00, surface: 100 },
+            { id: 2, address: 'B', salePrice: 1100000, zoneFactor: 1.03, locationFactor: 1.01, terrainFactor: 1.02, ageFactor: 0.99, shapeFactor: 1.00, surface: 110 },
+            { id: 3, address: 'C', salePrice: 1050000, zoneFactor: 1.04, locationFactor: 1.00, terrainFactor: 1.00, ageFactor: 0.97, shapeFactor: 0.99, surface: 105 },
+            { id: 4, address: 'D', salePrice: 1080000, zoneFactor: 1.02, locationFactor: 1.03, terrainFactor: 1.01, ageFactor: 0.98, shapeFactor: 1.00, surface: 108 },
+            { id: 5, address: 'E', salePrice: 950000, zoneFactor: 1.06, locationFactor: 1.02, terrainFactor: 1.00, ageFactor: 0.96, shapeFactor: 1.01, surface: 95 }
+          ]
+        };
+        const response = await fetch('/api/valuation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      });
+    </script>
+  </body>
+</html>

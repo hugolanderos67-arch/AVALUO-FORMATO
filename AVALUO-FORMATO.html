@@ -1,1 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dictamen de Avalúo Inmobiliario</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; padding: 24px; background: #f3f6fb; color: #1f2937; }
+      .card { max-width: 1100px; margin: 0 auto; background: white; padding: 24px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+      h1, h2, h3 { margin-top: 0; }
+      .grid { display: grid; gap: 12px; }
+      .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+      .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
+      .summary-card { background: #eff6ff; padding: 12px; border-radius: 10px; border: 1px solid #bfdbfe; }
+      label { display: grid; gap: 6px; font-weight: 600; }
+      input, textarea, select { padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; }
+      button { padding: 10px 16px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; }
+      button:hover { background: #1d4ed8; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+      th { background: #f9fafb; }
+      pre { background: #111827; color: #e5e7eb; padding: 16px; border-radius: 8px; overflow-x: auto; }
+      .muted { color: #6b7280; font-size: 0.95rem; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Dictamen de Avalúo Inmobiliario</h1>
+      <p class="muted">Formato base para captura de datos, georreferenciación, homologación y resumen del dictamen.</p>
+
+      <form id="valuationForm" class="grid">
+        <h2>1. Datos administrativos</h2>
+        <div class="two-col">
+          <label>Solicitante <input name="solicitante" placeholder="Nombre del solicitante" /></label>
+          <label>Cuenta predial <input name="cuentaPredial" placeholder="Cuenta predial" /></label>
+          <label>Clave catastral <input name="claveCatastral" placeholder="Clave catastral" /></label>
+          <label>Número de escritura <input name="numeroEscritura" placeholder="Número de escritura" /></label>
+          <label>Notario <input name="notario" placeholder="Notario" /></label>
+          <label>Tomo <input name="tomo" placeholder="Tomo" /></label>
+          <label>Fecha de inscripción <input name="fechaInscripcion" type="date" /></label>
+        </div>
+
+        <h2>2. Datos del inmueble</h2>
+        <div class="two-col">
+          <label>Calle <input name="calle" placeholder="Calle" /></label>
+          <label>Número exterior <input name="numeroExterior" placeholder="Número exterior" /></label>
+          <label>Colonia <input name="colonia" placeholder="Colonia" /></label>
+          <label>Código Postal <input name="codigoPostal" placeholder="Código Postal" /></label>
+          <label>Municipio <input name="municipio" placeholder="Municipio" /></label>
+          <label>Estado <input name="estado" placeholder="Estado" /></label>
+        </div>
+
+        <h2>3. Georreferenciación</h2>
+        <div class="two-col">
+          <label>Latitud <input name="latitud" type="number" step="any" placeholder="19.4326" /></label>
+          <label>Longitud <input name="longitud" type="number" step="any" placeholder="-99.1332" /></label>
+          <label>Superficie de terreno (m²) <input name="superficieTerreno" type="number" step="any" placeholder="300" /></label>
+          <label>Superficie de construcción (m²) <input name="superficieConstruccion" type="number" step="any" placeholder="180" /></label>
+          <label>Edad del inmueble (años) <input name="edadInmueble" type="number" placeholder="10" /></label>
+          <label>Estado de conservación <select name="estadoConservacion"><option value="excelente">Excelente</option><option value="bueno">Bueno</option><option value="regular">Regular</option><option value="malo">Malo</option></select></label>
+          <label>Calidad de proyecto <select name="calidadProyecto"><option value="alto">Alto</option><option value="medio">Medio</option><option value="basico">Básico</option></select></label>
+          <label>Renta anual estimada <input name="annualIncome" type="number" placeholder="120000" /></label>
+          <label>Tasa de capitalización (%) <input name="capRate" type="number" step="0.01" placeholder="0.08" /></label>
+        </div>
+
+        <h2>4. Anexos y observaciones</h2>
+        <label>Observaciones <textarea name="observaciones" rows="4" placeholder="Observaciones del inmueble"></textarea></label>
+        <label>Fotografías <textarea name="fotos" rows="3" placeholder="Fachada, interiores, servicios, vistas de calle"></textarea></label>
+
+        <button type="submit">Generar dictamen</button>
+      </form>
+
+      <h2>Resumen del dictamen</h2>
+      <div id="summaryCards" class="summary"></div>
+
+      <h2>Tabla de homologación</h2>
+      <div id="homologationTable"></div>
+
+      <h2>Memoria de cálculo</h2>
+      <pre id="result">Esperando datos...</pre>
+    </div>
+
+    <script>
+      const form = document.getElementById('valuationForm');
+      const result = document.getElementById('result');
+      const summaryCards = document.getElementById('summaryCards');
+      const homologationTable = document.getElementById('homologationTable');
+
+      function renderSummary(summary) {
+        summaryCards.innerHTML = [
+          { label: 'Valor de terreno', value: summary.valorTerreno },
+          { label: 'Valor de construcción', value: summary.valorConstruccion },
+          { label: 'Valor físico', value: summary.valorFisico },
+          { label: 'Valor de mercado', value: summary.valorMercado },
+          { label: 'Valor de capitalización', value: summary.valorCapitalizacion }
+        ].map(item => `<div class="summary-card"><strong>${item.label}</strong><br>$${Number(item.value).toLocaleString('es-MX', { maximumFractionDigits: 2 })}</div>`).join('');
+      }
+
+      function renderTable(tableData) {
+        if (!tableData || tableData.length === 0) {
+          homologationTable.innerHTML = '<p class="muted">No hay comparables disponibles.</p>';
+          return;
+        }
+
+        homologationTable.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Inmueble</th>
+                <th>Precio</th>
+                <th>Distancia</th>
+                <th>Valor ajustado</th>
+                <th>$/m²</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableData.map(item => `
+                <tr>
+                  <td>${item.address}</td>
+                  <td>$${Number(item.salePrice).toLocaleString('es-MX')}</td>
+                  <td>${item.distanceKm} km</td>
+                  <td>$${Number(item.adjustedValue).toLocaleString('es-MX')}</td>
+                  <td>$${Number(item.unitValuePerM2).toLocaleString('es-MX')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const payload = {
+          subject: {
+            surface: Number(formData.get('superficieTerreno')) || 120,
+            constructionSurface: Number(formData.get('superficieConstruccion')) || 180,
+            latitude: Number(formData.get('latitud')) || null,
+            longitude: Number(formData.get('longitud')) || null,
+            address: {
+              street: formData.get('calle') || '',
+              extNumber: formData.get('numeroExterior') || '',
+              colony: formData.get('colonia') || '',
+              postalCode: formData.get('codigoPostal') || '',
+              municipality: formData.get('municipio') || '',
+              state: formData.get('estado') || ''
+            },
+            age: Number(formData.get('edadInmueble')) || 0,
+            conservationState: formData.get('estadoConservacion') || 'bueno',
+            projectQuality: formData.get('calidadProyecto') || 'medio',
+            annualIncome: Number(formData.get('annualIncome')) || null,
+            capRate: Number(formData.get('capRate')) || 0.08
+          },
+          comparableSales: [
+            { id: 1, address: 'Insurgentes 100, Roma Norte', salePrice: 1000000, zoneFactor: 1.05, locationFactor: 1.02, terrainFactor: 1.01, ageFactor: 0.98, shapeFactor: 1.00, surface: 100 },
+            { id: 2, address: 'Av. Chapultepec 250, Condesa', salePrice: 1100000, zoneFactor: 1.03, locationFactor: 1.01, terrainFactor: 1.02, ageFactor: 0.99, shapeFactor: 1.00, surface: 110 },
+            { id: 3, address: 'Paseo de la Reforma 300, Juárez', salePrice: 1050000, zoneFactor: 1.04, locationFactor: 1.00, terrainFactor: 1.00, ageFactor: 0.97, shapeFactor: 0.99, surface: 105 },
+            { id: 4, address: 'Coyoacán 400, Del Valle', salePrice: 1080000, zoneFactor: 1.02, locationFactor: 1.03, terrainFactor: 1.01, ageFactor: 0.98, shapeFactor: 1.00, surface: 108 },
+            { id: 5, address: 'Eje 1 Norte 150, Anzures', salePrice: 950000, zoneFactor: 1.06, locationFactor: 1.02, terrainFactor: 1.00, ageFactor: 0.96, shapeFactor: 1.01, surface: 95 }
+          ]
+        };
+
+        try {
+          const response = await fetch('/api/valuation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+          renderSummary(data.summary);
+          renderTable(data.homologationTable || data.comparables || []);
+          result.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          result.textContent = 'Error: ' + error.message;
+        }
+      });
+    </script>
+  </body>
+</html>
 
