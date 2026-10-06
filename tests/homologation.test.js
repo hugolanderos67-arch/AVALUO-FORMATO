@@ -4,7 +4,7 @@ const { calculateHomologation } = require('../backend/valuation/homologation');
 
 test('calcula homologación con al menos 5 comparables', () => {
   const payload = {
-    subject: { surface: 120 },
+    subject: { surface: 120, constructionSurface: 90 },
     comparableSales: [
       { id: 1, address: 'A', salePrice: 1000000, zoneFactor: 1.05, locationFactor: 1.02, terrainFactor: 1.01, ageFactor: 0.98, shapeFactor: 1.00, surface: 100 },
       { id: 2, address: 'B', salePrice: 1100000, zoneFactor: 1.03, locationFactor: 1.01, terrainFactor: 1.02, ageFactor: 0.99, shapeFactor: 1.00, surface: 110 },
@@ -49,4 +49,34 @@ test('genera resumen de dictamen con valores físico, mercado y capitalización'
   assert.ok(result.summary.valorFisico > 0);
   assert.ok(result.summary.valorMercado > 0);
   assert.ok(result.summary.valorCapitalizacion > 0);
+});
+
+test('no calcula valor de mercado con comparables incompletos', () => {
+  const result = calculateHomologation({
+    subject: { surface: 120, constructionSurface: 90 },
+    comparableSales: [{ id: 1, address: 'Pendiente', salePrice: 0, surface: 0 }]
+  });
+
+  assert.equal(result.summary.averageUnitValuePerM2, 0);
+  assert.equal(result.summary.valorMercado, 0);
+  assert.match(result.summary.marketValuationStatus, /Sin comparables completos/);
+});
+
+test('usa costos capturados para el enfoque físico', () => {
+  const result = calculateHomologation({
+    subject: {
+      surface: 100,
+      constructionSurface: 90,
+      unitLandValue: 5000,
+      physicalConstructionValue: 800000,
+      physicalAccessoryValue: 100000,
+      annualIncome: 120000,
+      capRate: 0.08
+    },
+    comparableSales: [{ id: 1, address: 'Comparable', salePrice: 2000000, surface: 100 }]
+  });
+
+  assert.equal(result.summary.valorFisico, 1400000);
+  assert.equal(result.summary.valorMercado, 1800000);
+  assert.match(result.summary.physicalValuationStatus, /componentes capturados/);
 });

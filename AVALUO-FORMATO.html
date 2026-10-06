@@ -5,161 +5,1572 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dictamen de Avalúo Inmobiliario</title>
     <style>
-      body { font-family: Arial, sans-serif; margin: 0; padding: 24px; background: #f3f6fb; color: #1f2937; }
-      .card { max-width: 1100px; margin: 0 auto; background: white; padding: 24px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-      h1, h2, h3 { margin-top: 0; }
-      .grid { display: grid; gap: 12px; }
-      .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-      .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
-      .summary-card { background: #eff6ff; padding: 12px; border-radius: 10px; border: 1px solid #bfdbfe; }
-      label { display: grid; gap: 6px; font-weight: 600; }
-      input, textarea, select { padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; }
-      button { padding: 10px 16px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; }
-      button:hover { background: #1d4ed8; }
-      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-      th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
-      th { background: #f9fafb; }
-      pre { background: #111827; color: #e5e7eb; padding: 16px; border-radius: 8px; overflow-x: auto; }
-      .muted { color: #6b7280; font-size: 0.95rem; }
+      body {
+        margin: 0;
+        padding: 32px 20px;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(180deg, #dfeaf5 0%, #edf3f8 100%);
+        color: #122536;
+      }
+
+      .sheet {
+        max-width: 1360px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #bfd1e5;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      .topbar {
+        background: linear-gradient(135deg, #0a2f4f 0%, #0f4c81 100%);
+        color: white;
+        padding: 18px 24px;
+        text-align: center;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+      }
+
+      .institutional-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 24px 10px;
+        border-bottom: 1px solid #dfeaf3;
+        background: #f7fbff;
+      }
+
+      .institutional-header .brand {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #103f66;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .institutional-header .meta {
+        text-align: right;
+        font-size: 0.72rem;
+        color: #49627a;
+        line-height: 1.45;
+      }
+
+      .document-banner {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 14px;
+        padding: 20px 24px 8px;
+        background: #f6fbff;
+        border-bottom: 1px solid #dfeaf3;
+      }
+
+      .document-banner .title-box {
+        border-left: 4px solid #0f4c81;
+        padding-left: 12px;
+      }
+
+      .document-banner .title-box h1 {
+        margin: 0;
+        font-size: 1.6rem;
+        line-height: 1.2;
+        color: #0d355c;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .document-banner .title-box p {
+        margin: 8px 0 0;
+        color: #48677f;
+        font-size: 0.76rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .doc-meta {
+        display: grid;
+        gap: 8px;
+        font-size: 0.73rem;
+        color: #35506d;
+        align-content: center;
+      }
+
+      .doc-meta strong {
+        color: #123c61;
+      }
+
+      .official-meta-bar {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        gap: 10px;
+        padding: 12px 24px 18px;
+        background: #f4f9ff;
+        border-bottom: 1px solid #dfeaf3;
+      }
+
+      .meta-pill {
+        border: 1px solid #d5e7fb;
+        border-radius: 10px;
+        background: #ffffff;
+        padding: 10px 12px;
+      }
+
+      .meta-pill strong {
+        display: block;
+        font-size: 0.66rem;
+        color: #54728a;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .meta-pill span {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #123859;
+      }
+
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .capture {
+        padding: 18px;
+        border-right: 1px solid #d2dbe6;
+        background: #fafcff;
+      }
+
+      .report {
+        padding: 18px;
+        background: #f8fbff;
+      }
+
+      .section-title {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: #0f4c81;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        margin: 18px 0 12px;
+        border-bottom: 1px solid #dbeaf6;
+        padding-bottom: 6px;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #2b3d52;
+      }
+
+      input, textarea, select {
+        width: 100%;
+        padding: 9px 10px;
+        border: 1px solid #c8d4e2;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        background: #ffffff;
+        color: #18293a;
+        box-sizing: border-box;
+      }
+
+      textarea { min-height: 82px; resize: vertical; }
+
+      .comparable-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+        gap: 12px;
+      }
+
+      .comparable-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f4f9ff 100%);
+        border: 1px solid #dfeaf3;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+      }
+
+      .comparable-card h3 {
+        margin: 0 0 10px;
+        color: #0f4c81;
+        font-size: 0.9rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .button-row {
+        margin-top: 18px;
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0f4c81 0%, #1c6fb2 100%);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(15, 76, 129, 0.2);
+      }
+
+      .summary-box {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        gap: 10px;
+        margin: 12px 0 18px;
+      }
+
+      .mini-card {
+        background: linear-gradient(180deg, #edf5ff 0%, #f7fbff 100%);
+        border: 1px solid #d0e5ff;
+        border-radius: 10px;
+        padding: 12px 10px;
+        min-height: 78px;
+      }
+
+      .mini-card strong {
+        display: block;
+        font-size: 0.72rem;
+        color: #52667d;
+        margin-bottom: 6px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .mini-card span {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #102c4d;
+      }
+
+      .formal-section {
+        background: #fff;
+        border: 1px solid #dceaf7;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 14px;
+      }
+
+      .formal-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0 18px;
+      }
+
+      .formal-tab {
+        background: #ebf5ff;
+        border: 1px solid #cfe4fc;
+        color: #124a7d;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        padding: 8px 10px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .formal-tab:hover,
+      .formal-tab:focus-visible,
+      .formal-tab.active {
+        background: #0f4c81;
+        border-color: #0f4c81;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(15, 76, 129, 0.18);
+        outline: none;
+      }
+
+      .capture-target {
+        scroll-margin-top: 20px;
+      }
+
+      .fieldset {
+        background: #fff;
+        border: 1px solid #dfeaf3;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 16px;
+      }
+
+      .fieldset .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 12px;
+      }
+
+      .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .capture-table {
+        min-width: 900px;
+        font-size: 0.72rem;
+      }
+
+      .capture-table input,
+      .capture-table select {
+        min-width: 95px;
+        padding: 7px;
+        font-size: 0.75rem;
+      }
+
+      .report-data-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 14px;
+      }
+
+      .report-data-item {
+        padding: 7px 9px;
+        border-bottom: 1px solid #e3edf6;
+        overflow-wrap: anywhere;
+        font-size: 0.78rem;
+        line-height: 1.45;
+      }
+
+      .report-data-item strong {
+        display: block;
+        color: #174f7d;
+        font-size: 0.66rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      .formal-section h5 {
+        margin: 14px 0 7px;
+        color: #174f7d;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+      }
+
+      .technical-note {
+        border-left: 3px solid #d5a23a;
+        padding: 7px 10px;
+        background: #fffaf0;
+        color: #624b1d !important;
+        font-size: 0.72rem !important;
+      }
+
+      .formal-section h4 {
+        margin: 0 0 10px;
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0d4478;
+      }
+
+      .formal-section p {
+        margin: 6px 0;
+        font-size: 0.85rem;
+        color: #33506b;
+        line-height: 1.6;
+      }
+
+      .signature-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .signature-box {
+        border-top: 2px solid #bfd4ec;
+        padding-top: 10px;
+        min-height: 90px;
+        color: #34516d;
+        font-size: 0.75rem;
+      }
+
+      .official-stamp {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 110px;
+        border: 2px solid #bfd4ec;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #f9fcff 0%, #eef7ff 100%);
+        color: #0d4478;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .attachment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(180px, 1fr));
+        gap: 14px;
+      }
+
+      .attachment-box {
+        border: 1px solid #d7e6f3;
+        border-radius: 12px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .attachment-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px 12px;
+        background: #f5faff;
+        border-bottom: 1px solid #dfeaf3;
+      }
+
+      .attachment-header h4 {
+        margin: 0;
+        font-size: 0.74rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #0d4478;
+      }
+
+      .secondary-button {
+        background: #eaf4ff;
+        color: #0d4478;
+        border: 1px solid #cbdef5;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: none;
+      }
+
+      .hidden-file-input {
+        display: none;
+      }
+
+      .attachment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        min-height: 110px;
+      }
+
+      .attachment-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #f9fbff;
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 0.72rem;
+        color: #304a67;
+      }
+
+      .attachment-preview {
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #d9e7f6;
+        background: #eef5ff;
+      }
+
+      .attachment-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 0.8rem;
+      }
+
+      th, td {
+        border: 1px solid #dfeaf3;
+        padding: 7px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f5faff;
+        color: #114b7b;
+      }
+
+      pre {
+        background: #111827;
+        color: #e5e7eb;
+        padding: 12px;
+        border-radius: 8px;
+        line-height: 1.5;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .formula-box {
+        background: linear-gradient(180deg, #f2f9ff 0%, #edf5ff 100%);
+        border: 1px solid #d7ebff;
+        border-radius: 12px;
+        padding: 14px 12px;
+        margin-top: 12px;
+      }
+
+      .formula-box strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #0f4c81;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 0.74rem;
+      }
+
+      .formula-box p {
+        margin: 6px 0;
+        font-size: 0.9rem;
+        color: #203649;
+      }
+
+      .toggle-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 8px 0 14px;
+      }
+
+      .toggle-button {
+        background: #eaf4ff;
+        color: #0d4478;
+        border: 1px solid #cfe3fa;
+        border-radius: 10px;
+        padding: 9px 12px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .toggle-panel {
+        display: none;
+        margin-top: 10px;
+        border: 1px solid #dbeaf6;
+        border-radius: 12px;
+        background: #f9fbff;
+        padding: 12px;
+      }
+
+      .toggle-panel.open {
+        display: block;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .info-chip {
+        background: white;
+        border: 1px solid #dfeaf3;
+        border-radius: 10px;
+        padding: 9px 10px;
+        font-size: 0.75rem;
+        color: #2f4966;
+      }
+
+      .info-chip strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.68rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #174f7d;
+      }
+
+      .check-list {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .check-list li {
+        background: white;
+        border: 1px solid #ddeaf7;
+        border-radius: 8px;
+        padding: 8px 10px;
+        color: #2f4966;
+        font-size: 0.8rem;
+      }
+
+      @media print {
+        body {
+          background: white;
+          padding: 0;
+        }
+
+        .sheet {
+          max-width: none;
+          border-radius: 0;
+          box-shadow: none;
+          border: none;
+        }
+
+        .capture {
+          background: white;
+        }
+
+        .report {
+          background: white;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .main-grid,
+        .two-col,
+        .comparable-grid,
+        .summary-box,
+        .official-meta-bar,
+        .document-banner,
+        .attachment-grid,
+        .signature-row,
+        .report-data-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .capture {
+          border-right: none;
+          border-bottom: 1px solid #d2dbe6;
+        }
+      }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h1>Dictamen de Avalúo Inmobiliario</h1>
-      <p class="muted">Formato base para captura de datos, georreferenciación, homologación y resumen del dictamen.</p>
+    <div class="sheet">
+      <div class="topbar">Dictamen de Avalúo Inmobiliario</div>
+      <div class="institutional-header">
+        <div class="brand">Avalúo de Inmuebles</div>
+        <div class="meta">Folio: <span id="reportHeaderFolio">Pendiente</span><br />Fecha de emisión: 05/10/2026</div>
+      </div>
 
-      <form id="valuationForm" class="grid">
-        <h2>1. Datos administrativos</h2>
-        <div class="two-col">
-          <label>Solicitante <input name="solicitante" placeholder="Nombre del solicitante" /></label>
-          <label>Cuenta predial <input name="cuentaPredial" placeholder="Cuenta predial" /></label>
-          <label>Clave catastral <input name="claveCatastral" placeholder="Clave catastral" /></label>
-          <label>Número de escritura <input name="numeroEscritura" placeholder="Número de escritura" /></label>
-          <label>Notario <input name="notario" placeholder="Notario" /></label>
-          <label>Tomo <input name="tomo" placeholder="Tomo" /></label>
-          <label>Fecha de inscripción <input name="fechaInscripcion" type="date" /></label>
+      <div class="document-banner">
+        <div class="title-box">
+          <h1>Dictamen de Valoración</h1>
+          <p>Informe técnico de avalúo inmobiliario</p>
+        </div>
+        <div class="doc-meta">
+          <div><strong>Tipo:</strong> <span id="reportPropertyType">Inmueble residencial</span></div>
+          <div><strong>Región:</strong> <span id="reportRegion">Pendiente de confirmar</span></div>
+          <div><strong>Procedimiento:</strong> Comparación de ventas</div>
+        </div>
+      </div>
+
+      <div class="official-meta-bar">
+        <div class="meta-pill"><strong>Expediente</strong><span id="reportFolio">Pendiente de captura</span></div>
+        <div class="meta-pill"><strong>Propiedad</strong><span id="reportPropertyMeta">Residencial</span></div>
+        <div class="meta-pill"><strong>Municipio</strong><span id="reportHeaderMunicipality">Pendiente de captura</span></div>
+        <div class="meta-pill"><strong>Fecha</strong><span>05/10/2026</span></div>
+      </div>
+
+      <div class="main-grid">
+        <div class="capture">
+          <form id="valuationForm">
+            <div class="formal-tabs" aria-label="Navegación de captura">
+              <button type="button" class="formal-tab active" data-section-target="capture-general">General</button>
+              <button type="button" class="formal-tab" data-section-target="capture-location">Ubicación</button>
+              <button type="button" class="formal-tab" data-section-target="capture-terrain">Terreno</button>
+              <button type="button" class="formal-tab" data-section-target="capture-building">Construcción</button>
+              <button type="button" class="formal-tab" data-section-target="capture-values">Valores</button>
+              <button type="button" class="formal-tab" data-section-target="capture-comparables">Comparables</button>
+              <button type="button" class="formal-tab" data-section-target="capture-annexes">Anexos</button>
+            </div>
+
+            <div class="section-title capture-target" id="capture-general" tabindex="-1">I.- ANTECEDENTES</div>
+            <div class="fieldset">
+              <div class="row">
+                <label>Tipo de inmueble <input name="tipoInmueble" value="Residencial" /></label>
+                <label>Solicitante del avalúo <input name="solicitante" value="Propietario" /></label>
+                <label>Propietario <input name="propietario" /></label>
+                <label>Cuenta predial <input name="cuentaPredial" /></label>
+                <label>Calle y número <input name="calle" value="Calle Amandino" /></label>
+                <label>Colonia <input name="colonia" value="Valle de Otates" /></label>
+                <label>Municipio <input name="municipio" value="León" /></label>
+                <label>Estado <input name="estado" value="Guanajuato" /></label>
+                <label>Objeto del avalúo <input name="objetoAvaluo" /></label>
+                <label>Uso del avalúo <input name="usoAvaluo" placeholder="Indique el uso o destino del dictamen" /></label>
+                <label>Número de escritura pública <input name="numeroEscritura" /></label>
+                <label>Número de notario <input name="numeroNotario" /></label>
+                <label>Foja registral <input name="fojaRegistral" /></label>
+                <label>Registro Público / libertad de gravamen <input name="registroPublico" /></label>
+                <label>Coordenadas <input name="coordenadas" placeholder="Latitud, longitud o UTM" /></label>
+                <label>Medidas y colindancias según <input name="medidasSegun" placeholder="Escritura, levantamiento, catastro, etc." /></label>
+                <label>Clave catastral <input name="claveCatastral" /></label>
+                <label>Folio del expediente <input name="folioExpediente" /></label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-location" tabindex="-1">II.- CARACTERÍSTICAS URBANAS Y UBICACIÓN</div>
+            <div class="fieldset">
+              <div class="row">
+                <label>Latitud <input name="latitud" type="number" step="any" /></label>
+                <label>Longitud <input name="longitud" type="number" step="any" /></label>
+                <label>Clasificación de la zona <input name="clasificacionZona" /></label>
+                <label>Población / contexto demográfico <input name="poblacion" /></label>
+                <label>Construcción dominante <input name="construccionDominante" /></label>
+                <label>Nivel socioeconómico <input name="nivelSocioeconomico" /></label>
+                <label>Índice de saturación de la zona (%) <input name="indiceSaturacion" type="number" min="0" max="100" step="0.1" /></label>
+                <label>Densidad habitacional permitida <input name="densidadHabitacional" /></label>
+                <label>Uso de suelo según P.O.T. <input name="usoSueloPot" /></label>
+                <label>Vialidades <input name="vialidades" /></label>
+                <label>Vías de acceso e importancia <textarea name="viasAcceso"></textarea></label>
+                <label>Ancho de calle (m) <input name="anchoCalle" type="number" min="0" step="0.1" /></label>
+                <label>Banquetas y guarniciones <input name="banquetas" /></label>
+                <label>Equipamiento urbano y distancias a puntos importantes <textarea name="equipamientoUrbano" placeholder="Anote equipamiento y distancia aproximada desde el inmueble; indique la fuente o fecha de verificación."></textarea></label>
+              </div>
+            </div>
+
+            <div class="section-title">Elementos y cobertura técnica del entorno</div>
+            <div class="fieldset">
+              <div class="row">
+                <label>Educación y distancias <textarea name="urbEducacion"></textarea></label>
+                <label>Cultura y distancias <textarea name="urbCultura"></textarea></label>
+                <label>Salud y distancias <textarea name="urbSalud"></textarea></label>
+                <label>Comercio y abasto <textarea name="urbComercio"></textarea></label>
+                <label>Transporte <textarea name="urbTransporte"></textarea></label>
+                <label>Recreación y deporte <textarea name="urbRecreacion"></textarea></label>
+                <label>Seguridad pública <textarea name="urbSeguridad"></textarea></label>
+                <label>Infraestructura y servicios <textarea name="urbServicios"></textarea></label>
+                <label>Ubicación y georreferenciación <textarea name="urbGeorreferenciacion"></textarea></label>
+                <label>Definición de divisibilidad <textarea name="urbDivisibilidad"></textarea></label>
+                <label>Restricciones del plan territorial <textarea name="urbRestricciones"></textarea></label>
+                <label>Contexto territorial y demográfico <textarea name="urbContexto"></textarea></label>
+                <label>Entorno urbano y vialidad <textarea name="urbEntorno"></textarea></label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-terrain" tabindex="-1">III.- TERRENO</div>
+            <div class="fieldset">
+              <div class="row">
+                <label>Área privativa (m²) <input name="areaPrivativa" type="number" min="0" step="0.01" /></label>
+                <label>Área común 1 (m²) <input name="areaComun1" type="number" min="0" step="0.01" /></label>
+                <label>Área común 2 (m²) <input name="areaComun2" type="number" min="0" step="0.01" /></label>
+                <label>Indiviso (%) <input name="indiviso" type="number" min="0" max="100" step="0.01" /></label>
+                <label>Superficie del terreno (m²) <input name="superficieTerreno" type="number" min="0" step="0.01" /></label>
+                <label>Superficie aplicable (m²) <input name="superficieAplicable" type="number" min="0" step="0.01" /></label>
+                <label>Topografía y configuración <textarea name="topografia"></textarea></label>
+                <label>Características panorámicas <textarea name="panoramicas"></textarea></label>
+                <label>Datos según escritura <textarea name="datosEscritura"></textarea></label>
+                <label>Medidas y colindancias <textarea name="medidasColindancias"></textarea></label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-building" tabindex="-1">IV.- DESCRIPCIÓN GENERAL DEL INMUEBLE</div>
+            <div class="fieldset">
+              <div class="row">
+                <label>Uso actual <input name="usoActual" /></label>
+                <label>Partido arquitectónico / descripción de áreas <textarea name="partidoArquitectonico"></textarea></label>
+                <label>Calidad del proyecto <input name="calidadProyecto" /></label>
+                <label>Número de niveles <input name="niveles" type="number" min="1" step="1" /></label>
+                <label>Superficie construcción (m²) <input name="superficieConstruccion" type="number" min="0" step="0.01" /></label>
+                <label>Edad del inmueble (años) <input name="edadInmueble" type="number" min="0" step="1" /></label>
+                <label>Tipo de construcción <input name="tipoConstruccion" value="Residencial" /></label>
+                <label>Condición general <input name="condicionGeneral" /></label>
+                <label>Calidad y clasificación de construcción <input name="calidadConstruccion" /></label>
+                <label>Valor unitario nuevo de reposición (V.U.N., $/m²) <input name="valorUnitarioNuevo" type="number" min="0" step="0.01" placeholder="Requiere fuente de costos" /></label>
+                <label>Vida útil total estimada (años) <input name="vidaUtilTotal" type="number" min="1" step="1" /></label>
+                <label>Estado de conservación <select name="estadoConservacion"><option value="">Seleccione</option><option>Nuevo</option><option>Bueno</option><option>Regular</option><option>Malo</option><option>Ruinoso</option></select></label>
+                <label>Sistema estructural <textarea name="sistemaEstructural"></textarea></label>
+                <label>Cimentación <textarea name="cimentacion"></textarea></label>
+                <label>Muros, entrepisos y escaleras <textarea name="murosEntrepisos"></textarea></label>
+                <label>Cubierta y techumbre <textarea name="cubierta"></textarea></label>
+                <label>Acabados por áreas o elementos arquitectónicos <textarea name="acabadosAreas" placeholder="Ej.: sala/comedor, cocina, recámaras, baños, fachada; describa pisos, muros, plafones y recubrimientos observados."></textarea></label>
+                <label>Instalaciones hidrosanitarias <textarea name="instalacionesHidrosanitarias"></textarea></label>
+                <label>Instalación eléctrica <textarea name="instalacionElectrica"></textarea></label>
+                <label>Instalación de gas <textarea name="instalacionGas"></textarea></label>
+                <label>Instalaciones especiales <textarea name="instalacionesEspeciales"></textarea></label>
+                <label>Obra complementaria <textarea name="obraComplementaria"></textarea></label>
+              </div>
+            </div>
+
+            <div class="section-title">Tabla de clasificación de construcción</div>
+            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Tipo, calidad y clasificación</th><th>Superficie (m²)</th><th>V.U.T. ($/m²)</th><th>Edad</th><th>Vida útil remanente</th><th>Estado de conservación</th><th></th></tr></thead><tbody id="buildingRows"></tbody></table></div>
+            <div class="button-row"><button type="button" class="secondary-button" id="addBuildingRow">Agregar tipo de construcción</button></div>
+
+            <div class="section-title">Elementos accesorios, obra complementaria e instalaciones especiales</div>
+            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso (%)</th><th>V.U.T.</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>Estado de conservación</th><th>Coef. R-H (%)</th><th></th></tr></thead><tbody id="accessoryRows"></tbody></table></div>
+            <div class="button-row"><button type="button" class="secondary-button" id="addAccessoryRow">Agregar accesorio/instalación</button></div>
+
+            <div class="section-title capture-target" id="capture-values" tabindex="-1">III. Datos de mercado y valuación</div>
+            <div class="fieldset">
+              <div class="row">
+                <label>Tasa de capitalización (%) <input name="capRate" type="number" min="0" step="0.01" placeholder="Ejemplo: 8 para capturar 8%" /></label>
+                <label>Ingreso anual neto ($) <input name="annualIncome" type="number" min="0" step="0.01" placeholder="Capturar renta neta comprobable" /></label>
+                <label>Ajuste de mercado <input name="marketAdjustment" type="number" step="0.01" value="1" /></label>
+                <label>Valor unitario de terreno ($/m²) <input name="valorUnitarioTerreno" type="number" min="0" step="0.01" placeholder="Capturar con fuente de mercado" /></label>
+                <label>Fuente / fecha de costos o valores unitarios <input name="fuenteValoresUnitarios" placeholder="Indique fuente, fecha y alcance" /></label>
+                <label>Valor catastral <input name="valorCatastral" type="number" min="0" step="0.01" /></label>
+                <label>Observaciones <input name="observaciones" /></label>
+                <label>Estado de conservación <input name="estadoConservacion" /></label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-comparables" tabindex="-1">IV. Comparables de construcción</div>
+            <div class="comparable-grid">
+              <div class="comparable-card">
+                <h3>Comparable 1</h3>
+                <label>Dirección y fuente <input data-comparable="0" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
+                <label>Precio venta ($) <input data-comparable="0" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="0" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="0" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="0" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="0" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="0" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="0" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
+
+              <div class="comparable-card">
+                <h3>Comparable 2</h3>
+                <label>Dirección y fuente <input data-comparable="1" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
+                <label>Precio venta ($) <input data-comparable="1" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="1" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="1" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="1" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="1" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="1" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="1" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
+
+              <div class="comparable-card">
+                <h3>Comparable 3</h3>
+                <label>Dirección y fuente <input data-comparable="2" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
+                <label>Precio venta ($) <input data-comparable="2" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="2" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="2" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="2" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="2" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="2" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="2" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
+
+              <div class="comparable-card">
+                <h3>Comparable 4</h3>
+                <label>Dirección y fuente <input data-comparable="3" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
+                <label>Precio venta ($) <input data-comparable="3" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="3" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="3" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="3" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="3" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="3" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="3" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-annexes" tabindex="-1">V. Anexos: fotos, croquis y documentos</div>
+            <div class="attachment-grid">
+              <div class="attachment-box">
+                <div class="attachment-header">
+                  <h4>Fotos</h4>
+                  <button type="button" class="secondary-button" data-upload="photos">Agregar</button>
+                  <input class="hidden-file-input" id="photosInput" type="file" accept="image/*" multiple data-collection="photos" />
+                </div>
+                <div class="attachment-list" id="photosList"></div>
+              </div>
+
+              <div class="attachment-box">
+                <div class="attachment-header">
+                  <h4>Croquis</h4>
+                  <button type="button" class="secondary-button" data-upload="croquis">Agregar</button>
+                  <input class="hidden-file-input" id="croquisInput" type="file" accept="image/*,.pdf" multiple data-collection="croquis" />
+                </div>
+                <div class="attachment-list" id="croquisList"></div>
+              </div>
+
+              <div class="attachment-box">
+                <div class="attachment-header">
+                  <h4>Documentos</h4>
+                  <button type="button" class="secondary-button" data-upload="documents">Agregar</button>
+                  <input class="hidden-file-input" id="documentsInput" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple data-collection="documents" />
+                </div>
+                <div class="attachment-list" id="documentsList"></div>
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button type="submit">Generar dictamen</button>
+            </div>
+          </form>
         </div>
 
-        <h2>2. Datos del inmueble</h2>
-        <div class="two-col">
-          <label>Calle <input name="calle" placeholder="Calle" /></label>
-          <label>Número exterior <input name="numeroExterior" placeholder="Número exterior" /></label>
-          <label>Colonia <input name="colonia" placeholder="Colonia" /></label>
-          <label>Código Postal <input name="codigoPostal" placeholder="Código Postal" /></label>
-          <label>Municipio <input name="municipio" placeholder="Municipio" /></label>
-          <label>Estado <input name="estado" placeholder="Estado" /></label>
+        <div class="report">
+          <div class="section-title">Cuerpo del avalúo</div>
+
+          <div class="formal-section">
+            <h4>I.- ANTECEDENTES</h4>
+            <div id="reportAntecedentes" class="report-data-grid"></div>
+          </div>
+
+          <div class="formal-section">
+            <h4>II.- CARACTERÍSTICAS URBANAS</h4>
+            <div id="reportUrban" class="report-data-grid"></div>
+            <div class="toggle-row">
+              <button type="button" class="toggle-button" data-target="urban-investigation">Proceso investigatorio</button>
+            </div>
+            <div id="urban-investigation" class="toggle-panel">
+              <div class="field-block">
+                <label for="urbanInvestigationText">Información del proceso investigatorio</label>
+                <textarea id="urbanInvestigationText" placeholder="Registre las observaciones verificadas sobre características urbanas, uso de suelo, vialidad, servicios, entorno y condiciones de uso habitacional..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="formal-section">
+            <h4>III.- TERRENO</h4>
+            <div id="reportTerrain" class="report-data-grid"></div>
+          </div>
+
+          <div class="formal-section">
+            <h4>IV.- DESCRIPCIÓN GENERAL DEL INMUEBLE</h4>
+            <div id="reportDescription" class="report-data-grid"></div>
+            <h5>Clasificación y superficies de construcción</h5>
+            <div id="reportBuildingTable" class="table-scroll"></div>
+            <p id="buildingTotalSurface"></p>
+            <h5>Elementos accesorios, obra complementaria e instalaciones especiales</h5>
+            <div id="reportAccessoryTable" class="table-scroll"></div>
+            <p class="technical-note">F.R.H. mostrado como factor de apoyo: [1 − 0.5 × (e/V + (e/V)²)] × (1 − K/100), con V = edad + vida útil remanente y K según el estado seleccionado. Confirmar coeficientes, tablas y alcance con la metodología aplicable al encargo; no constituye certificación normativa.</p>
+          </div>
+
+          <div class="formal-section">
+            <h4>V.- ELEMENTOS DE LA CONSTRUCCIÓN</h4>
+            <div id="reportConstructionDetail" class="report-data-grid"></div>
+            <div class="toggle-row">
+              <button type="button" class="toggle-button" data-target="construction-elements">Mostrar elementos</button>
+            </div>
+            <div id="construction-elements" class="toggle-panel">
+              <div class="field-block">
+                <label for="constructionElementsText">Elementos de la construcción</label>
+                <textarea id="constructionElementsText" placeholder="Describa solo los elementos observados o documentados: estructura, muros, cubierta, instalaciones, acabados por área, conservación y mantenimiento..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="formal-section">
+            <h4>VI.- ENFOQUE COMPARATIVO DE MERCADO</h4>
+            <p>La estimación se calculará con comparables de construcción verificables y pertinentes al mercado del inmueble sujeto. Capture precio, superficie construida, ubicación, fuente y factores de homologación; no se consideran referencias incompletas.</p>
+            <p id="reportMarketStatus" class="technical-note">Pendiente: capturar y verificar comparables locales.</p>
+            <div class="formula-box">
+              <strong>Condicionantes del enfoque comparativo</strong>
+              <p>Fv = Pv × Fz × Fl × Ft × Fe × Ff</p>
+              <p>Donde: Fz = zona, Fl = ubicación, Ft = construcción, Fe = edad, Ff = acabado.</p>
+              <p>Se ajusta el valor de venta de cada comparable para estimar el valor equivalente del inmueble sujeto.</p>
+            </div>
+          </div>
+
+          <div class="summary-box">
+            <div class="mini-card"><strong>Valor físico</strong><span id="valorFisico">$0.00</span></div>
+            <div class="mini-card"><strong>Valor mercado</strong><span id="valorMercado">$0.00</span></div>
+            <div class="mini-card"><strong>Valor capitalización</strong><span id="valorCapitalizacion">$0.00</span></div>
+            <div class="mini-card"><strong>Valor final</strong><span id="valorFinal">$0.00</span></div>
+          </div>
+
+          <div class="formal-section">
+            <h4>VII.- ENFOQUE FÍSICO O DIRECTO</h4>
+            <p>El enfoque físico considera el costo de reposición o reproducción del inmueble, ajustado por depreciación funcional y física, así como por las condiciones de uso, antigüedad y nivel constructivo del bien.</p>
+            <div class="formula-box">
+              <strong>Condicionantes del enfoque físico</strong>
+              <p>Valor estimado = costo nuevo − depreciación física − depreciación funcional</p>
+              <p>Se consideran materiales, mano de obra, obra nueva equivalente, antigüedad y mantenimiento.</p>
+            </div>
+          </div>
+
+          <div class="formal-section">
+            <h4>VIII.- ENFOQUE DE INGRESOS O CAPITALIZACIÓN DE RENTAS</h4>
+            <p>El enfoque de ingresos considera el rendimiento esperado del inmueble, con base en la renta potencial anual y la tasa de capitalización aplicada, para reflejar la capacidad de generación de valor por concepto de uso o arrendamiento.</p>
+            <div class="formula-box">
+              <strong>Condicionantes del enfoque de ingresos</strong>
+              <p>Valor = Renta neta anual / Tasa de capitalización</p>
+              <p>Se analiza ingreso anual, estabilidad de ocupación, riesgo de mercado y condiciones de arrendamiento.</p>
+            </div>
+          </div>
+
+          <div class="formal-section">
+            <h4>IX.- CONCLUSIÓN Y VALOR FINAL</h4>
+            <p id="reportConclusion">La conclusión se generará al procesar los tres enfoques con la información capturada. Los resultados son preliminares y requieren revisión profesional y respaldo documental.</p>
+          </div>
+
+          <div class="formula-box">
+            <strong>Procedimiento de cálculo</strong>
+            <p>Vh = Pv × Fz × Fl × Ft × Fe × Ff</p>
+            <p>Vu = Vh / S</p>
+            <p>Vf = Vu × Sobjeto</p>
+            <p id="formulaDetail">Se calculará a partir de los datos capturados.</p>
+          </div>
+
+          <div class="section-title">Tabla de comparables</div>
+          <div id="reportTable"></div>
+
+          <div class="formal-section">
+            <h4>X.- OBSERVACIONES Y DEFINICIONES EN EL AVALUO</h4>
+            <p>El valor estimado se fundamenta en los datos del mercado, la información proporcionada por el propietario, la georreferenciación y la documentación auxiliar. Las observaciones del caso deben interpretarse como condiciones de mercado aplicables al momento del avalúo.</p>
+          </div>
+
+          <div class="formal-section">
+            <h4>ANEXO I.- CROQUIS DEL INMUEBLE</h4>
+            <div id="croquisPreview"></div>
+          </div>
+
+          <div class="formal-section">
+            <h4>ANEXO II.- LOCALIZACIÓN DEL INMUEBLE</h4>
+            <p id="reportAddress">La dirección se integrará con los datos capturados.</p>
+          </div>
+
+          <div class="formal-section">
+            <h4>ANEXO III.- FOTOS DEL INMUEBLE</h4>
+            <div id="photosPreview"></div>
+          </div>
+
+          <div class="formal-section">
+            <h4>ANEXO IV.- DOCUMENTOS DEL INMUEBLE</h4>
+            <div id="documentsPreview"></div>
+          </div>
+
+          <div class="section-title">Resultado del cálculo</div>
+          <pre id="result">Esperando generación del dictamen...</pre>
+
+          <div class="signature-row">
+            <div class="signature-box">
+              <strong>Valuador responsable</strong><br />
+              _______________________________<br />
+              Nombre y firma
+            </div>
+            <div class="official-stamp">
+              Sello / autorización
+            </div>
+          </div>
         </div>
-
-        <h2>3. Georreferenciación</h2>
-        <div class="two-col">
-          <label>Latitud <input name="latitud" type="number" step="any" placeholder="19.4326" /></label>
-          <label>Longitud <input name="longitud" type="number" step="any" placeholder="-99.1332" /></label>
-          <label>Superficie de terreno (m²) <input name="superficieTerreno" type="number" step="any" placeholder="300" /></label>
-          <label>Superficie de construcción (m²) <input name="superficieConstruccion" type="number" step="any" placeholder="180" /></label>
-          <label>Edad del inmueble (años) <input name="edadInmueble" type="number" placeholder="10" /></label>
-          <label>Estado de conservación <select name="estadoConservacion"><option value="excelente">Excelente</option><option value="bueno">Bueno</option><option value="regular">Regular</option><option value="malo">Malo</option></select></label>
-          <label>Calidad de proyecto <select name="calidadProyecto"><option value="alto">Alto</option><option value="medio">Medio</option><option value="basico">Básico</option></select></label>
-          <label>Renta anual estimada <input name="annualIncome" type="number" placeholder="120000" /></label>
-          <label>Tasa de capitalización (%) <input name="capRate" type="number" step="0.01" placeholder="0.08" /></label>
-        </div>
-
-        <h2>4. Anexos y observaciones</h2>
-        <label>Observaciones <textarea name="observaciones" rows="4" placeholder="Observaciones del inmueble"></textarea></label>
-        <label>Fotografías <textarea name="fotos" rows="3" placeholder="Fachada, interiores, servicios, vistas de calle"></textarea></label>
-
-        <button type="submit">Generar dictamen</button>
-      </form>
-
-      <h2>Resumen del dictamen</h2>
-      <div id="summaryCards" class="summary"></div>
-
-      <h2>Tabla de homologación</h2>
-      <div id="homologationTable"></div>
-
-      <h2>Memoria de cálculo</h2>
-      <pre id="result">Esperando datos...</pre>
+      </div>
     </div>
 
     <script>
       const form = document.getElementById('valuationForm');
       const result = document.getElementById('result');
-      const summaryCards = document.getElementById('summaryCards');
-      const homologationTable = document.getElementById('homologationTable');
+      const reportTable = document.getElementById('reportTable');
+      const formulaDetail = document.getElementById('formulaDetail');
+      const attachmentPreview = document.getElementById('attachmentPreview');
+      const photosPreview = document.getElementById('photosPreview');
+      const croquisPreview = document.getElementById('croquisPreview');
+      const documentsPreview = document.getElementById('documentsPreview');
+      const attachmentState = {
+        photos: [],
+        croquis: [],
+        documents: []
+      };
 
-      function renderSummary(summary) {
-        summaryCards.innerHTML = [
-          { label: 'Valor de terreno', value: summary.valorTerreno },
-          { label: 'Valor de construcción', value: summary.valorConstruccion },
-          { label: 'Valor físico', value: summary.valorFisico },
-          { label: 'Valor de mercado', value: summary.valorMercado },
-          { label: 'Valor de capitalización', value: summary.valorCapitalizacion }
-        ].map(item => `<div class="summary-card"><strong>${item.label}</strong><br>$${Number(item.value).toLocaleString('es-MX', { maximumFractionDigits: 2 })}</div>`).join('');
+      function money(value) {
+        return new Intl.NumberFormat('es-MX', {
+          style: 'currency',
+          currency: 'MXN',
+          maximumFractionDigits: 2
+        }).format(value || 0);
       }
 
-      function renderTable(tableData) {
-        if (!tableData || tableData.length === 0) {
-          homologationTable.innerHTML = '<p class="muted">No hay comparables disponibles.</p>';
+      function toDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function renderAttachmentList(collectionName) {
+        const listId = `${collectionName}List`;
+        const list = document.getElementById(listId);
+        const items = attachmentState[collectionName] || [];
+
+        if (!list) return;
+
+        list.innerHTML = items.length
+          ? items.map(item => `
+              <div class="attachment-item">
+                ${item.preview ? `<img class="attachment-preview" src="${item.preview}" alt="${item.name}" />` : `<div class="attachment-preview" style="display:flex;align-items:center;justify-content:center;font-size:18px;">📎</div>`}
+                <div class="attachment-name">${item.name}</div>
+              </div>
+            `).join('')
+          : '<div class="attachment-item"><div class="attachment-name">Sin archivos cargados</div></div>';
+      }
+
+      function renderAttachmentPreview() {
+        const renderList = (items, container, label) => {
+          if (!container) return;
+          if (!items.length) {
+            container.innerHTML = '<p style="margin:0;color:#4b6680;">No hay archivos cargados.</p>';
+            return;
+          }
+
+          container.innerHTML = items.map(item => `
+            <div style="display:flex;align-items:center;gap:10px;border:1px solid #dfeaf3;border-radius:8px;padding:8px;margin:8px 0;background:#f9fbff;">
+              ${item.preview ? `<img src="${item.preview}" alt="${item.name}" style="width:46px;height:46px;object-fit:cover;border-radius:8px;border:1px solid #d9e7f6;" />` : `<div style="width:46px;height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eef5ff;border:1px solid #d9e7f6;">📄</div>`}
+              <div>
+                <div style="font-size:0.72rem;color:#0d4478;font-weight:700;">${label}</div>
+                <div style="font-size:0.72rem;color:#314b67;">${item.name}</div>
+              </div>
+            </div>
+          `).join('');
+        };
+
+        renderList(attachmentState.photos, photosPreview, 'Fotos');
+        renderList(attachmentState.croquis, croquisPreview, 'Croquis');
+        renderList(attachmentState.documents, documentsPreview, 'Documentos');
+
+        if (!attachmentPreview) return;
+
+        const allEntries = [
+          ...attachmentState.photos.map(item => ({ ...item, section: 'Fotos' })),
+          ...attachmentState.croquis.map(item => ({ ...item, section: 'Croquis' })),
+          ...attachmentState.documents.map(item => ({ ...item, section: 'Documentos' }))
+        ];
+
+        if (!allEntries.length) {
+          attachmentPreview.innerHTML = '<p style="margin:0;color:#4b6680;">No hay anexos cargados.</p>';
           return;
         }
 
-        homologationTable.innerHTML = `
+        attachmentPreview.innerHTML = allEntries.map(item => `
+          <div style="display:flex;align-items:center;gap:10px;border:1px solid #dfeaf3;border-radius:8px;padding:8px;margin:8px 0;background:#f9fbff;">
+            ${item.preview ? `<img src="${item.preview}" alt="${item.name}" style="width:46px;height:46px;object-fit:cover;border-radius:8px;border:1px solid #d9e7f6;" />` : `<div style="width:46px;height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eef5ff;border:1px solid #d9e7f6;">📄</div>`}
+            <div>
+              <div style="font-size:0.72rem;color:#0d4478;font-weight:700;">${item.section}</div>
+              <div style="font-size:0.72rem;color:#314b67;">${item.name}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function attachFiles(collectionName, files) {
+        files.forEach(async (file) => {
+          const entry = {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            preview: file.type.startsWith('image/') ? await toDataUrl(file) : ''
+          };
+          attachmentState[collectionName].push(entry);
+          renderAttachmentList(collectionName);
+          renderAttachmentPreview();
+        });
+      }
+
+      const buildingRows = document.getElementById('buildingRows');
+      const accessoryRows = document.getElementById('accessoryRows');
+      const conservationCoefficients = { Nuevo: 0, Bueno: 2.52, Regular: 18.1, Malo: 52.6, Ruinoso: 100 };
+
+      function inputCell(column, type = 'text', value = '', extra = '') {
+        return `<td><input data-column="${column}" type="${type}" value="${String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" ${type === 'number' ? 'min="0" step="any"' : ''} ${extra}></td>`;
+      }
+
+      function addBuildingRow(values = {}) {
+        const row = document.createElement('tr');
+        row.innerHTML = inputCell('type', 'text', values.type) +
+          inputCell('quality', 'text', values.quality) +
+          inputCell('surface', 'number', values.surface) +
+          inputCell('unitValue', 'number', values.unitValue) +
+          inputCell('age', 'number', values.age) +
+          inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining) +
+          `<td><select data-column="conservation"><option value="">Seleccione</option>${Object.keys(conservationCoefficients).map(state => `<option ${values.conservation === state ? 'selected' : ''}>${state}</option>`).join('')}</select></td>` +
+          '<td><button type="button" class="secondary-button" data-remove-row>Quitar</button></td>';
+        buildingRows.appendChild(row);
+      }
+
+      function rossHeideckeFactor(age, remainingLife, conservation) {
+        const totalLife = Number(age) + Number(remainingLife);
+        if (!Number.isFinite(totalLife) || totalLife <= 0 || conservationCoefficients[conservation] === undefined) return '';
+        const ageRatio = Math.min(Math.max(Number(age) / totalLife, 0), 1);
+        const ageFactor = 1 - 0.5 * (ageRatio + ageRatio ** 2);
+        const conservationFactor = 1 - conservationCoefficients[conservation] / 100;
+        return Math.max(0, Math.min(1, ageFactor * conservationFactor));
+      }
+
+      function addAccessoryRow(values = {}) {
+        const row = document.createElement('tr');
+        row.innerHTML = inputCell('description', 'text', values.description) +
+          inputCell('quantity', 'number', values.quantity) +
+          inputCell('unit', 'text', values.unit) +
+          inputCell('indiviso', 'number', values.indiviso) +
+          inputCell('unitValue', 'number', values.unitValue) +
+          inputCell('age', 'number', values.age) +
+          inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining) +
+          '<td data-column="frh">—</td>' +
+          `<td><select data-column="conservation"><option value="">Seleccione</option>${Object.keys(conservationCoefficients).map(state => `<option ${values.conservation === state ? 'selected' : ''}>${state}</option>`).join('')}</select></td>` +
+          '<td data-column="rhCoefficient">—</td>' +
+          '<td><button type="button" class="secondary-button" data-remove-row>Quitar</button></td>';
+        accessoryRows.appendChild(row);
+        updateAccessoryRow(row);
+      }
+
+      function updateAccessoryRow(row) {
+        const value = column => row.querySelector(`[data-column="${column}"]`)?.value || '';
+        const coefficient = conservationCoefficients[value('conservation')];
+        const frh = rossHeideckeFactor(value('age'), value('usefulLifeRemaining'), value('conservation'));
+        row.querySelector('[data-column="frh"]').textContent = frh === '' ? '—' : frh.toFixed(4);
+        row.querySelector('[data-column="rhCoefficient"]').textContent = coefficient === undefined ? '—' : `${coefficient.toFixed(2)}%`;
+      }
+
+      function readEditableRows(tbody) {
+        return Array.from(tbody.rows).map(row => {
+          const item = {};
+          row.querySelectorAll('[data-column]').forEach(element => {
+            const key = element.dataset.column;
+            if (key === 'frh' || key === 'rhCoefficient') return;
+            const value = element.value.trim();
+            item[key] = element.type === 'number' ? (value === '' ? null : Number(value)) : value;
+          });
+          if (tbody === accessoryRows) {
+            item.frh = rossHeideckeFactor(item.age, item.usefulLifeRemaining, item.conservation);
+            item.rhCoefficient = conservationCoefficients[item.conservation] ?? null;
+          }
+          return item;
+        }).filter(item => Object.values(item).some(value => value !== '' && value !== null));
+      }
+
+      document.getElementById('addBuildingRow').addEventListener('click', () => addBuildingRow());
+      document.getElementById('addAccessoryRow').addEventListener('click', () => addAccessoryRow());
+      document.addEventListener('click', event => {
+        const removeButton = event.target.closest('[data-remove-row]');
+        if (removeButton) removeButton.closest('tr').remove();
+      });
+      accessoryRows.addEventListener('input', event => updateAccessoryRow(event.target.closest('tr')));
+      accessoryRows.addEventListener('change', event => updateAccessoryRow(event.target.closest('tr')));
+
+      const initialBuildingType = document.querySelector('[name="tipoConstruccion"]').value;
+      const initialBuildingSurface = document.querySelector('[name="superficieConstruccion"]').value;
+      const initialBuildingAge = document.querySelector('[name="edadInmueble"]').value;
+      addBuildingRow({ type: initialBuildingType, surface: initialBuildingSurface, age: initialBuildingAge });
+      addAccessoryRow();
+
+      document.querySelector('[name="superficieConstruccion"]').addEventListener('input', event => {
+        const surface = buildingRows.querySelector('[data-column="surface"]');
+        if (buildingRows.rows.length === 1 && surface) surface.value = event.target.value;
+      });
+      document.querySelector('[name="edadInmueble"]').addEventListener('input', event => {
+        const age = buildingRows.querySelector('[data-column="age"]');
+        if (buildingRows.rows.length === 1 && age) age.value = event.target.value;
+      });
+      document.querySelector('[name="tipoConstruccion"]').addEventListener('input', event => {
+        const type = buildingRows.querySelector('[data-column="type"]');
+        if (buildingRows.rows.length === 1 && type) type.value = event.target.value;
+      });
+      buildingRows.addEventListener('input', () => {
+        const total = readEditableRows(buildingRows).reduce((sum, row) => sum + (Number(row.surface) || 0), 0);
+        document.querySelector('[name="superficieConstruccion"]').value = total || '';
+      });
+
+      document.querySelectorAll('[data-upload]').forEach((button) => {
+        const collectionName = button.dataset.upload;
+        const input = document.getElementById(`${collectionName}Input`);
+        button.addEventListener('click', () => input.click());
+        input.addEventListener('change', (event) => {
+          const files = Array.from(event.target.files || []);
+          if (files.length) attachFiles(collectionName, files);
+          input.value = '';
+        });
+      });
+
+      function getComparableRows() {
+        const rows = [];
+        for (let i = 0; i < 4; i += 1) {
+          const item = {};
+          document.querySelectorAll('[data-comparable="' + i + '"]').forEach((field) => {
+            const key = field.dataset.field;
+            const value = field.value;
+            item[key] = ['salePrice', 'surface'].includes(key) ? Number(value) : value;
+            if (['zoneFactor', 'locationFactor', 'terrainFactor', 'ageFactor', 'shapeFactor'].includes(key)) {
+              item[key] = Number(value);
+            }
+          });
+
+          rows.push({
+            id: i + 1,
+            address: item.address || 'Comparable ' + (i + 1),
+            salePrice: Number(item.salePrice) || 0,
+            zoneFactor: Number(item.zoneFactor) || 1,
+            locationFactor: Number(item.locationFactor) || 1,
+            terrainFactor: Number(item.terrainFactor) || 1,
+            ageFactor: Number(item.ageFactor) || 1,
+            shapeFactor: Number(item.shapeFactor) || 1,
+            surface: Number(item.surface) || 0
+          });
+        }
+        return rows;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+      }
+
+      function renderReportData(containerId, entries) {
+        const container = document.getElementById(containerId);
+        container.replaceChildren();
+        entries.forEach(([label, value]) => {
+          if (value === null || value === undefined || String(value).trim() === '') return;
+          const item = document.createElement('div');
+          item.className = 'report-data-item';
+          const title = document.createElement('strong');
+          title.textContent = label;
+          const text = document.createElement('span');
+          text.textContent = String(value);
+          item.append(title, text);
+          container.appendChild(item);
+        });
+        if (!container.childElementCount) container.textContent = 'Sin información capturada; completar y verificar en expediente o visita.';
+      }
+
+      function renderReportFromData(data, payload) {
+        const captured = payload.capture;
+        const antecedentes = [
+          ['Tipo de inmueble', captured.tipoInmueble], ['Solicitante', captured.solicitante], ['Propietario', captured.propietario],
+          ['Cuenta predial', captured.cuentaPredial], ['Calle y número', captured.calle], ['Colonia', captured.colonia],
+          ['Municipio', captured.municipio], ['Estado', captured.estado], ['Objeto del avalúo', captured.objetoAvaluo],
+          ['Uso del avalúo', captured.usoAvaluo], ['Escritura pública', captured.numeroEscritura], ['Notario', captured.numeroNotario],
+          ['Foja registral', captured.fojaRegistral], ['Registro Público / libertad de gravamen', captured.registroPublico],
+          ['Coordenadas', captured.coordenadas || (captured.latitud != null || captured.longitud != null ? `${captured.latitud ?? ''}, ${captured.longitud ?? ''}` : '')],
+          ['Medidas y colindancias según', captured.medidasSegun]
+        ];
+        renderReportData('reportAntecedentes', antecedentes);
+
+        const urbanFields = [
+          ['Clasificación de la zona', 'clasificacionZona'], ['Población/contexto demográfico', 'poblacion'], ['Construcción dominante', 'construccionDominante'],
+          ['Nivel socioeconómico', 'nivelSocioeconomico'], ['Índice de saturación', 'indiceSaturacion'], ['Densidad habitacional permitida', 'densidadHabitacional'],
+          ['Uso de suelo según P.O.T.', 'usoSueloPot'], ['Vialidades', 'vialidades'], ['Vías de acceso e importancia', 'viasAcceso'],
+          ['Ancho de calle (m)', 'anchoCalle'], ['Banquetas y guarniciones', 'banquetas'], ['Equipamiento urbano y distancias', 'equipamientoUrbano'],
+          ['Educación', 'urbEducacion'], ['Cultura', 'urbCultura'], ['Salud', 'urbSalud'], ['Comercio y abasto', 'urbComercio'],
+          ['Transporte', 'urbTransporte'], ['Recreación y deporte', 'urbRecreacion'], ['Seguridad pública', 'urbSeguridad'],
+          ['Infraestructura y servicios', 'urbServicios'], ['Georreferenciación', 'urbGeorreferenciacion'], ['Divisibilidad', 'urbDivisibilidad'],
+          ['Restricciones del plan territorial', 'urbRestricciones'], ['Contexto territorial y demográfico', 'urbContexto'], ['Entorno urbano y vialidad', 'urbEntorno']
+        ].map(([label, key]) => [label, captured[key]]);
+        urbanFields.push(['Proceso investigatorio', payload.urbanInvestigation]);
+        renderReportData('reportUrban', urbanFields);
+
+        renderReportData('reportTerrain', [
+          ['Área privativa (m²)', captured.areaPrivativa], ['Área común 1 (m²)', captured.areaComun1], ['Área común 2 (m²)', captured.areaComun2],
+          ['Indiviso (%)', captured.indiviso], ['Superficie del terreno (m²)', captured.superficieTerreno], ['Superficie aplicable (m²)', captured.superficieAplicable],
+          ['Topografía y configuración', captured.topografia], ['Características panorámicas', captured.panoramicas],
+          ['Datos según escritura', captured.datosEscritura], ['Medidas y colindancias', captured.medidasColindancias]
+        ]);
+        renderReportData('reportDescription', [
+          ['Uso actual', captured.usoActual], ['Partido arquitectónico / áreas', captured.partidoArquitectonico],
+          ['Calidad del proyecto', captured.calidadProyecto], ['Número de niveles', captured.niveles],
+          ['Superficie total de construcción (m²)', captured.superficieConstruccion], ['Tipo de construcción', captured.tipoConstruccion]
+        ]);
+
+        const buildingRowsData = payload.buildingItems;
+        document.getElementById('reportBuildingTable').innerHTML = `<table><thead><tr><th>Tipo, calidad y clasificación</th><th>Superficie (m²)</th><th>V.U.T.</th><th>Edad</th><th>Vida útil remanente</th><th>Estado</th><th>F.R.H. referencial</th></tr></thead><tbody>${buildingRowsData.map(row => `<tr><td>${escapeHtml([row.type, row.quality].filter(Boolean).join(' — ') || 'Sin especificar')}</td><td>${escapeHtml(row.surface ?? '—')}</td><td>${row.unitValue == null ? 'Pendiente' : money(row.unitValue)}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(row.conservation || 'Sin especificar')}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td></tr>`).join('')}</tbody></table>`;
+        const totalBuilt = buildingRowsData.reduce((sum, row) => sum + (Number(row.surface) || 0), 0);
+        document.getElementById('buildingTotalSurface').textContent = `Superficie total desglosada: ${totalBuilt.toFixed(2)} m². Captura general: ${Number(captured.superficieConstruccion || 0).toFixed(2)} m².`;
+
+        document.getElementById('reportAccessoryTable').innerHTML = `<table><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso</th><th>V.U.T.</th><th>Edad</th><th>Vida útil remanente</th><th>F.R.H.</th><th>Estado</th><th>Coef. R-H</th></tr></thead><tbody>${payload.accessoryItems.length ? payload.accessoryItems.map(row => `<tr><td>${escapeHtml(row.description || '—')}</td><td>${escapeHtml(row.quantity ?? '—')}</td><td>${escapeHtml(row.unit || '—')}</td><td>${escapeHtml(row.indiviso ?? '—')}</td><td>${row.unitValue == null ? '—' : money(row.unitValue)}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : '—'}</td><td>${escapeHtml(row.conservation || '—')}</td><td>${row.rhCoefficient == null ? '—' : `${row.rhCoefficient.toFixed(2)}%`}</td></tr>`).join('') : '<tr><td colspan="10">Sin accesorios o instalaciones capturados.</td></tr>'}</tbody></table>`;
+        renderReportData('reportConstructionDetail', [
+          ['Descripción técnica por sistemas/áreas', payload.constructionElements], ['Calidad y clasificación', captured.calidadConstruccion],
+          ['Edad del inmueble (años)', captured.edadInmueble], ['Estado general de conservación', captured.estadoConservacion],
+          ['Sistema estructural', captured.sistemaEstructural], ['Cimentación', captured.cimentacion],
+          ['Muros, entrepisos y escaleras', captured.murosEntrepisos], ['Cubierta y techumbre', captured.cubierta],
+          ['Acabados por áreas', captured.acabadosAreas], ['Instalaciones hidrosanitarias', captured.instalacionesHidrosanitarias],
+          ['Instalación eléctrica', captured.instalacionElectrica], ['Instalación de gas', captured.instalacionGas],
+          ['Instalaciones especiales', captured.instalacionesEspeciales], ['Obra complementaria', captured.obraComplementaria],
+          ['Fuente de valores unitarios', captured.fuenteValoresUnitarios]
+        ]);
+        document.getElementById('reportAddress').textContent = `Dirección: ${[captured.calle, captured.colonia, captured.municipio, captured.estado].filter(Boolean).join(', ') || 'Sin información capturada.'}`;
+        document.getElementById('reportPropertyType').textContent = captured.tipoInmueble || 'Pendiente de captura';
+        document.getElementById('reportRegion').textContent = captured.estado || 'Pendiente de confirmar';
+        document.getElementById('reportHeaderMunicipality').textContent = captured.municipio || 'Pendiente de captura';
+        document.getElementById('reportHeaderFolio').textContent = captured.folioExpediente || 'Pendiente';
+        document.getElementById('reportFolio').textContent = captured.folioExpediente || 'Pendiente de captura';
+        document.getElementById('reportPropertyMeta').textContent = captured.tipoInmueble || 'Pendiente de captura';
+
+        if (urbanInvestigationText && data.urbanInvestigation) {
+          urbanInvestigationText.value = data.urbanInvestigation;
+        }
+
+        if (constructionElementsText && data.constructionElements) {
+          constructionElementsText.value = data.constructionElements;
+        }
+
+        document.getElementById('valorFisico').textContent = money(data.summary.valorFisico);
+        document.getElementById('valorMercado').textContent = money(data.summary.valorMercado);
+        document.getElementById('valorCapitalizacion').textContent = money(data.summary.valorCapitalizacion);
+        document.getElementById('valorFinal').textContent = money(data.summary.finalValue);
+
+        formulaDetail.textContent = [
+          'Promedio de valor unitario: ' + money(data.summary.averageUnitValuePerM2) + '/m²',
+          'Valor final estimado: ' + money(data.summary.finalValue),
+          'Valor físico: ' + money(data.summary.valorFisico),
+          'Valor de mercado: ' + money(data.summary.valorMercado)
+        ].join(' | ');
+
+        const rows = (data.homologationTable || data.comparables || []).filter(item => Number(item.salePrice) > 0 && Number(item.unitValuePerM2) > 0).map(item => {
+          const source = payload.comparableSales.find(comparable => comparable.id === item.id) || {};
+          const factors = [source.zoneFactor, source.locationFactor, source.terrainFactor, source.ageFactor, source.shapeFactor].map(factor => Number(factor ?? 1).toFixed(2)).join(' × ');
+          return `
+          <tr>
+            <td>${escapeHtml(item.address)}</td>
+            <td>${money(item.salePrice)}</td>
+            <td>${factors}</td>
+            <td>${money(item.adjustedValue)}</td>
+            <td>${money(item.unitValuePerM2)}</td>
+            <td>${Number(item.distanceKm || 0).toFixed(2)} km</td>
+          </tr>
+        `;
+        }).join('');
+
+        reportTable.innerHTML = `
           <table>
             <thead>
               <tr>
-                <th>Inmueble</th>
-                <th>Precio</th>
-                <th>Distancia</th>
+                <th>Comparable</th>
+                <th>Venta</th>
+                <th>Factores aplicados</th>
                 <th>Valor ajustado</th>
                 <th>$/m²</th>
+                <th>Distancia</th>
               </tr>
             </thead>
-            <tbody>
-              ${tableData.map(item => `
-                <tr>
-                  <td>${item.address}</td>
-                  <td>$${Number(item.salePrice).toLocaleString('es-MX')}</td>
-                  <td>${item.distanceKm} km</td>
-                  <td>$${Number(item.adjustedValue).toLocaleString('es-MX')}</td>
-                  <td>$${Number(item.unitValuePerM2).toLocaleString('es-MX')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
+            <tbody>${rows || '<tr><td colspan="6">Sin comparables completos; capture precio y superficie construida verificables.</td></tr>'}</tbody>
           </table>
         `;
+
+        document.getElementById('reportConclusion').textContent = `Enfoque de mercado: ${money(data.summary.valorMercado)} (valor unitario promedio ${money(data.summary.averageUnitValuePerM2)}/m², superficie de construcción del sujeto ${Number(captured.superficieConstruccion || 0).toFixed(2)} m²). Enfoque físico/directo: ${money(data.summary.valorFisico)}. Enfoque de ingresos: ${money(data.summary.valorCapitalizacion)}. Valor concluido por referencia principal al mercado: ${money(data.summary.finalValue)}. ${data.summary.marketValuationStatus || ''} ${data.summary.physicalValuationStatus || ''} ${data.summary.incomeValuationStatus || ''} Corroborar comparables, fechas, fuentes, alcances y superficies; conclusión preliminar sujeta a revisión profesional.`;
+        document.getElementById('reportMarketStatus').textContent = data.summary.marketValuationStatus;
+
+        result.textContent = JSON.stringify({
+          ...data,
+          antecedentes: payload.antecedentes,
+          captura: payload.capture,
+          construcciones: payload.buildingItems,
+          accesoriosInstalaciones: payload.accessoryItems,
+          investigacionUrbana: payload.urbanInvestigation,
+          elementosConstruccion: payload.constructionElements,
+          anexos: {
+            fotos: attachmentState.photos,
+            croquis: attachmentState.croquis,
+            documentos: attachmentState.documents
+          }
+        }, null, 2);
       }
+
+      function buildPayload() {
+        const formData = new FormData(form);
+        const capture = {};
+        form.querySelectorAll('[name]').forEach(field => {
+          const value = formData.get(field.name);
+          capture[field.name] = field.type === 'number' ? (value === '' ? null : Number(value)) : String(value || '').trim();
+        });
+        const buildingItems = readEditableRows(buildingRows).map(row => ({
+          ...row,
+          frh: rossHeideckeFactor(row.age, row.usefulLifeRemaining, row.conservation)
+        }));
+        const accessoryItems = readEditableRows(accessoryRows);
+        const physicalConstructionValue = buildingItems.reduce((sum, row) => sum + (Number(row.surface) || 0) * (Number(row.unitValue) || 0) * (Number(row.frh) || 0), 0);
+        const physicalAccessoryValue = accessoryItems.reduce((sum, row) => sum + (Number(row.quantity) || 0) * (Number(row.unitValue) || 0) * (row.indiviso == null ? 1 : Number(row.indiviso) / 100) * (Number(row.frh) || 0), 0);
+        return {
+          capture,
+          buildingItems,
+          accessoryItems,
+          urbanInvestigation: readPanelText('urbanInvestigationText'),
+          constructionElements: readPanelText('constructionElementsText'),
+          antecedentes: {
+            tipoInmueble: formData.get('tipoInmueble') || '',
+            solicitante: formData.get('solicitante') || '',
+            propietario: formData.get('propietario') || '',
+            cuentaPredial: formData.get('cuentaPredial') || '',
+            calle: formData.get('calle') || '',
+            colonia: formData.get('colonia') || '',
+            municipio: formData.get('municipio') || '',
+            estado: formData.get('estado') || '',
+            objetoAvaluo: formData.get('objetoAvaluo') || '',
+            usoAvaluo: formData.get('usoAvaluo') || '',
+            escritura: formData.get('numeroEscritura') || '',
+            notario: formData.get('numeroNotario') || '',
+            fojaRegistral: formData.get('fojaRegistral') || '',
+            registroPublico: formData.get('registroPublico') || '',
+            coordenadas: formData.get('coordenadas') || '',
+            medidasSegun: formData.get('medidasSegun') || ''
+          },
+          subject: {
+            surface: Number(formData.get('superficieTerreno')) || 0,
+            constructionSurface: Number(formData.get('superficieConstruccion')) || 0,
+            latitude: Number(formData.get('latitud')) || undefined,
+            longitude: Number(formData.get('longitud')) || undefined,
+            annualIncome: Number(formData.get('annualIncome')) || 0,
+            capRate: (Number(formData.get('capRate')) || 0) / 100,
+            marketAdjustment: Number(formData.get('marketAdjustment')) || 1,
+            unitLandValue: Number(formData.get('valorUnitarioTerreno')) || 0,
+            physicalConstructionValue,
+            physicalAccessoryValue,
+            address: {
+              street: formData.get('calle') || '',
+              colony: formData.get('colonia') || '',
+              municipality: formData.get('municipio') || '',
+              state: formData.get('estado') || ''
+            }
+          },
+          comparableSales: getComparableRows(),
+          anexos: {
+            fotos: attachmentState.photos,
+            croquis: attachmentState.croquis,
+            documentos: attachmentState.documents
+          }
+        };
+      }
+
+      const urbanInvestigationText = document.getElementById('urbanInvestigationText');
+      const constructionElementsText = document.getElementById('constructionElementsText');
+
+      function readPanelText(elementId) {
+        const element = document.getElementById(elementId);
+        return element ? element.value.trim() : '';
+      }
+
+      document.querySelectorAll('.toggle-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          const target = document.getElementById(button.dataset.target);
+          if (!target) return;
+          target.classList.toggle('open');
+        });
+      });
+
+      document.querySelectorAll('.formal-tab[data-section-target]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const target = document.getElementById(button.dataset.sectionTarget);
+          if (!target) return;
+
+          document.querySelectorAll('.formal-tab').forEach((tab) => {
+            tab.classList.toggle('active', tab === button);
+          });
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          target.focus({ preventScroll: true });
+        });
+      });
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-
-        const formData = new FormData(form);
-        const payload = {
-          subject: {
-            surface: Number(formData.get('superficieTerreno')) || 120,
-            constructionSurface: Number(formData.get('superficieConstruccion')) || 180,
-            latitude: Number(formData.get('latitud')) || null,
-            longitude: Number(formData.get('longitud')) || null,
-            address: {
-              street: formData.get('calle') || '',
-              extNumber: formData.get('numeroExterior') || '',
-              colony: formData.get('colonia') || '',
-              postalCode: formData.get('codigoPostal') || '',
-              municipality: formData.get('municipio') || '',
-              state: formData.get('estado') || ''
-            },
-            age: Number(formData.get('edadInmueble')) || 0,
-            conservationState: formData.get('estadoConservacion') || 'bueno',
-            projectQuality: formData.get('calidadProyecto') || 'medio',
-            annualIncome: Number(formData.get('annualIncome')) || null,
-            capRate: Number(formData.get('capRate')) || 0.08
-          },
-          comparableSales: [
-            { id: 1, address: 'Insurgentes 100, Roma Norte', salePrice: 1000000, zoneFactor: 1.05, locationFactor: 1.02, terrainFactor: 1.01, ageFactor: 0.98, shapeFactor: 1.00, surface: 100 },
-            { id: 2, address: 'Av. Chapultepec 250, Condesa', salePrice: 1100000, zoneFactor: 1.03, locationFactor: 1.01, terrainFactor: 1.02, ageFactor: 0.99, shapeFactor: 1.00, surface: 110 },
-            { id: 3, address: 'Paseo de la Reforma 300, Juárez', salePrice: 1050000, zoneFactor: 1.04, locationFactor: 1.00, terrainFactor: 1.00, ageFactor: 0.97, shapeFactor: 0.99, surface: 105 },
-            { id: 4, address: 'Coyoacán 400, Del Valle', salePrice: 1080000, zoneFactor: 1.02, locationFactor: 1.03, terrainFactor: 1.01, ageFactor: 0.98, shapeFactor: 1.00, surface: 108 },
-            { id: 5, address: 'Eje 1 Norte 150, Anzures', salePrice: 950000, zoneFactor: 1.06, locationFactor: 1.02, terrainFactor: 1.00, ageFactor: 0.96, shapeFactor: 1.01, surface: 95 }
-          ]
-        };
+        const payload = buildPayload();
 
         try {
           const response = await fetch('/api/valuation', {
@@ -167,14 +1578,18 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
+
           const data = await response.json();
-          renderSummary(data.summary);
-          renderTable(data.homologationTable || data.comparables || []);
-          result.textContent = JSON.stringify(data, null, 2);
+          renderReportFromData(data, payload);
         } catch (error) {
           result.textContent = 'Error: ' + error.message;
         }
       });
+
+      renderAttachmentList('photos');
+      renderAttachmentList('croquis');
+      renderAttachmentList('documents');
+      renderAttachmentPreview();
     </script>
   </body>
 </html>

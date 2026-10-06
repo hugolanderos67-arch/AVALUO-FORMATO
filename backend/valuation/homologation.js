@@ -55,15 +55,26 @@ function calculateHomologation(input) {
     };
   });
 
-  const averageUnitValue = homologatedValues.reduce((sum, item) => sum + item.unitValuePerM2, 0) / homologatedValues.length;
-  const terrainValue = roundCurrency((subject.surface || 1) * averageUnitValue);
-  const constructionValue = roundCurrency((subject.constructionSurface || 0) * averageUnitValue * 0.8);
-  const valorFisico = roundCurrency(terrainValue + constructionValue);
-  const valorMercado = roundCurrency(valorFisico * (subject.marketAdjustment || 1));
-  const annualIncome = subject.annualIncome || (valorMercado * 0.08);
+  const validComparables = homologatedValues.filter(item => Number(item.salePrice) > 0 && Number(item.surface) > 0);
+  const averageUnitValue = validComparables.length
+    ? validComparables.reduce((sum, item) => sum + item.unitValuePerM2, 0) / validComparables.length
+    : 0;
+  const terrainSurface = Number(subject.surface) || 0;
+  const constructionSurface = Number(subject.constructionSurface) || 0;
+  const terrainValue = roundCurrency(terrainSurface * (Number(subject.unitLandValue) || 0));
+  const marketValueBeforeAdjustment = roundCurrency(averageUnitValue * constructionSurface);
+  const valorMercado = roundCurrency(marketValueBeforeAdjustment * (Number(subject.marketAdjustment) || 1));
+  const hasPhysicalCostInputs = Number(subject.unitLandValue) > 0 || Number(subject.physicalConstructionValue) > 0 || Number(subject.physicalAccessoryValue) > 0;
+  const constructionValue = roundCurrency(Number(subject.physicalConstructionValue) > 0
+    ? Number(subject.physicalConstructionValue)
+    : (hasPhysicalCostInputs ? 0 : constructionSurface * averageUnitValue * 0.8));
+  const accessoryValue = roundCurrency(Number(subject.physicalAccessoryValue) || 0);
+  const valorFisico = roundCurrency(terrainValue + constructionValue + accessoryValue);
+  const annualIncome = Number(subject.annualIncome) || (valorMercado * 0.08);
   const capRate = subject.capRate || 0.08;
   const valorCapitalizacion = roundCurrency(annualIncome / capRate);
-  const finalValue = roundCurrency(averageUnitValue * (subject.surface || 1));
+  const hasIncomeInputs = Number(subject.annualIncome) > 0 && Number(subject.capRate) > 0;
+  const finalValue = valorMercado;
 
   return {
     summary: {
@@ -74,6 +85,16 @@ function calculateHomologation(input) {
       valorFisico,
       valorMercado,
       valorCapitalizacion,
+      valorAccesorios: accessoryValue,
+      marketValuationStatus: validComparables.length
+        ? `${validComparables.length} comparable(s) con precio y superficie capturados; confirmar ubicación, fecha, fuente, características y homologación.`
+        : 'Sin comparables completos; no se emitió una conclusión cuantitativa de mercado.',
+      physicalValuationStatus: hasPhysicalCostInputs
+        ? `El enfoque físico incorpora únicamente los componentes capturados. ${Number(subject.unitLandValue) > 0 ? '' : 'Falta valor unitario de terreno; no se asignó valor a ese componente. '}${Number(subject.physicalConstructionValue) > 0 ? '' : 'Falta valor de reposición de construcciones; no se asignó valor a ese componente. '}${Number(subject.physicalAccessoryValue) > 0 ? '' : 'No se capturó valor depreciado de accesorios. '}Verificar fuentes, fecha, depreciación y alcance.`
+        : 'Enfoque físico provisional: faltan valores unitarios documentados; la construcción se aproxima con el promedio de comparables (no es costo de reposición) y el terreno no se valora sin fuente unitaria.',
+      incomeValuationStatus: hasIncomeInputs
+        ? 'Capitalización calculada con ingreso anual neto y tasa capturados; verificar soporte y tasa aplicable.'
+        : 'Capitalización ilustrativa: no se capturaron ambos, ingreso anual neto y tasa; se usó ingreso derivado del mercado y/o tasa provisional.',
       weights
     },
     homologationTable: homologatedValues.map(item => ({
