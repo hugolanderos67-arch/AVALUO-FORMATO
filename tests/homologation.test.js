@@ -19,7 +19,7 @@ test('calcula homologación con al menos 5 comparables', () => {
   assert.ok(result.summary.finalValue > 0);
 });
 
-test('selecciona comparables automáticamente por georreferenciación', () => {
+test('no fabrica comparables cuando no se capturan ventas verificables', () => {
   const payload = {
     subject: {
       surface: 140,
@@ -29,11 +29,13 @@ test('selecciona comparables automáticamente por georreferenciación', () => {
   };
 
   const result = calculateHomologation(payload);
-  assert.ok(result.comparables.length >= 5);
-  assert.ok(result.homologationTable.every(item => typeof item.distanceKm === 'number'));
+  assert.equal(result.comparables.length, 0);
+  assert.equal(result.summary.averageUnitValuePerM2, 0);
+  assert.equal(result.summary.valorMercado, 0);
+  assert.match(result.summary.marketValuationStatus, /Sin comparables completos/);
 });
 
-test('genera resumen de dictamen con valores físico, mercado y capitalización', () => {
+test('genera mercado e ingresos con datos capturados y deja físico pendiente sin costos', () => {
   const payload = {
     subject: {
       surface: 140,
@@ -42,13 +44,15 @@ test('genera resumen de dictamen con valores físico, mercado y capitalización'
       annualIncome: 120000,
       latitude: 19.4326,
       longitude: -99.1332
-    }
+    },
+    comparableSales: [{ id: 1, address: 'Comparable verificado', salePrice: 1000000, surface: 100 }]
   };
 
   const result = calculateHomologation(payload);
-  assert.ok(result.summary.valorFisico > 0);
+  assert.equal(result.summary.valorFisico, 0);
   assert.ok(result.summary.valorMercado > 0);
   assert.ok(result.summary.valorCapitalizacion > 0);
+  assert.match(result.summary.physicalValuationStatus, /no se estimó costo de reposición/);
 });
 
 test('no calcula valor de mercado con comparables incompletos', () => {
@@ -60,6 +64,40 @@ test('no calcula valor de mercado con comparables incompletos', () => {
   assert.equal(result.summary.averageUnitValuePerM2, 0);
   assert.equal(result.summary.valorMercado, 0);
   assert.match(result.summary.marketValuationStatus, /Sin comparables completos/);
+});
+
+test('no calcula valor unitario para comparables sin superficie positiva', () => {
+  const result = calculateHomologation({
+    subject: { surface: 100, constructionSurface: 80 },
+    comparableSales: [{ id: 1, address: 'Sin superficie', salePrice: 1000000, surface: 0 }]
+  });
+
+  assert.equal(result.homologationTable[0].unitValuePerM2, 0);
+  assert.equal(result.summary.averageUnitValuePerM2, 0);
+  assert.equal(result.summary.valorMercado, 0);
+});
+
+test('no inventa costo físico, renta ni tasa cuando faltan datos documentados', () => {
+  const result = calculateHomologation({
+    subject: { surface: 100, constructionSurface: 80 },
+    comparableSales: [{ id: 1, address: 'Comparable', salePrice: 1000000, surface: 100 }]
+  });
+
+  assert.ok(result.summary.valorMercado > 0);
+  assert.equal(result.summary.valorFisico, 0);
+  assert.equal(result.summary.valorCapitalizacion, 0);
+  assert.match(result.summary.physicalValuationStatus, /no se estimó costo de reposición/);
+  assert.match(result.summary.incomeValuationStatus, /no se estimó renta ni tasa/);
+});
+
+test('deja pendiente mercado si falta superficie de construcción del sujeto', () => {
+  const result = calculateHomologation({
+    subject: { surface: 100 },
+    comparableSales: [{ id: 1, address: 'Comparable', salePrice: 1000000, surface: 100 }]
+  });
+
+  assert.equal(result.summary.valorMercado, 0);
+  assert.match(result.summary.marketValuationStatus, /falta superficie de construcción/);
 });
 
 test('usa costos capturados para el enfoque físico', () => {

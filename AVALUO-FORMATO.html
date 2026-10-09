@@ -135,7 +135,11 @@
 
       .main-grid {
         display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      }
+
+      .main-grid > * {
+        min-width: 0;
       }
 
       .capture {
@@ -311,6 +315,37 @@
         gap: 12px;
       }
 
+      .description-editor {
+        display: grid;
+        gap: 6px;
+        margin: 10px 0 14px;
+      }
+
+      .description-editor textarea {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .legacy-special-fields[hidden] {
+        display: none !important;
+      }
+
+      .legacy-system-alias {
+        display: none;
+      }
+
+      .special-installation-items {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .special-installation-item {
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        padding: 12px;
+      }
+
       .table-scroll {
         width: 100%;
         overflow-x: auto;
@@ -364,6 +399,94 @@
         background: #fffaf0;
         color: #624b1d !important;
         font-size: 0.72rem !important;
+      }
+
+      .urban-map-panel {
+        display: grid;
+        gap: 6px;
+        margin: 12px 0;
+      }
+
+      .urban-map-panel[hidden] {
+        display: none;
+      }
+
+      .urban-map-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border: 1px solid #c8d4e2;
+        border-radius: 8px;
+        background: #f4f7f8;
+        overflow: hidden;
+      }
+
+      .urban-map-tiles {
+        position: absolute;
+        display: grid;
+        width: 768px;
+        height: 768px;
+        grid-template-columns: repeat(3, 256px);
+        grid-template-rows: repeat(3, 256px);
+        transform-origin: top left;
+      }
+
+      .urban-map-tiles img {
+        display: block;
+        width: 256px;
+        height: 256px;
+      }
+
+      .urban-map-marker {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 14px;
+        height: 14px;
+        transform: translate(-50%, -50%);
+        border: 3px solid #fff;
+        border-radius: 50%;
+        background: #c62828;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.65);
+        pointer-events: none;
+      }
+
+      .urban-plan-uploader {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #dfeaf3;
+      }
+
+      .urban-plan-matches {
+        display: grid;
+        gap: 8px;
+      }
+
+      .urban-plan-match {
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+      }
+
+      .urban-plan-match label {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: start;
+      }
+
+      .urban-plan-match input[type="checkbox"] {
+        width: auto;
+        margin-top: 2px;
+      }
+
+      .urban-plan-match small {
+        display: block;
+        margin-top: 5px;
+        color: #49627a;
+        font-weight: 400;
+        overflow-wrap: anywhere;
       }
 
       .formal-section h4 {
@@ -656,6 +779,24 @@
           grid-template-columns: 1fr;
         }
 
+        .sheet {
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+
+        .main-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .main-grid > * {
+          min-width: 0;
+        }
+
+        .fieldset .row {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
         .capture {
           border-right: none;
           border-bottom: 1px solid #d2dbe6;
@@ -706,21 +847,89 @@
             <div class="section-title capture-target" id="capture-general" tabindex="-1">I.- ANTECEDENTES</div>
             <div class="fieldset">
               <div class="row">
-                <label>Tipo de inmueble <input name="tipoInmueble" value="Residencial" /></label>
+                <label>Tipo de inmueble
+                  <select name="tipoInmueble">
+                    <option value="">Seleccione</option>
+                    <option>Casa habitación</option>
+                    <option>Departamento</option>
+                    <option>Local comercial</option>
+                    <option>Bodega industria ligera</option>
+                    <option>Bodega industria pesada</option>
+                    <option>Oficina</option>
+                    <option>Terreno urbano</option>
+                    <option>Terreno industrial</option>
+                    <option>Recreacional</option>
+                    <option>Hotel</option>
+                    <option>Edificio multifamiliar</option>
+                    <option>Mixto residencial-comercial</option>
+                    <option>Otra clasificación</option>
+                  </select>
+                </label>
                 <label>Solicitante del avalúo <input name="solicitante" value="Propietario" /></label>
                 <label>Propietario <input name="propietario" /></label>
                 <label>Cuenta predial <input name="cuentaPredial" /></label>
-                <label>Calle y número <input name="calle" value="Calle Amandino" /></label>
-                <label>Colonia <input name="colonia" value="Valle de Otates" /></label>
-                <label>Municipio <input name="municipio" value="León" /></label>
-                <label>Estado <input name="estado" value="Guanajuato" /></label>
-                <label>Objeto del avalúo <input name="objetoAvaluo" /></label>
+                <label>Calle y número <input name="calle" /></label>
+                <label>Colonia <input name="colonia" /></label>
+                <label>Municipio
+                  <select name="municipio" id="municipioSelect">
+                    <option value="">Seleccione</option>
+                  </select>
+                </label>
+                <label>Estado
+                  <select name="estado" id="estadoSelect">
+                    <option value="">Seleccione</option>
+                    <option>Aguascalientes</option>
+                    <option>Baja California</option>
+                    <option>Baja California Sur</option>
+                    <option>Campeche</option>
+                    <option>Chiapas</option>
+                    <option>Chihuahua</option>
+                    <option>Ciudad de México</option>
+                    <option>Coahuila</option>
+                    <option>Colima</option>
+                    <option>Durango</option>
+                    <option>Guanajuato</option>
+                    <option>Guerrero</option>
+                    <option>Hidalgo</option>
+                    <option>Jalisco</option>
+                    <option>Estado de México</option>
+                    <option>Michoacán</option>
+                    <option>Morelos</option>
+                    <option>Nayarit</option>
+                    <option>Nuevo León</option>
+                    <option>Oaxaca</option>
+                    <option>Puebla</option>
+                    <option>Querétaro</option>
+                    <option>Quintana Roo</option>
+                    <option>San Luis Potosí</option>
+                    <option>Sinaloa</option>
+                    <option>Sonora</option>
+                    <option>Tabasco</option>
+                    <option>Tamaulipas</option>
+                    <option>Tlaxcala</option>
+                    <option>Veracruz</option>
+                    <option>Yucatán</option>
+                    <option>Zacatecas</option>
+                  </select>
+                </label>
+                <label>Objeto del avalúo
+                  <select name="objetoAvaluo">
+                    <option value="">Seleccione</option>
+                    <option>Valor comercial para venta</option>
+                    <option>Estimar valor comercial</option>
+                    <option>Estimar valor de rentas</option>
+                    <option>Estimar capitalización de rentas</option>
+                    <option>Dictamen pericial para juzgado</option>
+                    <option>Garantía o fianza</option>
+                    <option>Enajenación o compra-venta</option>
+                    <option>Otro</option>
+                  </select>
+                </label>
                 <label>Uso del avalúo <input name="usoAvaluo" placeholder="Indique el uso o destino del dictamen" /></label>
                 <label>Número de escritura pública <input name="numeroEscritura" /></label>
                 <label>Número de notario <input name="numeroNotario" /></label>
                 <label>Foja registral <input name="fojaRegistral" /></label>
                 <label>Registro Público / libertad de gravamen <input name="registroPublico" /></label>
-                <label>Coordenadas <input name="coordenadas" placeholder="Latitud, longitud o UTM" /></label>
                 <label>Medidas y colindancias según <input name="medidasSegun" placeholder="Escritura, levantamiento, catastro, etc." /></label>
                 <label>Clave catastral <input name="claveCatastral" /></label>
                 <label>Folio del expediente <input name="folioExpediente" /></label>
@@ -732,8 +941,8 @@
               <div class="row">
                 <label>Latitud <input name="latitud" type="number" step="any" /></label>
                 <label>Longitud <input name="longitud" type="number" step="any" /></label>
-                <label>Clasificación de la zona <input name="clasificacionZona" /></label>
-                <label>Población / contexto demográfico <input name="poblacion" /></label>
+                <label>Clasificación de la zona <input name="clasificacionZona" placeholder="Capture con base en el plan territorial aplicable" /></label>
+                <label>Población / contexto demográfico <input name="poblacion" placeholder="La búsqueda de ubicación no sustituye la cifra censal oficial" /></label>
                 <label>Construcción dominante <input name="construccionDominante" /></label>
                 <label>Nivel socioeconómico <input name="nivelSocioeconomico" /></label>
                 <label>Índice de saturación de la zona (%) <input name="indiceSaturacion" type="number" min="0" max="100" step="0.1" /></label>
@@ -744,6 +953,25 @@
                 <label>Ancho de calle (m) <input name="anchoCalle" type="number" min="0" step="0.1" /></label>
                 <label>Banquetas y guarniciones <input name="banquetas" /></label>
                 <label>Equipamiento urbano y distancias a puntos importantes <textarea name="equipamientoUrbano" placeholder="Anote equipamiento y distancia aproximada desde el inmueble; indique la fuente o fecha de verificación."></textarea></label>
+              </div>
+              <p id="urbanLookupStatus" class="technical-note" role="status" aria-live="polite">Capture latitud y longitud para buscar la referencia de ubicación.</p>
+              <p class="technical-note">La geocodificación inversa completa únicamente datos encontrados en la fuente; no determina zonificación oficial, densidad ni cifras censales. Fuente cartográfica: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>. Consulta sujeta a la <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noreferrer">política de uso de Nominatim</a>.</p>
+              <div id="urbanMapPanel" class="urban-map-panel" hidden>
+                <div id="urbanMap" class="urban-map-frame" role="img" aria-label="Mapa de OpenStreetMap con marcador en la coordenada capturada">
+                  <div class="urban-map-tiles"></div>
+                  <span class="urban-map-marker"></span>
+                </div>
+                <a id="urbanMapLink" target="_blank" rel="noreferrer">Abrir ubicación en OpenStreetMap</a>
+                <small>© OpenStreetMap contributors · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Reportar un problema del mapa</a></small>
+              </div>
+              <div class="urban-plan-uploader">
+                <strong>Documentos de planeación territorial</strong>
+                <span>Selecciona PDF, DOCX o TXT del P.O.T., programa de desarrollo urbano o constancia de uso de suelo. Se extraen coincidencias textuales explícitas; los PDF escaneados requieren OCR.</span>
+                <input id="urbanPlanDocuments" class="hidden-file-input" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" multiple />
+                <button id="selectUrbanPlanDocuments" class="secondary-button" type="button">Seleccionar documentos territoriales</button>
+                <p id="urbanPlanStatus" class="technical-note" role="status" aria-live="polite">Los archivos se procesan localmente y no se guardan.</p>
+                <div id="urbanPlanMatches" class="urban-plan-matches"></div>
+                <button id="applyUrbanPlanMatches" class="secondary-button" type="button" disabled>Aplicar coincidencias seleccionadas a campos vacíos</button>
               </div>
             </div>
 
@@ -787,35 +1015,794 @@
               <div class="row">
                 <label>Uso actual <input name="usoActual" /></label>
                 <label>Partido arquitectónico / descripción de áreas <textarea name="partidoArquitectonico"></textarea></label>
-                <label>Calidad del proyecto <input name="calidadProyecto" /></label>
+                <label>Calidad del proyecto
+                  <select name="calidadProyecto">
+                    <option value="">Seleccione</option>
+                    <option>Bueno</option>
+                    <option>Regular</option>
+                    <option>Malo</option>
+                    <option>Empírico</option>
+                    <option>Autoconstrucción</option>
+                    <option>Diseño de autor</option>
+                    <option>Otro</option>
+                  </select>
+                </label>
                 <label>Número de niveles <input name="niveles" type="number" min="1" step="1" /></label>
                 <label>Superficie construcción (m²) <input name="superficieConstruccion" type="number" min="0" step="0.01" /></label>
                 <label>Edad del inmueble (años) <input name="edadInmueble" type="number" min="0" step="1" /></label>
-                <label>Tipo de construcción <input name="tipoConstruccion" value="Residencial" /></label>
-                <label>Condición general <input name="condicionGeneral" /></label>
-                <label>Calidad y clasificación de construcción <input name="calidadConstruccion" /></label>
-                <label>Valor unitario nuevo de reposición (V.U.N., $/m²) <input name="valorUnitarioNuevo" type="number" min="0" step="0.01" placeholder="Requiere fuente de costos" /></label>
-                <label>Vida útil total estimada (años) <input name="vidaUtilTotal" type="number" min="1" step="1" /></label>
-                <label>Estado de conservación <select name="estadoConservacion"><option value="">Seleccione</option><option>Nuevo</option><option>Bueno</option><option>Regular</option><option>Malo</option><option>Ruinoso</option></select></label>
-                <label>Sistema estructural <textarea name="sistemaEstructural"></textarea></label>
-                <label>Cimentación <textarea name="cimentacion"></textarea></label>
-                <label>Muros, entrepisos y escaleras <textarea name="murosEntrepisos"></textarea></label>
-                <label>Cubierta y techumbre <textarea name="cubierta"></textarea></label>
+                <label>Condición general
+                  <select name="condicionGeneral">
+                    <option value="">Seleccione</option>
+                    <option>Excelente</option>
+                    <option>Bueno</option>
+                    <option>Regular</option>
+                    <option>Malo</option>
+                    <option>Inutilizable</option>
+                  </select>
+                </label>
+                <label>Calidad y clasificación de construcción
+                  <select name="calidadConstruccion">
+                    <option value="">Seleccione</option>
+                    <option>Nuevo</option>
+                    <option>Muy bueno</option>
+                    <option>Normal</option>
+                    <option>Regular</option>
+                    <option>Reparaciones sencillas</option>
+                    <option>Reparaciones importantes</option>
+                    <option>Rehabilitación completa</option>
+                    <option>Ruinoso</option>
+                    <option>Ruinoso inutilizable</option>
+                  </select>
+                </label>
+                <label>V.R.N. — Valor de reposición nuevo ($/m²) <input name="valorUnitarioNuevo" type="number" min="0" step="0.01" placeholder="Requiere fuente de costos" /></label>
+                <label>Vida útil total estimada (años)
+                  <select name="vidaUtilTotal" id="vidaUtilTotalSelect">
+                    <option value="">Seleccione</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="35">35</option>
+                    <option value="40">40</option>
+                    <option value="45">45</option>
+                    <option value="50">50</option>
+                    <option value="55">55</option>
+                    <option value="60" selected>60</option>
+                    <option value="65">65</option>
+                    <option value="70">70</option>
+                    <option value="75">75</option>
+                    <option value="80">80</option>
+                    <option value="90">90</option>
+                    <option value="100">100</option>
+                    <option value="custom">Predeterminar otro valor</option>
+                  </select>
+                  <input name="vidaUtilTotalCustom" id="vidaUtilTotalCustom" type="number" min="1" step="1" placeholder="Otro valor (años)" style="display:none;" />
+                </label>
+                <label>Estado de conservación
+                  <select name="estadoConservacion">
+                    <option value="">Seleccione</option>
+                    <option>Nuevo</option>
+                    <option>Muy bueno</option>
+                    <option>Normal</option>
+                    <option>Regular</option>
+                    <option>Reparaciones sencillas</option>
+                    <option>Reparaciones importantes</option>
+                    <option>Rehabilitación completa</option>
+                    <option>Ruinoso</option>
+                    <option>Ruinoso inutilizable</option>
+                  </select>
+                </label>
+                <label>Cimentación
+                  <select name="cimentacion">
+                    <option value="">Seleccione</option>
+                    <option>Zapata aislada</option>
+                    <option>Zapata corrida</option>
+                    <option>Losa de cimentación</option>
+                    <option>Pilotes</option>
+                    <option>Cimentación de mampostería</option>
+                    <option>Cimentación ciclópea</option>
+                  </select>
+                </label>
+                <label>Estructura vertical
+                  <select name="estructuraVertical">
+                    <option value="">Seleccione</option>
+                    <option>Muros de carga</option>
+                    <option>Muros de tabique</option>
+                    <option>Muros de block</option>
+                    <option>Castillos y dalas</option>
+                    <option>Marcos de concreto armado</option>
+                    <option>Marcos de acero</option>
+                    <option>Estructura metálica ligera</option>
+                    <option>Muros de concreto armado</option>
+                  </select>
+                </label>
+                <label>Entrepisos
+                  <select name="entrepisos">
+                    <option value="">Seleccione</option>
+                    <option>Losa maciza</option>
+                    <option>Losa aligerada</option>
+                    <option>Losa reticular</option>
+                    <option>Losa de vigueta y bovedilla</option>
+                    <option>Losa de concreto prefabricada</option>
+                    <option>Cubierta metálica</option>
+                    <option>Cubierta de lámina</option>
+                    <option>Cubierta de teja</option>
+                  </select>
+                </label>
+                <label>Techumbres
+                  <select name="techumbres">
+                    <option value="">Seleccione</option>
+                    <option>Losa maciza</option>
+                    <option>Losa aligerada</option>
+                    <option>Losa reticular</option>
+                    <option>Losa de vigueta y bovedilla</option>
+                    <option>Losa de concreto prefabricada</option>
+                    <option>Cubierta metálica</option>
+                    <option>Cubierta de lámina</option>
+                    <option>Cubierta de teja</option>
+                  </select>
+                </label>
+                <div class="description-editor">
+                  <label for="descripcionCimentacion">Descripción técnica de cimentación</label>
+                  <textarea id="descripcionCimentacion" name="descripcionCimentacion" rows="2" data-description-for="cimentacion"></textarea>
+                  <button type="button" class="secondary-button" data-reset-description="cimentacion">Restablecer descripción automática</button>
+                </div>
+                <div class="description-editor">
+                  <label for="descripcionEstructuraVertical">Descripción técnica de estructura vertical</label>
+                  <textarea id="descripcionEstructuraVertical" name="descripcionEstructuraVertical" rows="2" data-description-for="estructuraVertical"></textarea>
+                  <button type="button" class="secondary-button" data-reset-description="estructuraVertical">Restablecer descripción automática</button>
+                </div>
+                <div class="description-editor">
+                  <label for="descripcionEntrepisos">Descripción técnica de entrepiso</label>
+                  <textarea id="descripcionEntrepisos" name="descripcionEntrepisos" rows="2" data-description-for="entrepisos"></textarea>
+                  <button type="button" class="secondary-button" data-reset-description="entrepisos">Restablecer descripción automática</button>
+                </div>
+                <div class="description-editor">
+                  <label for="descripcionTechumbres">Descripción técnica de techumbre</label>
+                  <textarea id="descripcionTechumbres" name="descripcionTechumbres" rows="2" data-description-for="techumbres"></textarea>
+                  <button type="button" class="secondary-button" data-reset-description="techumbres">Restablecer descripción automática</button>
+                </div>
                 <label>Acabados por áreas o elementos arquitectónicos <textarea name="acabadosAreas" placeholder="Ej.: sala/comedor, cocina, recámaras, baños, fachada; describa pisos, muros, plafones y recubrimientos observados."></textarea></label>
-                <label>Instalaciones hidrosanitarias <textarea name="instalacionesHidrosanitarias"></textarea></label>
-                <label>Instalación eléctrica <textarea name="instalacionElectrica"></textarea></label>
-                <label>Instalación de gas <textarea name="instalacionGas"></textarea></label>
-                <label>Instalaciones especiales <textarea name="instalacionesEspeciales"></textarea></label>
                 <label>Obra complementaria <textarea name="obraComplementaria"></textarea></label>
               </div>
             </div>
 
+            <div class="fieldset">
+              <div class="section-title">Instalaciones del inmueble</div>
+
+              <div class="row">
+                <label class="legacy-system-alias">Instalación hidráulica
+                  <select name="instalacionHidraulicaGeneral">
+                    <option value="">Seleccione</option>
+                    <option>Red municipal</option>
+                    <option>Pozo</option>
+                    <option>Pipa</option>
+                    <option>Captación pluvial</option>
+                    <option>Mixta</option>
+                    <option>No determinado</option>
+                  </select>
+                </label>
+                <label>Estado de conservación hidráulica
+                  <select name="estadoConservacionHidraulica" data-conservation-state>
+                    <option value="">Seleccione</option>
+                    <option>B</option>
+                    <option>R</option>
+                    <option>M</option>
+                    <option>O</option>
+                    <option>NV</option>
+                    <option>ND</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="row">
+                <label>Abastecimiento hidráulico
+                  <select name="abastecimientoHidraulico">
+                    <option value="">Seleccione</option>
+                    <option>Red municipal</option>
+                    <option>Pozo</option>
+                    <option>Pipa</option>
+                    <option>Mixto</option>
+                  </select>
+                </label>
+                <label>Almacenamiento hidráulico
+                  <select name="almacenamientoHidraulico">
+                    <option value="">Seleccione</option>
+                    <option>Sin almacenamiento</option>
+                    <option>Tinaco</option>
+                    <option>Cisterna</option>
+                    <option>Cisterna más tinaco</option>
+                  </select>
+                </label>
+                <label>Material de red hidráulica
+                  <select name="materialRedHidraulica">
+                    <option value="">Seleccione</option>
+                    <option>Cobre</option>
+                    <option>CPVC</option>
+                    <option>PVC</option>
+                    <option>PPR</option>
+                    <option>Galvanizado</option>
+                    <option>PEX</option>
+                    <option>Mixta</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Presurización
+                  <select name="presurizacionHidraulica">
+                    <option value="">Seleccione</option>
+                    <option>Gravedad</option>
+                    <option>Bomba</option>
+                    <option>Hidroneumático</option>
+                  </select>
+                </label>
+                <label>Agua caliente
+                  <select name="aguaCalienteHidraulica">
+                    <option value="">Seleccione</option>
+                    <option>Gas</option>
+                    <option>Eléctrico</option>
+                    <option>Solar</option>
+                    <option>De paso</option>
+                    <option>Solar más respaldo</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="description-editor">
+                <label for="descripcionHidraulica">Descripción técnica hidráulica</label>
+                <textarea id="descripcionHidraulica" name="descripcionHidraulica" rows="3" data-description-for="hydraulic"></textarea>
+                <button type="button" class="secondary-button" data-reset-description="hydraulic">Restablecer descripción automática</button>
+              </div>
+
+              <div class="row">
+                <label class="legacy-system-alias">Instalación sanitaria
+                  <select name="instalacionSanitariaGeneral">
+                    <option value="">Seleccione</option>
+                    <option>Red municipal</option>
+                    <option>Fosa séptica</option>
+                    <option>Biodigestor</option>
+                  </select>
+                </label>
+                <label>Estado de conservación sanitaria
+                  <select name="estadoConservacionSanitaria" data-conservation-state>
+                    <option value="">Seleccione</option>
+                    <option>B</option>
+                    <option>R</option>
+                    <option>M</option>
+                    <option>O</option>
+                    <option>NV</option>
+                    <option>ND</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="row">
+                <label>Sistema de desalojo
+                  <select name="sistemaDesalojoSanitario">
+                    <option value="">Seleccione</option>
+                    <option>Red municipal</option>
+                    <option>Fosa séptica</option>
+                    <option>Biodigestor</option>
+                  </select>
+                </label>
+                <label>Material de tubería sanitaria
+                  <select name="materialTuberiaSanitaria">
+                    <option value="">Seleccione</option>
+                    <option>PVC sanitario</option>
+                    <option>Concreto</option>
+                    <option>Fierro fundido</option>
+                    <option>Barro</option>
+                    <option>Polietileno</option>
+                    <option>Mixta</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Sistema pluvial
+                  <select name="sistemaPluvialSanitario">
+                    <option value="">Seleccione</option>
+                    <option>Red municipal</option>
+                    <option>Descarga a terreno</option>
+                    <option>Coladeras</option>
+                    <option>Bajantes</option>
+                    <option>Captación pluvial</option>
+                    <option>Mixto</option>
+                    <option>No determinado</option>
+                  </select>
+                </label>
+                <label>Drenaje interior
+                  <select name="drenajeInteriorSanitario">
+                    <option value="">Seleccione</option>
+                    <option>PVC sanitario</option>
+                    <option>Fierro fundido</option>
+                    <option>Barro</option>
+                    <option>Mixto</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Registros
+                  <select name="registrosSanitario">
+                    <option value="">Seleccione</option>
+                    <option>Sí</option>
+                    <option>No</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Ventilación sanitaria
+                  <select name="ventilacionSanitaria">
+                    <option value="">Seleccione</option>
+                    <option>Sí</option>
+                    <option>No</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Trampa de grasas
+                  <select name="trampaGrasas">
+                    <option value="">Seleccione</option>
+                    <option>Sí</option>
+                    <option>No</option>
+                    <option>No aplica</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>Elementos adicionales sanitarios <input name="elementosAdicionalesSanitarios" type="text" /></label>
+              <div class="description-editor">
+                <label for="descripcionSanitaria">Descripción técnica sanitaria</label>
+                <textarea id="descripcionSanitaria" name="descripcionSanitaria" rows="3" data-description-for="sanitary"></textarea>
+                <button type="button" class="secondary-button" data-reset-description="sanitary">Restablecer descripción automática</button>
+              </div>
+
+              <div class="row">
+                <label class="legacy-system-alias">Instalación de gas
+                  <select name="instalacionGasGeneral">
+                    <option value="">Seleccione</option>
+                    <option>Gas LP</option>
+                    <option>Gas natural</option>
+                    <option>No cuenta</option>
+                  </select>
+                </label>
+                <label>Estado de conservación de gas
+                  <select name="estadoConservacionGas" data-conservation-state>
+                    <option value="">Seleccione</option>
+                    <option>B</option>
+                    <option>R</option>
+                    <option>M</option>
+                    <option>O</option>
+                    <option>NV</option>
+                    <option>ND</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="row">
+                <label>Combustible
+                  <select name="combustibleGas">
+                    <option value="">Seleccione</option>
+                    <option>Gas LP</option>
+                    <option>Gas natural</option>
+                    <option>No cuenta</option>
+                  </select>
+                </label>
+                <label>Almacenamiento gas
+                  <select name="almacenamientoGas">
+                    <option value="">Seleccione</option>
+                    <option>Cilindro portátil</option>
+                    <option>Tanque estacionario</option>
+                    <option>Red municipal</option>
+                  </select>
+                </label>
+                <label>Material de tubería gas
+                  <select name="materialTuberiaGas">
+                    <option value="">Seleccione</option>
+                    <option>Cobre</option>
+                    <option>Acero galvanizado</option>
+                    <option>Acero negro</option>
+                    <option>Multicapa</option>
+                    <option>Mixta</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Equipos de consumo (selección múltiple)
+                  <select name="equiposGas" multiple size="4">
+                    <option>Calentador</option>
+                    <option>Estufa</option>
+                    <option>Horno</option>
+                    <option>Secadora</option>
+                    <option>Otros</option>
+                  </select>
+                </label>
+                <label>Otros equipos de consumo <input name="otrosEquiposGas" type="text" /></label>
+                <label>Tipo de instalación gas
+                  <select name="tipoInstalacionGas">
+                    <option value="">Seleccione</option>
+                    <option>Oculta</option>
+                    <option>Aparente</option>
+                    <option>Mixta</option>
+                    <option>No determinada</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="description-editor">
+                <label for="descripcionGas">Descripción técnica de gas</label>
+                <textarea id="descripcionGas" name="descripcionGas" rows="3" data-description-for="gas"></textarea>
+                <button type="button" class="secondary-button" data-reset-description="gas">Restablecer descripción automática</button>
+              </div>
+
+              <div class="row">
+                <label class="legacy-system-alias">Instalación eléctrica
+                  <select name="instalacionElectricaGeneral">
+                    <option value="">Seleccione</option>
+                    <option>Monofásica</option>
+                    <option>Bifásica</option>
+                    <option>Trifásica</option>
+                    <option>No determinada</option>
+                  </select>
+                </label>
+                <label>Estado de conservación eléctrica
+                  <select name="estadoConservacionElectrica" data-conservation-state>
+                    <option value="">Seleccione</option>
+                    <option>B</option>
+                    <option>R</option>
+                    <option>M</option>
+                    <option>O</option>
+                    <option>NV</option>
+                    <option>ND</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="row">
+                <label>Alimentación eléctrica
+                  <select name="alimentacionElectrica">
+                    <option value="">Seleccione</option>
+                    <option>Monofásica</option>
+                    <option>Bifásica</option>
+                    <option>Trifásica</option>
+                    <option>No determinada</option>
+                  </select>
+                </label>
+                <label>Conductores eléctricos
+                  <select name="conductoresElectricos">
+                    <option value="">Seleccione</option>
+                    <option>Cobre</option>
+                    <option>Aluminio</option>
+                    <option>Mixto</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Canalización eléctrica
+                  <select name="canalizacionElectrica">
+                    <option value="">Seleccione</option>
+                    <option>PVC</option>
+                    <option>Metálica</option>
+                    <option>Mixta</option>
+                    <option>Aparente</option>
+                    <option>Oculta</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Tipo de instalación eléctrica
+                  <select name="tipoInstalacionElectrica">
+                    <option value="">Seleccione</option>
+                    <option>Oculta</option>
+                    <option>Aparente</option>
+                    <option>Mixta</option>
+                  </select>
+                </label>
+                <label>Distribución eléctrica
+                  <select name="distribucionElectrica">
+                    <option value="">Seleccione</option>
+                    <option>Centro de carga</option>
+                    <option>Tablero de distribución</option>
+                    <option>Ambos</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Protección eléctrica
+                  <select name="proteccionElectrica">
+                    <option value="">Seleccione</option>
+                    <option>Interruptores termomagnéticos</option>
+                    <option>Fusibles</option>
+                    <option>Termomagnéticos más diferencial</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Tierra física
+                  <select name="tierraFisicaElectrica">
+                    <option value="">Seleccione</option>
+                    <option>Sí</option>
+                    <option>No</option>
+                    <option>No visible</option>
+                  </select>
+                </label>
+                <label>Iluminación
+                  <select name="iluminacionElectrica">
+                    <option value="">Seleccione</option>
+                    <option>LED</option>
+                    <option>Fluorescente</option>
+                    <option>Incandescente</option>
+                    <option>Mixta</option>
+                    <option>No determinada</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="description-editor">
+                <label for="descripcionElectrica">Descripción técnica eléctrica</label>
+                <textarea id="descripcionElectrica" name="descripcionElectrica" rows="3" data-description-for="electric"></textarea>
+                <button type="button" class="secondary-button" data-reset-description="electric">Restablecer descripción automática</button>
+              </div>
+
+              <div class="row legacy-special-fields" hidden>
+                <label>Instalaciones especiales
+                  <select name="instalacionesEspecialesGeneral">
+                    <option value="">Seleccione</option>
+                    <option>Con aire acondicionado</option>
+                    <option>Con calefacción</option>
+                    <option>Con seguridad</option>
+                    <option>Con telecomunicaciones</option>
+                    <option>Con protección contra incendio</option>
+                    <option>Con energía alternativa</option>
+                    <option>Con equipamiento especial</option>
+                  </select>
+                </label>
+                <label>Estado de conservación especial
+                  <select name="estadoConservacionEspecial" data-conservation-state>
+                    <option value="">Seleccione</option>
+                    <option>B</option>
+                    <option>R</option>
+                    <option>M</option>
+                    <option>O</option>
+                    <option>NV</option>
+                    <option>ND</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="row legacy-special-fields" hidden>
+                <label>Aire acondicionado
+                  <select name="aireAcondicionadoEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Minisplit</option>
+                    <option>Central</option>
+                    <option>Paquete</option>
+                    <option>Ventana</option>
+                    <option>Mixto</option>
+                  </select>
+                </label>
+                <label>Calefacción
+                  <select name="calefaccionEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Independiente</option>
+                    <option>Central</option>
+                    <option>Mixta</option>
+                  </select>
+                </label>
+                <label>Alarma
+                  <select name="alarmaEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Sí</option>
+                  </select>
+                </label>
+                <label>CCTV
+                  <select name="cctvEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Sí</option>
+                  </select>
+                </label>
+                <label>Control de acceso
+                  <select name="controlAccesoEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Manual</option>
+                    <option>Electrónico</option>
+                    <option>Automatizado</option>
+                  </select>
+                </label>
+                <label>Portero
+                  <select name="porteroEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Portero eléctrico</option>
+                    <option>Videoportero</option>
+                  </select>
+                </label>
+                <label>Telefonía
+                  <select name="telefoniaEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Convencional</option>
+                    <option>Red estructurada</option>
+                  </select>
+                </label>
+                <label>Datos
+                  <select name="datosEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Cableado estructurado</option>
+                    <option>Red inalámbrica</option>
+                    <option>Mixto</option>
+                  </select>
+                </label>
+                <label>Antena
+                  <select name="antenaEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>TV</option>
+                    <option>Satelital</option>
+                    <option>Mixta</option>
+                  </select>
+                </label>
+                <label>Extintores
+                  <select name="extintoresEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Sí</option>
+                  </select>
+                </label>
+                <label>Red contra incendio
+                  <select name="redContraIncendioEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Sí</option>
+                  </select>
+                </label>
+                <label>Fotovoltaica
+                  <select name="fotovoltaicaEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Sí</option>
+                  </select>
+                </label>
+                <label>Elevador
+                  <select name="elevadorEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Pasajeros</option>
+                    <option>Carga</option>
+                  </select>
+                </label>
+                <label>Alberca
+                  <select name="albercaEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Sí</option>
+                  </select>
+                </label>
+                <label>Domótica
+                  <select name="domoticaEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Básica</option>
+                    <option>Integral</option>
+                  </select>
+                </label>
+                <label>Sistema de bombeo especial
+                  <select name="bombeoEspecial">
+                    <option value="">Seleccione</option>
+                    <option>No cuenta</option>
+                    <option>Sí</option>
+                  </select>
+                </label>
+              </div>
+              <div class="special-installations-editor">
+                <div class="row">
+                  <label>Categoría de instalación especial
+                    <select id="specialInstallationCategory"></select>
+                  </label>
+                  <label>Tipo de instalación especial
+                    <select id="specialInstallationType"></select>
+                  </label>
+                </div>
+                <div class="button-row">
+                  <button type="button" class="secondary-button" id="addSpecialInstallation">Agregar instalación especial</button>
+                </div>
+                <div id="specialInstallationItems" class="special-installation-items"></div>
+              </div>
+            </div>
+
+            <div class="fieldset" hidden>
+              <div class="section-title">Catálogo de instalaciones y estado de conservación</div>
+              <h4>Instalación hidráulica</h4>
+              <table class="capture-table">
+                <thead><tr><th>Campo</th><th>Catálogo</th></tr></thead>
+                <tbody>
+                  <tr><td>Abastecimiento</td><td>Red municipal / Pozo / Pipa / Captación pluvial / Mixto / No determinado</td></tr>
+                  <tr><td>Almacenamiento</td><td>Sin almacenamiento / Tinaco / Cisterna / Cisterna + tinaco / Cisterna prefabricada / No determinado</td></tr>
+                  <tr><td>Material red</td><td>Cobre / CPVC / PVC hidráulico / PPR / Fierro galvanizado / PEX-multicapa / Mixta / No visible</td></tr>
+                  <tr><td>Presurización</td><td>Gravedad / Bomba / Hidroneumático / Presurizador / Mixta / No determinado</td></tr>
+                  <tr><td>Agua caliente</td><td>No cuenta / Gas / Eléctrico / De paso / Solar / Solar + respaldo / Sistema central</td></tr>
+                  <tr><td>Estado</td><td>Bueno / Regular / Malo / Obsoleto / No visible</td></tr>
+                </tbody>
+              </table>
+
+              <h4>Instalación sanitaria</h4>
+              <table class="capture-table">
+                <thead><tr><th>Campo</th><th>Catálogo</th></tr></thead>
+                <tbody>
+                  <tr><td>Sistema de desalojo</td><td>Red municipal / Fosa séptica / Biodigestor / Planta de tratamiento / Pozo de absorción / Mixto / No determinado</td></tr>
+                  <tr><td>Material tubería</td><td>PVC sanitario / Concreto / Fierro fundido / Barro / Polietileno / Mixta / No visible</td></tr>
+                  <tr><td>Sistema pluvial</td><td>Red municipal / Descarga a terreno / Coladeras / Bajantes / Captación pluvial / Mixto / No determinado</td></tr>
+                  <tr><td>Drenaje interior</td><td>PVC sanitario / Fierro fundido / Barro / Mixto / No visible</td></tr>
+                  <tr><td>Registros</td><td>Sí / No / No visible</td></tr>
+                  <tr><td>Ventilación sanitaria</td><td>Sí / No / No visible</td></tr>
+                  <tr><td>Trampa de grasas</td><td>Sí / No / No aplica / No visible</td></tr>
+                  <tr><td>Estado</td><td>Bueno / Regular / Malo / Obsoleto / No visible</td></tr>
+                </tbody>
+              </table>
+
+              <h4>Instalación de gas</h4>
+              <table class="capture-table">
+                <thead><tr><th>Campo</th><th>Catálogo</th></tr></thead>
+                <tbody>
+                  <tr><td>Combustible</td><td>Gas LP / Gas natural / No cuenta</td></tr>
+                  <tr><td>Almacenamiento</td><td>Cilindro portátil / Tanque estacionario / Red de distribución / No aplica</td></tr>
+                  <tr><td>Material tubería</td><td>Cobre / Acero galvanizado / Acero negro / Multicapa / Mixta / No visible</td></tr>
+                  <tr><td>Equipos alimentados</td><td>Calentador / Estufa / Horno / Secadora / Boiler / Otros</td></tr>
+                  <tr><td>Tipo instalación</td><td>Oculta / Aparente / Mixta / No visible</td></tr>
+                  <tr><td>Estado</td><td>Bueno / Regular / Malo / Obsoleto / No visible</td></tr>
+                </tbody>
+              </table>
+
+              <h4>Instalación eléctrica</h4>
+              <table class="capture-table">
+                <thead><tr><th>Campo</th><th>Catálogo</th></tr></thead>
+                <tbody>
+                  <tr><td>Alimentación</td><td>Monofásica / Bifásica / Trifásica / No determinada</td></tr>
+                  <tr><td>Conductores</td><td>Cobre / Aluminio / Mixto / No visible</td></tr>
+                  <tr><td>Canalización</td><td>PVC / Metálica / Mixta / No visible</td></tr>
+                  <tr><td>Instalación</td><td>Oculta / Aparente / Mixta</td></tr>
+                  <tr><td>Distribución</td><td>Centro de carga / Tablero de distribución / Ambos / No visible</td></tr>
+                  <tr><td>Protección</td><td>Termomagnéticos / Fusibles / Termomagnéticos + diferencial / Mixta / No visible</td></tr>
+                  <tr><td>Tierra física</td><td>Sí / No / No visible</td></tr>
+                  <tr><td>Iluminación</td><td>LED / Fluorescente / Incandescente / Mixta / No determinada</td></tr>
+                  <tr><td>Estado</td><td>Bueno / Regular / Malo / Obsoleto / No visible</td></tr>
+                </tbody>
+              </table>
+
+              <h4>Instalaciones especiales</h4>
+              <table class="capture-table">
+                <thead><tr><th>Campo</th><th>Catálogo</th></tr></thead>
+                <tbody>
+                  <tr><td>Aire acondicionado</td><td>No cuenta / Minisplit / Central / Paquete / Ventana / Mixto</td></tr>
+                  <tr><td>Calefacción</td><td>No cuenta / Independiente / Central / Mixta</td></tr>
+                  <tr><td>Alarma</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>CCTV</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Control de acceso</td><td>No cuenta / Manual / Electrónico / Automatizado</td></tr>
+                  <tr><td>Portero</td><td>No cuenta / Portero eléctrico / Videoportero</td></tr>
+                  <tr><td>Telefonía</td><td>No cuenta / Convencional / Red estructurada</td></tr>
+                  <tr><td>Datos</td><td>No cuenta / Cableado estructurado / Red inalámbrica / Mixto</td></tr>
+                  <tr><td>Antena</td><td>No cuenta / TV / Satelital / Mixta</td></tr>
+                  <tr><td>Extintores</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Red contra incendio</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Sistema de detección</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Sistema integral</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Fotovoltaica</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Calentador solar</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Planta de emergencia</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>UPS</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Elevador</td><td>No cuenta / Pasajeros / Carga</td></tr>
+                  <tr><td>Alberca</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Sistema de filtración</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Calentamiento de alberca</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Domótica</td><td>No cuenta / Básica / Integral</td></tr>
+                  <tr><td>Sistema de bombeo especial</td><td>No cuenta / Sí</td></tr>
+                  <tr><td>Estado</td><td>Bueno / Regular / Malo / Obsoleto / No visible</td></tr>
+                </tbody>
+              </table>
+            </div>
+
             <div class="section-title">Tabla de clasificación de construcción</div>
-            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Tipo, calidad y clasificación</th><th>Superficie (m²)</th><th>V.U.T. ($/m²)</th><th>Edad</th><th>Vida útil remanente</th><th>Estado de conservación</th><th></th></tr></thead><tbody id="buildingRows"></tbody></table></div>
+            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Tipo</th><th>Calidad y clasificación</th><th>Superficie (m²)</th><th>Vida útil total (años)</th><th>V.R.N. ($/m²)</th><th>V.N.R. ($/m²)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>Estado de conservación</th><th></th></tr></thead><tbody id="buildingRows"></tbody></table></div>
             <div class="button-row"><button type="button" class="secondary-button" id="addBuildingRow">Agregar tipo de construcción</button></div>
 
             <div class="section-title">Elementos accesorios, obra complementaria e instalaciones especiales</div>
-            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso (%)</th><th>V.U.T.</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>Estado de conservación</th><th>Coef. R-H (%)</th><th></th></tr></thead><tbody id="accessoryRows"></tbody></table></div>
+            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso (%)</th><th>Vida útil total (años)</th><th>V.R.N. ($/unidad)</th><th>V.N.R. ($/unidad)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>V.N.R. total ($)</th><th>Estado de conservación</th><th>Coef. R-H (%)</th><th></th></tr></thead><tbody id="accessoryRows"></tbody></table></div>
             <div class="button-row"><button type="button" class="secondary-button" id="addAccessoryRow">Agregar accesorio/instalación</button></div>
 
             <div class="section-title capture-target" id="capture-values" tabindex="-1">III. Datos de mercado y valuación</div>
@@ -828,7 +1815,20 @@
                 <label>Fuente / fecha de costos o valores unitarios <input name="fuenteValoresUnitarios" placeholder="Indique fuente, fecha y alcance" /></label>
                 <label>Valor catastral <input name="valorCatastral" type="number" min="0" step="0.01" /></label>
                 <label>Observaciones <input name="observaciones" /></label>
-                <label>Estado de conservación <input name="estadoConservacion" /></label>
+                <label>Estado de conservación
+                  <select name="estadoConservacionValores">
+                    <option value="">Seleccione</option>
+                    <option>Nuevo</option>
+                    <option>Muy bueno</option>
+                    <option>Normal</option>
+                    <option>Regular</option>
+                    <option>Reparaciones sencillas</option>
+                    <option>Reparaciones importantes</option>
+                    <option>Rehabilitación completa</option>
+                    <option>Ruinoso</option>
+                    <option>Ruinoso inutilizable</option>
+                  </select>
+                </label>
               </div>
             </div>
 
@@ -930,6 +1930,13 @@
           <div class="formal-section">
             <h4>II.- CARACTERÍSTICAS URBANAS</h4>
             <div id="reportUrban" class="report-data-grid"></div>
+            <div id="reportUrbanMapPanel" class="urban-map-panel" hidden>
+              <div id="reportUrbanMap" class="urban-map-frame" role="img" aria-label="Mapa de OpenStreetMap con marcador en la ubicación del inmueble">
+                <div class="urban-map-tiles"></div>
+                <span class="urban-map-marker"></span>
+              </div>
+              <a id="reportUrbanMapLink" target="_blank" rel="noreferrer">© OpenStreetMap contributors · Abrir mapa</a>
+            </div>
             <div class="toggle-row">
               <button type="button" class="toggle-button" data-target="urban-investigation">Proceso investigatorio</button>
             </div>
@@ -1025,6 +2032,10 @@
 
           <div class="section-title">Tabla de comparables</div>
           <div id="reportTable"></div>
+          <div class="section-title">Cuadro de cálculo del inmueble sujeto</div>
+          <div id="subjectCalculationTable" class="table-scroll">
+            <p>Se integrará al procesar las superficies capturadas.</p>
+          </div>
 
           <div class="formal-section">
             <h4>X.- OBSERVACIONES Y DEFINICIONES EN EL AVALUO</h4>
@@ -1068,8 +2079,10 @@
       </div>
     </div>
 
+    <script src="/frontend/technical-descriptions.js"></script>
     <script>
       const form = document.getElementById('valuationForm');
+      const technicalDescriptions = window.TechnicalDescriptions;
       const result = document.getElementById('result');
       const reportTable = document.getElementById('reportTable');
       const formulaDetail = document.getElementById('formulaDetail');
@@ -1082,6 +2095,551 @@
         croquis: [],
         documents: []
       };
+      const specialInstallationItems = [];
+
+      function readTechnicalSelections() {
+        const values = {};
+        form.querySelectorAll('[name]').forEach(field => {
+          values[field.name] = field instanceof HTMLSelectElement && field.multiple
+            ? Array.from(field.selectedOptions, option => option.value).filter(Boolean)
+            : field.value;
+        });
+        return values;
+      }
+
+      function updateGeneratedDescriptions() {
+        const selections = readTechnicalSelections();
+        const construction = technicalDescriptions.generateConstructionDescriptions(selections);
+        const generated = {
+          cimentacion: construction.cimentacion,
+          estructuraVertical: construction.estructuraVertical,
+          entrepisos: construction.entrepisos,
+          techumbres: construction.techumbres,
+          hydraulic: technicalDescriptions.generateHydraulicDescription(selections),
+          sanitary: technicalDescriptions.generateSanitaryDescription(selections),
+          gas: technicalDescriptions.generateGasDescription(selections),
+          electric: technicalDescriptions.generateElectricDescription(selections)
+        };
+
+        Object.entries(generated).forEach(([key, value]) => {
+          const editor = form.querySelector(`[data-description-for="${key}"]`);
+          if (editor && editor.dataset.manuallyEdited !== 'true') editor.value = value;
+        });
+      }
+
+      function initializeConservationCatalog() {
+        form.querySelectorAll('[data-conservation-state]').forEach(select => {
+          const selectedValue = select.value;
+          const placeholder = select.options[0];
+          select.replaceChildren(placeholder);
+          technicalDescriptions.CONSERVATION_STATES.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state.value;
+            option.textContent = state.label;
+            select.appendChild(option);
+          });
+          select.value = selectedValue;
+        });
+      }
+
+      function clearTechnicalDefaults() {
+        const names = [
+          'instalacionHidraulicaGeneral', 'estadoConservacionHidraulica', 'abastecimientoHidraulico', 'almacenamientoHidraulico',
+          'materialRedHidraulica', 'presurizacionHidraulica', 'aguaCalienteHidraulica', 'instalacionSanitariaGeneral',
+          'estadoConservacionSanitaria', 'sistemaDesalojoSanitario', 'materialTuberiaSanitaria', 'sistemaPluvialSanitario',
+          'drenajeInteriorSanitario', 'registrosSanitario', 'ventilacionSanitaria', 'trampaGrasas', 'instalacionGasGeneral',
+          'estadoConservacionGas', 'combustibleGas', 'almacenamientoGas', 'materialTuberiaGas', 'equiposGas',
+          'tipoInstalacionGas', 'instalacionElectricaGeneral', 'estadoConservacionElectrica', 'alimentacionElectrica',
+          'conductoresElectricos', 'canalizacionElectrica', 'tipoInstalacionElectrica', 'distribucionElectrica',
+          'proteccionElectrica', 'tierraFisicaElectrica', 'iluminacionElectrica'
+        ];
+        names.forEach(name => {
+          const field = form.elements.namedItem(name);
+          if (!(field instanceof HTMLSelectElement)) return;
+          if (field.multiple) Array.from(field.options).forEach(option => { option.selected = false; });
+          else field.selectedIndex = 0;
+        });
+      }
+
+      function appendSelectOptions(select, options, placeholder) {
+        select.replaceChildren();
+        if (placeholder) {
+          const emptyOption = document.createElement('option');
+          emptyOption.value = '';
+          emptyOption.textContent = placeholder;
+          select.appendChild(emptyOption);
+        }
+        options.forEach(optionData => {
+          const option = document.createElement('option');
+          option.value = optionData.value;
+          option.textContent = optionData.label;
+          select.appendChild(option);
+        });
+      }
+
+      const specialCategorySelect = document.getElementById('specialInstallationCategory');
+      const specialTypeSelect = document.getElementById('specialInstallationType');
+      const specialInstallationContainer = document.getElementById('specialInstallationItems');
+
+      function updateSpecialTypeOptions() {
+        const group = technicalDescriptions.SPECIAL_INSTALLATIONS.find(item => item.category === specialCategorySelect.value);
+        appendSelectOptions(specialTypeSelect, (group?.items || []).map(item => ({ value: item.name, label: item.name })), 'Seleccione');
+      }
+
+      function getSpecialFunctionOptions() {
+        return technicalDescriptions.SPECIAL_FUNCTION_STATES;
+      }
+
+      function renderSpecialInstallationItems() {
+        specialInstallationContainer.replaceChildren();
+        specialInstallationItems.forEach((item, index) => {
+          const card = document.createElement('fieldset');
+          card.className = 'special-installation-item';
+          const heading = document.createElement('strong');
+          heading.textContent = `${item.category}: ${item.name}`;
+          card.appendChild(heading);
+
+          const descriptionLabel = document.createElement('label');
+          descriptionLabel.textContent = 'Descripción técnica';
+          const description = document.createElement('textarea');
+          description.rows = 2;
+          description.value = item.description;
+          description.addEventListener('input', () => { item.description = description.value; });
+          descriptionLabel.appendChild(description);
+          card.appendChild(descriptionLabel);
+
+          const detailLabel = document.createElement('label');
+          detailLabel.textContent = 'Campos complementarios';
+          const details = document.createElement('input');
+          details.type = 'text';
+          details.value = item.details;
+          details.addEventListener('input', () => { item.details = details.value; });
+          detailLabel.appendChild(details);
+          card.appendChild(detailLabel);
+
+          const controls = document.createElement('div');
+          controls.className = 'row';
+          const stateLabel = document.createElement('label');
+          stateLabel.textContent = 'Estado de conservación';
+          const stateSelect = document.createElement('select');
+          appendSelectOptions(stateSelect, technicalDescriptions.CONSERVATION_STATES, 'Seleccione');
+          stateSelect.value = item.conservation;
+          stateSelect.addEventListener('change', () => { item.conservation = stateSelect.value; });
+          stateLabel.appendChild(stateSelect);
+          controls.appendChild(stateLabel);
+
+          const functionLabel = document.createElement('label');
+          functionLabel.textContent = 'Funcionamiento';
+          const functionSelect = document.createElement('select');
+          appendSelectOptions(functionSelect, getSpecialFunctionOptions(), 'Seleccione');
+          functionSelect.value = item.functionStatus;
+          functionSelect.addEventListener('change', () => { item.functionStatus = functionSelect.value; });
+          functionLabel.appendChild(functionSelect);
+          controls.appendChild(functionLabel);
+          card.appendChild(controls);
+
+          const removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.className = 'secondary-button';
+          removeButton.textContent = 'Eliminar instalación';
+          removeButton.addEventListener('click', () => {
+            specialInstallationItems.splice(index, 1);
+            renderSpecialInstallationItems();
+          });
+          card.appendChild(removeButton);
+          specialInstallationContainer.appendChild(card);
+        });
+      }
+
+      technicalDescriptions.SPECIAL_INSTALLATIONS.forEach(group => {
+        const option = document.createElement('option');
+        option.value = group.category;
+        option.textContent = group.category;
+        specialCategorySelect.appendChild(option);
+      });
+      specialCategorySelect.addEventListener('change', updateSpecialTypeOptions);
+      updateSpecialTypeOptions();
+      document.getElementById('addSpecialInstallation').addEventListener('click', () => {
+        const group = technicalDescriptions.SPECIAL_INSTALLATIONS.find(item => item.category === specialCategorySelect.value);
+        const selected = group?.items.find(item => item.name === specialTypeSelect.value);
+        if (!selected) return;
+        specialInstallationItems.push({
+          category: group.category,
+          name: selected.name,
+          description: selected.description,
+          details: '',
+          conservation: '',
+          functionStatus: ''
+        });
+        renderSpecialInstallationItems();
+      });
+
+      document.querySelectorAll('[data-reset-description]').forEach(button => {
+        button.addEventListener('click', () => {
+          const editor = form.querySelector(`[data-description-for="${button.dataset.resetDescription}"]`);
+          if (!editor) return;
+          editor.dataset.manuallyEdited = 'false';
+          updateGeneratedDescriptions();
+        });
+      });
+      form.querySelectorAll('[data-description-for]').forEach(editor => {
+        editor.addEventListener('input', () => { editor.dataset.manuallyEdited = 'true'; });
+      });
+      form.addEventListener('change', event => {
+        if (!event.target.matches('[data-description-for]')) updateGeneratedDescriptions();
+      });
+      form.addEventListener('input', event => {
+        if (!event.target.matches('[data-description-for]')) updateGeneratedDescriptions();
+      });
+      clearTechnicalDefaults();
+      initializeConservationCatalog();
+      form.querySelectorAll('.legacy-special-fields select').forEach(select => { select.disabled = true; });
+      form.querySelectorAll('.legacy-system-alias select').forEach(select => { select.disabled = true; });
+      updateGeneratedDescriptions();
+
+      const municipioPorEstado = {
+        'Aguascalientes': ['Aguascalientes', 'Asientos', 'Calvillo', 'Cosío', 'Jesús María', 'Pabellón de Arteaga', 'Rincón de Romos', 'San José de Gracia', 'Tepezalá'],
+        'Baja California': ['Ensenada', 'Mexicali', 'Playas de Rosarito', 'Tecate', 'Tijuana'],
+        'Baja California Sur': ['Comondú', 'La Paz', 'Los Cabos', 'Loreto', 'Mulegé'],
+        'Campeche': ['Campeche', 'Calkiní', 'Carmen', 'Champotón', 'Hecelchakán', 'Hopelchén', 'Palizada', 'Tenabo'],
+        'Chiapas': ['Acacoyagua', 'Arriaga', 'Chiapa de Corzo', 'Comitán', 'Tuxtla Gutiérrez', 'Tapachula', 'Villaflores'],
+        'Chihuahua': ['Chihuahua', 'Cuauhtémoc', 'Delicias', 'Juárez', 'Parral', 'Saucillo'],
+        'Ciudad de México': ['Álvaro Obregón', 'Azcapotzalco', 'Benito Juárez', 'Coyoacán', 'Cuajimalpa', 'Gustavo A. Madero', 'Iztacalco', 'Iztapalapa', 'Magdalena Contreras', 'Miguel Hidalgo', 'Milpa Alta', 'Tláhuac', 'Tlalpan', 'Venustiano Carranza', 'Xochimilco'],
+        'Coahuila': ['Saltillo', 'Monclova', 'Piedras Negras', 'Torreón', 'Sabinas'],
+        'Colima': ['Armería', 'Colima', 'Comala', 'Coquimatlán', 'Manzanillo', 'Villa de Álvarez'],
+        'Durango': ['Durango', 'Gómez Palacio', 'Canatlán', 'Pueblo Nuevo', 'Torreón'],
+        'Guanajuato': ['Abasolo', 'Apaseo el Grande', 'Celaya', 'Dolores Hidalgo', 'Guanajuato', 'Irapuato', 'León', 'Salamanca', 'San Miguel de Allende', 'San Luis de la Paz'],
+        'Guerrero': ['Acapulco', 'Chilpancingo', 'Iguala', 'Taxco', 'Zihuatanejo'],
+        'Hidalgo': ['Pachuca', 'Huejutla', 'Tula', 'Tulancingo', 'Ixmiquilpan'],
+        'Jalisco': ['Guadalajara', 'Puerto Vallarta', 'Zapopan', 'Tlaquepaque', 'Tonalá'],
+        'Estado de México': ['Ecatepec', 'Huixquilucan', 'Toluca', 'Naucalpan', 'Atizapán'],
+        'Michoacán': ['Morelia', 'Uruapan', 'Zamora', 'Lázaro Cárdenas', 'Pátzcuaro'],
+        'Morelos': ['Cuernavaca', 'Jiutepec', 'Temixco', 'Puente de Ixtla', 'Yautepec'],
+        'Nayarit': ['Tepic', 'Bahía de Banderas', 'Compostela', 'Santiago Ixcuintla', 'Xalisco'],
+        'Nuevo León': ['Monterrey', 'Guadalupe', 'San Nicolás de los Garza', 'Apodaca', 'Santa Catarina'],
+        'Oaxaca': ['Oaxaca', 'Juchitán', 'Salina Cruz', 'Tehuantepec', 'Puerto Escondido'],
+        'Puebla': ['Puebla', 'Atlixco', 'Cholula', 'Tehuacán', 'San Martín Texmelucan'],
+        'Querétaro': ['Querétaro', 'San Juan del Río', 'El Marqués', 'Cadereyta', 'Corregidora'],
+        'Quintana Roo': ['Chetumal', 'Cozumel', 'Playa del Carmen', 'Solidaridad', 'Bacalar'],
+        'San Luis Potosí': ['San Luis Potosí', 'Matehuala', 'Rioverde', 'Soledad de Graciano Sánchez', 'Tamazunchale'],
+        'Sinaloa': ['Culiacán', 'Mazatlán', 'Los Mochis', 'Guasave', 'Ahome'],
+        'Sonora': ['Hermosillo', 'Nogales', 'Ciudad Obregón', 'San Luis Río Colorado', 'Guaymas'],
+        'Tabasco': ['Villahermosa', 'Comalcalco', 'Cárdenas', 'Huimanguillo', 'Paraíso'],
+        'Tamaulipas': ['Reynosa', 'Matamoros', 'Nuevo Laredo', 'Ciudad Victoria', 'Altamira'],
+        'Tlaxcala': ['Tlaxcala', 'Apizaco', 'Chiautempan', 'Huamantla', 'Zitácuaro'],
+        'Veracruz': ['Xalapa', 'Veracruz', 'Coatzacoalcos', 'Poza Rica', 'Cordoba'],
+        'Yucatán': ['Mérida', 'Valladolid', 'Tizimín', 'Progreso', 'Kanasín'],
+        'Zacatecas': ['Zacatecas', 'Fresnillo', 'Guadalupe', 'Jerez', 'Ojocaliente']
+      };
+
+      function updateMunicipios(preserveManualMunicipality = false) {
+        const estadoSelect = document.getElementById('estadoSelect');
+        const municipioSelect = document.getElementById('municipioSelect');
+        const selectedState = estadoSelect.value;
+        const currentMunicipality = municipioSelect.value;
+        const shouldPreserveMunicipality = preserveManualMunicipality &&
+          municipioSelect.dataset.locationManuallyEdited === 'true' && currentMunicipality;
+        const municipios = municipioPorEstado[selectedState] || ['Seleccione primero un estado'];
+
+        municipioSelect.innerHTML = '<option value="">Seleccione</option>' + municipios.map(m => `<option value="${m}">${m}</option>`).join('');
+        if (selectedState === '') {
+          municipioSelect.innerHTML = '<option value="">Seleccione primero un estado</option>';
+        }
+        if (shouldPreserveMunicipality && !Array.from(municipioSelect.options).some(option => option.value === currentMunicipality)) {
+          const option = document.createElement('option');
+          option.value = currentMunicipality;
+          option.textContent = currentMunicipality;
+          municipioSelect.appendChild(option);
+        }
+        if (shouldPreserveMunicipality) municipioSelect.value = currentMunicipality;
+      }
+
+      document.getElementById('estadoSelect').addEventListener('change', () => updateMunicipios());
+      updateMunicipios();
+
+      const urbanLookupStatus = document.getElementById('urbanLookupStatus');
+      const urbanMapPanel = document.getElementById('urbanMapPanel');
+      const urbanMap = document.getElementById('urbanMap');
+      const urbanMapLink = document.getElementById('urbanMapLink');
+      const reportUrbanMapPanel = document.getElementById('reportUrbanMapPanel');
+      const reportUrbanMap = document.getElementById('reportUrbanMap');
+      const reportUrbanMapLink = document.getElementById('reportUrbanMapLink');
+      const urbanMapViews = [];
+      const urbanAutoFieldNames = [
+        'calle', 'colonia', 'municipio', 'estado', 'poblacion', 'vialidades', 'viasAcceso',
+        'urbGeorreferenciacion', 'urbContexto', 'urbEntorno'
+      ];
+      let urbanLookupTimer;
+      let lastUrbanLookupKey = '';
+
+      function updateUrbanMaps(coordinates) {
+        if (!coordinates || coordinates.invalid) {
+          urbanMapPanel.hidden = true;
+          reportUrbanMapPanel.hidden = true;
+          return;
+        }
+
+        const latitude = coordinates.latitude;
+        const longitude = coordinates.longitude;
+        const zoom = 16;
+        const tileCount = 2 ** zoom;
+        const latitudeRadians = latitude * Math.PI / 180;
+        const mapX = (longitude + 180) / 360 * tileCount;
+        const mapY = (1 - Math.asinh(Math.tan(latitudeRadians)) / Math.PI) / 2 * tileCount;
+        const stageWidth = urbanMap.clientWidth || 768;
+        const stageHeight = urbanMap.clientHeight || stageWidth * 9 / 16;
+        const scale = stageWidth / 768;
+        const firstTileX = Math.floor(mapX - 1.5);
+        const lastTileX = Math.floor(mapX + 1.5);
+        const firstTileY = Math.floor(mapY - stageHeight / scale / 512);
+        const lastTileY = Math.floor(mapY + stageHeight / scale / 512);
+        const columns = lastTileX - firstTileX + 1;
+        const rows = lastTileY - firstTileY + 1;
+
+        function updateMapStage(stage) {
+          const tileGrid = stage.querySelector('.urban-map-tiles');
+          const centerTileX = ((Math.floor(mapX) % tileCount) + tileCount) % tileCount;
+          const gridKey = `${zoom}/${centerTileX}/${Math.floor(mapY)}/${columns}/${rows}`;
+          if (tileGrid.dataset.tileKey !== gridKey) {
+            tileGrid.replaceChildren();
+            tileGrid.style.gridTemplateColumns = `repeat(${columns}, 256px)`;
+            tileGrid.style.gridTemplateRows = `repeat(${rows}, 256px)`;
+            for (let row = 0; row < rows; row += 1) {
+              const tileY = firstTileY + row;
+              for (let column = 0; column < columns; column += 1) {
+                const rawTileX = firstTileX + column;
+                const tileX = ((rawTileX % tileCount) + tileCount) % tileCount;
+                const image = document.createElement('img');
+                image.alt = '';
+                image.width = 256;
+                image.height = 256;
+                image.loading = 'lazy';
+                image.decoding = 'async';
+                image.referrerPolicy = 'strict-origin-when-cross-origin';
+                if (tileY >= 0 && tileY < tileCount) image.src = `/api/map-tiles/${zoom}/${tileX}/${tileY}.png`;
+                tileGrid.appendChild(image);
+              }
+            }
+            tileGrid.dataset.tileKey = gridKey;
+          }
+          const currentWidth = stage.clientWidth || 768;
+          const currentHeight = stage.clientHeight || currentWidth * 9 / 16;
+          const currentScale = currentWidth / 768;
+          tileGrid.style.transform = `scale(${currentScale})`;
+          tileGrid.style.left = `${currentWidth / 2 - (mapX - firstTileX) * 256 * currentScale}px`;
+          tileGrid.style.top = `${currentHeight / 2 - (mapY - firstTileY) * 256 * currentScale}px`;
+          stage.setAttribute('aria-label', `Mapa OpenStreetMap con marcador en ${latitude.toFixed(6)}, ${longitude.toFixed(6)}.`);
+        }
+
+        [urbanMap, reportUrbanMap].forEach(stage => {
+          if (!urbanMapViews.some(view => view.stage === stage)) {
+            urbanMapViews.push({ stage, update: () => updateMapStage(stage) });
+          }
+        });
+        urbanMapPanel.hidden = false;
+        reportUrbanMapPanel.hidden = false;
+        [urbanMap, reportUrbanMap].forEach(updateMapStage);
+        const linkUrl = new URL('https://www.openstreetmap.org/');
+        linkUrl.search = new URLSearchParams({ mlat: String(latitude), mlon: String(longitude) });
+        linkUrl.hash = `map=17/${latitude}/${longitude}`;
+        [urbanMapLink, reportUrbanMapLink].forEach(link => { link.href = linkUrl.href; });
+      }
+
+      window.addEventListener('resize', () => urbanMapViews.forEach(view => view.update()));
+
+      function currentCoordinates() {
+        const latitudeField = form.elements.namedItem('latitud');
+        const longitudeField = form.elements.namedItem('longitud');
+        const latitude = latitudeField.value.trim();
+        const longitude = longitudeField.value.trim();
+        if (latitude === '' || longitude === '') return null;
+        const coordinates = { latitude: Number(latitude), longitude: Number(longitude) };
+        if (!Number.isFinite(coordinates.latitude) || !Number.isFinite(coordinates.longitude) ||
+            coordinates.latitude < -90 || coordinates.latitude > 90 || coordinates.longitude < -180 || coordinates.longitude > 180) {
+          return { invalid: true };
+        }
+        return coordinates;
+      }
+
+      function clearPreviousUrbanLookup() {
+        urbanAutoFieldNames.forEach(name => {
+          const field = form.elements.namedItem(name);
+          if (field?.dataset.geocoded === 'true' && field.dataset.locationManuallyEdited !== 'true') {
+            field.value = '';
+            delete field.dataset.geocoded;
+          }
+        });
+        updateMunicipios(true);
+      }
+
+      function setUrbanLookupField(name, value) {
+        const field = form.elements.namedItem(name);
+        if (!field || !value || field.dataset.locationManuallyEdited === 'true') return;
+        if (field.value.trim() && field.dataset.geocoded !== 'true') return;
+        if (field instanceof HTMLSelectElement && !Array.from(field.options).some(option => option.value === value)) {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          field.appendChild(option);
+        }
+        field.value = value;
+        field.dataset.geocoded = 'true';
+      }
+
+      async function lookupUrbanCoordinates(coordinates) {
+        const key = `${coordinates.latitude.toFixed(6)},${coordinates.longitude.toFixed(6)}`;
+        if (key === lastUrbanLookupKey) return;
+        lastUrbanLookupKey = key;
+        urbanLookupStatus.textContent = 'Buscando la referencia geográfica de las coordenadas…';
+        try {
+          const params = new URLSearchParams({ lat: String(coordinates.latitude), lon: String(coordinates.longitude) });
+          const response = await fetch(`/api/urban-context?${params}`);
+          const context = await response.json();
+          if (!response.ok) throw new Error(context.error || 'No fue posible consultar la fuente cartográfica.');
+          const latestCoordinates = currentCoordinates();
+          if (!latestCoordinates || latestCoordinates.invalid ||
+              `${latestCoordinates.latitude.toFixed(6)},${latestCoordinates.longitude.toFixed(6)}` !== key) return;
+
+          clearPreviousUrbanLookup();
+          setUrbanLookupField('estado', context.fields.estado);
+          updateMunicipios(true);
+          setUrbanLookupField('municipio', context.fields.municipio);
+          urbanAutoFieldNames.filter(name => !['estado', 'municipio'].includes(name)).forEach(name => {
+            setUrbanLookupField(name, context.fields[name]);
+          });
+          urbanLookupStatus.textContent = `Ubicación completada con ${context.source}. Confirma la referencia predial; las características sin fuente permanecen para captura manual.`;
+        } catch (error) {
+          if (lastUrbanLookupKey === key) urbanLookupStatus.textContent = `No se pudo completar la ubicación: ${error.message}`;
+        }
+      }
+
+      function scheduleUrbanLookup() {
+        clearTimeout(urbanLookupTimer);
+        const coordinates = currentCoordinates();
+        if (!coordinates) {
+          lastUrbanLookupKey = '';
+          updateUrbanMaps(null);
+          if (form.elements.namedItem('latitud').value || form.elements.namedItem('longitud').value) {
+            urbanLookupStatus.textContent = 'Completa latitud y longitud para buscar la ubicación.';
+          }
+          return;
+        }
+        if (coordinates.invalid) {
+          updateUrbanMaps(null);
+          urbanLookupStatus.textContent = 'Las coordenadas deben estar dentro del rango WGS84.';
+          return;
+        }
+        updateUrbanMaps(coordinates);
+        urbanLookupTimer = setTimeout(() => lookupUrbanCoordinates(coordinates), 800);
+      }
+
+      urbanAutoFieldNames.forEach(name => {
+        const field = form.elements.namedItem(name);
+        field?.addEventListener('input', () => { field.dataset.locationManuallyEdited = 'true'; });
+        field?.addEventListener('change', () => { field.dataset.locationManuallyEdited = 'true'; });
+      });
+      ['latitud', 'longitud'].forEach(name => {
+        const field = form.elements.namedItem(name);
+        field.addEventListener('input', scheduleUrbanLookup);
+        field.addEventListener('change', scheduleUrbanLookup);
+      });
+
+      const urbanPlanInput = document.getElementById('urbanPlanDocuments');
+      const urbanPlanStatus = document.getElementById('urbanPlanStatus');
+      const urbanPlanMatchesContainer = document.getElementById('urbanPlanMatches');
+      const applyUrbanPlanMatchesButton = document.getElementById('applyUrbanPlanMatches');
+      let urbanPlanMatches = [];
+      const urbanPlanAppliedSources = [];
+
+      function renderUrbanPlanMatches(documents) {
+        urbanPlanMatches = documents.flatMap(documentResult => documentResult.matches || []);
+        urbanPlanMatchesContainer.replaceChildren();
+        documents.forEach(documentResult => {
+          const section = document.createElement('section');
+          const heading = document.createElement('strong');
+          heading.textContent = documentResult.fileName;
+          section.appendChild(heading);
+          if (documentResult.error) {
+            const error = document.createElement('p');
+            error.textContent = documentResult.error;
+            section.appendChild(error);
+          } else if (!documentResult.matches?.length) {
+            const note = document.createElement('p');
+            note.textContent = 'No se encontraron valores con etiquetas reconocidas. El texto no se aplicó.';
+            section.appendChild(note);
+          }
+          documentResult.matches?.forEach((match, index) => {
+            const matchIndex = urbanPlanMatches.indexOf(match);
+            const card = document.createElement('div');
+            card.className = 'urban-plan-match';
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = true;
+            checkbox.dataset.matchIndex = String(matchIndex);
+            const text = document.createElement('span');
+            text.textContent = `${match.label}: ${match.value}`;
+            const evidence = document.createElement('small');
+            evidence.textContent = `Evidencia: ${match.evidence}`;
+            label.append(checkbox, text);
+            card.append(label, evidence);
+            section.appendChild(card);
+          });
+          urbanPlanMatchesContainer.appendChild(section);
+        });
+        applyUrbanPlanMatchesButton.disabled = urbanPlanMatches.length === 0;
+      }
+
+      document.getElementById('selectUrbanPlanDocuments').addEventListener('click', () => urbanPlanInput.click());
+      urbanPlanInput.addEventListener('change', async () => {
+        const selectedFiles = Array.from(urbanPlanInput.files || []);
+        if (!selectedFiles.length) return;
+        urbanPlanMatchesContainer.replaceChildren();
+        applyUrbanPlanMatchesButton.disabled = true;
+        urbanPlanStatus.textContent = `Extrayendo texto de ${selectedFiles.length} documento(s)…`;
+        const body = new FormData();
+        selectedFiles.forEach(file => body.append('documents', file, file.name));
+        try {
+          const response = await fetch('/api/urban-plan-documents', { method: 'POST', body });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'No se pudieron procesar los documentos.');
+          renderUrbanPlanMatches(result.documents || []);
+          const totalMatches = urbanPlanMatches.length;
+          urbanPlanStatus.textContent = totalMatches
+            ? `Se encontraron ${totalMatches} coincidencia(s). Revisa la evidencia y aplica solo los valores del plan correspondiente al inmueble.`
+            : 'Se procesaron los documentos, pero no se encontraron campos reconocidos. Verifica etiquetas, formato y que el PDF contenga texto seleccionable.';
+        } catch (error) {
+          urbanPlanMatches = [];
+          urbanPlanStatus.textContent = `No se pudieron leer los documentos: ${error.message}`;
+        }
+      });
+
+      applyUrbanPlanMatchesButton.addEventListener('click', () => {
+        const selectedIndexes = Array.from(urbanPlanMatchesContainer.querySelectorAll('[data-match-index]:checked'), checkbox => Number(checkbox.dataset.matchIndex));
+        let applied = 0;
+        let preserved = 0;
+        selectedIndexes.forEach(index => {
+          const match = urbanPlanMatches[index];
+          const field = form.elements.namedItem(match.field);
+          if (!field) return;
+          if (field.value.trim() && field.dataset.geocoded !== 'true') {
+            preserved += 1;
+            return;
+          }
+          const value = field.type === 'number' ? Number(match.value) : match.value;
+          if (field.type === 'number' && (!Number.isFinite(value) || (field.min && value < Number(field.min)) || (field.max && value > Number(field.max)))) {
+            preserved += 1;
+            return;
+          }
+          field.value = String(value);
+          field.dataset.geocoded = 'false';
+          field.dataset.locationManuallyEdited = 'true';
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+          urbanPlanAppliedSources.push({ field: match.label, fileName: match.fileName, evidence: match.evidence });
+          applied += 1;
+        });
+        urbanPlanStatus.textContent = `Se aplicaron ${applied} coincidencia(s). ${preserved} campo(s) con captura previa se conservaron sin cambios.`;
+      });
 
       function money(value) {
         return new Intl.NumberFormat('es-MX', {
@@ -1191,12 +2749,56 @@
         row.innerHTML = inputCell('type', 'text', values.type) +
           inputCell('quality', 'text', values.quality) +
           inputCell('surface', 'number', values.surface) +
+          inputCell('totalUsefulLife', 'number', values.totalUsefulLife ?? selectedTotalUsefulLife()) +
           inputCell('unitValue', 'number', values.unitValue) +
+          '<td data-column="netUnitValue">—</td>' +
           inputCell('age', 'number', values.age) +
-          inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining) +
+          inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining, 'readonly') +
+          '<td data-column="frh">—</td>' +
           `<td><select data-column="conservation"><option value="">Seleccione</option>${Object.keys(conservationCoefficients).map(state => `<option ${values.conservation === state ? 'selected' : ''}>${state}</option>`).join('')}</select></td>` +
           '<td><button type="button" class="secondary-button" data-remove-row>Quitar</button></td>';
         buildingRows.appendChild(row);
+        updateBuildingRow(row);
+      }
+
+      function selectedTotalUsefulLife() {
+        const select = document.getElementById('vidaUtilTotalSelect');
+        const value = select.value === 'custom'
+          ? document.getElementById('vidaUtilTotalCustom').value
+          : select.value;
+        const total = Number(value);
+        return Number.isFinite(total) && total > 0 ? total : null;
+      }
+
+      function updateBuildingRow(row) {
+        const ageField = row.querySelector('[data-column="age"]');
+        const totalLifeField = row.querySelector('[data-column="totalUsefulLife"]');
+        const remainingLifeField = row.querySelector('[data-column="usefulLifeRemaining"]');
+        const age = ageField.value === '' ? null : Number(ageField.value);
+        const totalLife = totalLifeField.value === '' ? null : Number(totalLifeField.value);
+        remainingLifeField.value = age !== null && totalLife !== null ? String(Math.max(0, totalLife - age)) : '';
+        const conservation = row.querySelector('[data-column="conservation"]').value;
+        const frh = rossHeideckeFactor(age, remainingLifeField.value, conservation);
+        row.querySelector('[data-column="frh"]').textContent = frh === '' ? '—' : frh.toFixed(4);
+        const replacementValue = Number(row.querySelector('[data-column="unitValue"]').value) || 0;
+        row.querySelector('[data-column="netUnitValue"]').textContent = frh === '' || replacementValue <= 0 ? '—' : money(replacementValue * frh);
+      }
+
+      function updateAllBuildingRows() {
+        Array.from(buildingRows.rows).forEach(row => {
+          const totalLifeField = row.querySelector('[data-column="totalUsefulLife"]');
+          if (totalLifeField.dataset.manualOverride !== 'true') totalLifeField.value = selectedTotalUsefulLife() ?? '';
+          updateBuildingRow(row);
+        });
+      }
+
+      function updateAutomaticAccessoryLifeRows() {
+        const totalLife = selectedTotalUsefulLife();
+        Array.from(accessoryRows.rows).forEach(row => {
+          const totalLifeField = row.querySelector('[data-column="totalUsefulLife"]');
+          if (totalLifeField.dataset.manualOverride !== 'true') totalLifeField.value = totalLife ?? '';
+          updateAccessoryRow(row);
+        });
       }
 
       function rossHeideckeFactor(age, remainingLife, conservation) {
@@ -1214,10 +2816,13 @@
           inputCell('quantity', 'number', values.quantity) +
           inputCell('unit', 'text', values.unit) +
           inputCell('indiviso', 'number', values.indiviso) +
+          inputCell('totalUsefulLife', 'number', values.totalUsefulLife ?? selectedTotalUsefulLife()) +
           inputCell('unitValue', 'number', values.unitValue) +
+          '<td data-column="netUnitValue">—</td>' +
           inputCell('age', 'number', values.age) +
-          inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining) +
+          inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining, 'readonly') +
           '<td data-column="frh">—</td>' +
+          '<td data-column="netTotalValue">—</td>' +
           `<td><select data-column="conservation"><option value="">Seleccione</option>${Object.keys(conservationCoefficients).map(state => `<option ${values.conservation === state ? 'selected' : ''}>${state}</option>`).join('')}</select></td>` +
           '<td data-column="rhCoefficient">—</td>' +
           '<td><button type="button" class="secondary-button" data-remove-row>Quitar</button></td>';
@@ -1227,9 +2832,18 @@
 
       function updateAccessoryRow(row) {
         const value = column => row.querySelector(`[data-column="${column}"]`)?.value || '';
+        const age = Number(value('age'));
+        const totalLife = Number(value('totalUsefulLife'));
+        const remainingLife = value('age') !== '' && value('totalUsefulLife') !== '' ? Math.max(0, totalLife - age) : '';
+        row.querySelector('[data-column="usefulLifeRemaining"]').value = remainingLife === '' ? '' : String(remainingLife);
         const coefficient = conservationCoefficients[value('conservation')];
-        const frh = rossHeideckeFactor(value('age'), value('usefulLifeRemaining'), value('conservation'));
+        const frh = rossHeideckeFactor(value('age'), remainingLife, value('conservation'));
+        const unitValue = Number(value('unitValue')) || 0;
+        const quantity = Number(value('quantity')) || 0;
+        const indiviso = value('indiviso') === '' ? 1 : Number(value('indiviso')) / 100;
         row.querySelector('[data-column="frh"]').textContent = frh === '' ? '—' : frh.toFixed(4);
+        row.querySelector('[data-column="netUnitValue"]').textContent = frh === '' || unitValue <= 0 ? '—' : money(unitValue * frh);
+        row.querySelector('[data-column="netTotalValue"]').textContent = frh === '' || unitValue <= 0 || quantity <= 0 ? '—' : money(quantity * unitValue * indiviso * frh);
         row.querySelector('[data-column="rhCoefficient"]').textContent = coefficient === undefined ? '—' : `${coefficient.toFixed(2)}%`;
       }
 
@@ -1238,9 +2852,12 @@
           const item = {};
           row.querySelectorAll('[data-column]').forEach(element => {
             const key = element.dataset.column;
-            if (key === 'frh' || key === 'rhCoefficient') return;
+            if (['frh', 'rhCoefficient', 'netUnitValue', 'netTotalValue'].includes(key)) return;
             const value = element.value.trim();
             item[key] = element.type === 'number' ? (value === '' ? null : Number(value)) : value;
+            if (tbody === buildingRows && key === 'unitValue' && value !== '') {
+              item.unitValueSource = element.dataset.source || 'partida';
+            }
           });
           if (tbody === accessoryRows) {
             item.frh = rossHeideckeFactor(item.age, item.usefulLifeRemaining, item.conservation);
@@ -1254,33 +2871,96 @@
       document.getElementById('addAccessoryRow').addEventListener('click', () => addAccessoryRow());
       document.addEventListener('click', event => {
         const removeButton = event.target.closest('[data-remove-row]');
-        if (removeButton) removeButton.closest('tr').remove();
+        if (removeButton) {
+          const row = removeButton.closest('tr');
+          const isBuildingRow = row.parentElement === buildingRows;
+          row.remove();
+          if (isBuildingRow) syncConstructionSurfaceFromBreakdown();
+        }
       });
-      accessoryRows.addEventListener('input', event => updateAccessoryRow(event.target.closest('tr')));
-      accessoryRows.addEventListener('change', event => updateAccessoryRow(event.target.closest('tr')));
+      accessoryRows.addEventListener('input', event => {
+        if (event.target.matches('[data-column="totalUsefulLife"]')) event.target.dataset.manualOverride = 'true';
+        updateAccessoryRow(event.target.closest('tr'));
+      });
+      accessoryRows.addEventListener('change', event => {
+        if (event.target.matches('[data-column="totalUsefulLife"]')) event.target.dataset.manualOverride = 'true';
+        updateAccessoryRow(event.target.closest('tr'));
+      });
 
-      const initialBuildingType = document.querySelector('[name="tipoConstruccion"]').value;
-      const initialBuildingSurface = document.querySelector('[name="superficieConstruccion"]').value;
+      const constructionSurfaceField = document.querySelector('[name="superficieConstruccion"]');
+      let constructionSurfaceSource = 'captura manual';
+
+      function syncConstructionSurfaceFromBreakdown() {
+        const total = readEditableRows(buildingRows).reduce((sum, row) => sum + (Number(row.surface) || 0), 0);
+        constructionSurfaceField.value = total > 0 ? String(total) : '';
+        constructionSurfaceSource = 'desglose por clasificación';
+      }
+
+      function syncSingleBuildingRowFromCapture() {
+        if (buildingRows.rows.length !== 1) return;
+        const row = buildingRows.rows[0];
+        const rowValues = {
+          type: form.elements.namedItem('tipoInmueble').value,
+          quality: form.elements.namedItem('calidadConstruccion').value,
+          surface: constructionSurfaceField.value,
+          unitValue: form.elements.namedItem('valorUnitarioNuevo').value,
+          age: form.elements.namedItem('edadInmueble').value,
+          conservation: form.elements.namedItem('estadoConservacion').value
+        };
+        Object.entries(rowValues).forEach(([column, value]) => {
+          const field = row.querySelector(`[data-column="${column}"]`);
+          if (!field || field.dataset.manualOverride === 'true') return;
+          field.value = value;
+          if (column === 'unitValue' && value !== '') field.dataset.source = 'V.U.N. de captura general';
+        });
+        updateBuildingRow(row);
+      }
+
+      const initialBuildingType = document.querySelector('[name="tipoInmueble"]')?.value || '';
+      const initialBuildingSurface = constructionSurfaceField.value;
       const initialBuildingAge = document.querySelector('[name="edadInmueble"]').value;
-      addBuildingRow({ type: initialBuildingType, surface: initialBuildingSurface, age: initialBuildingAge });
+      const initialBuildingQuality = document.querySelector('[name="calidadConstruccion"]').value;
+      const initialReplacementValue = document.querySelector('[name="valorUnitarioNuevo"]').value;
+      const initialConservation = document.querySelector('[name="estadoConservacion"]').value;
+      addBuildingRow({
+        type: initialBuildingType,
+        quality: initialBuildingQuality,
+        surface: initialBuildingSurface,
+        unitValue: initialReplacementValue,
+        age: initialBuildingAge,
+        conservation: initialConservation
+      });
       addAccessoryRow();
 
-      document.querySelector('[name="superficieConstruccion"]').addEventListener('input', event => {
-        const surface = buildingRows.querySelector('[data-column="surface"]');
-        if (buildingRows.rows.length === 1 && surface) surface.value = event.target.value;
+      constructionSurfaceField.addEventListener('input', event => {
+        constructionSurfaceSource = 'captura manual';
+        if (buildingRows.rows.length === 1) syncSingleBuildingRowFromCapture();
       });
       document.querySelector('[name="edadInmueble"]').addEventListener('input', event => {
-        const age = buildingRows.querySelector('[data-column="age"]');
-        if (buildingRows.rows.length === 1 && age) age.value = event.target.value;
+        if (buildingRows.rows.length === 1) syncSingleBuildingRowFromCapture();
       });
-      document.querySelector('[name="tipoConstruccion"]').addEventListener('input', event => {
-        const type = buildingRows.querySelector('[data-column="type"]');
-        if (buildingRows.rows.length === 1 && type) type.value = event.target.value;
+      ['tipoInmueble', 'calidadConstruccion', 'valorUnitarioNuevo', 'estadoConservacion'].forEach(name => {
+        const field = form.elements.namedItem(name);
+        field.addEventListener('input', syncSingleBuildingRowFromCapture);
+        field.addEventListener('change', syncSingleBuildingRowFromCapture);
       });
-      buildingRows.addEventListener('input', () => {
-        const total = readEditableRows(buildingRows).reduce((sum, row) => sum + (Number(row.surface) || 0), 0);
-        document.querySelector('[name="superficieConstruccion"]').value = total || '';
+      buildingRows.addEventListener('input', event => {
+        if (event.target.matches('[data-column]')) event.target.dataset.manualOverride = 'true';
       });
+      buildingRows.addEventListener('change', event => {
+        if (event.target.matches('[data-column]')) event.target.dataset.manualOverride = 'true';
+      });
+      buildingRows.addEventListener('input', event => {
+        if (event.target.matches('[data-column="surface"]')) syncConstructionSurfaceFromBreakdown();
+        if (event.target.matches('[data-column="age"]')) updateBuildingRow(event.target.closest('tr'));
+      });
+      buildingRows.addEventListener('change', event => {
+        if (event.target.matches('[data-column="surface"]')) syncConstructionSurfaceFromBreakdown();
+        if (event.target.matches('[data-column="age"], [data-column="conservation"]')) updateBuildingRow(event.target.closest('tr'));
+      });
+
+      document.getElementById('vidaUtilTotalSelect').addEventListener('change', updateAllBuildingRows);
+      document.getElementById('vidaUtilTotalCustom').addEventListener('input', updateAllBuildingRows);
 
       document.querySelectorAll('[data-upload]').forEach((button) => {
         const collectionName = button.dataset.upload;
@@ -1342,6 +3022,52 @@
         if (!container.childElementCount) container.textContent = 'Sin información capturada; completar y verificar en expediente o visita.';
       }
 
+      function renderSubjectCalculationTable(data, payload) {
+        const container = document.getElementById('subjectCalculationTable');
+        const surfaces = payload.surfaceSummary;
+        const subject = payload.subject;
+        const area = value => Number(value) > 0 ? `${Number(value).toFixed(2)} m²` : 'Pendiente';
+        const unitValue = value => Number(value) > 0 ? `${money(value)}/m²` : 'Pendiente';
+        const amount = value => Number(value) > 0 ? money(value) : 'Pendiente';
+        const difference = surfaces.declaredConstructionSurface - surfaces.constructionBreakdownSurface;
+        const differenceText = Math.abs(difference) <= 0.01
+          ? 'Conciliada'
+          : `Diferencia ${difference > 0 ? '+' : ''}${difference.toFixed(2)} m²`;
+        const rows = [
+          ['Superficie de terreno capturada', area(surfaces.terrainSurface), '—', '—', 'Dato manual de terreno'],
+          ['Terreno para cálculo físico', area(surfaces.landSurfaceUsed), unitValue(subject.unitLandValue), amount(data.summary.valorTerreno), `${surfaces.landSurfaceSource} × valor unitario de terreno capturado`],
+          ['Construcción para enfoque de mercado', area(surfaces.declaredConstructionSurface), unitValue(data.summary.averageUnitValuePerM2), amount(data.summary.valorMercado), 'Área capturada × promedio unitario de comparables válidos'],
+          ['Conciliación del área de construcción', area(surfaces.constructionBreakdownSurface), '—', differenceText, `Captura general: ${area(surfaces.declaredConstructionSurface)}; fuente: ${surfaces.constructionSurfaceSource}`],
+          ['Construcción para enfoque físico', area(surfaces.constructionBreakdownSurface), surfaces.replacementUnitValueApplied ? unitValue(surfaces.replacementUnitValue) : 'V.U. por partida', amount(data.summary.valorConstruccion), 'Suma de partidas con costo unitario y factor de depreciación capturados'],
+          ['Accesorios y elementos', '—', '—', amount(data.summary.valorAccesorios), 'Solo elementos con cantidad, valor unitario y depreciación capturados'],
+          ['Valor físico', '—', '—', amount(data.summary.valorFisico), 'Suma de componentes físicos calculados'],
+          ['Valor por capitalización', '—', '—', amount(data.summary.valorCapitalizacion), 'Requiere ingreso anual neto y tasa capturados']
+        ];
+
+        const table = document.createElement('table');
+        table.className = 'capture-table';
+        const head = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Concepto', 'Superficie', 'Valor unitario', 'Importe', 'Base de cálculo'].forEach(label => {
+          const cell = document.createElement('th');
+          cell.textContent = label;
+          headerRow.appendChild(cell);
+        });
+        head.appendChild(headerRow);
+        const body = document.createElement('tbody');
+        rows.forEach(values => {
+          const row = document.createElement('tr');
+          values.forEach(value => {
+            const cell = document.createElement('td');
+            cell.textContent = String(value);
+            row.appendChild(cell);
+          });
+          body.appendChild(row);
+        });
+        table.append(head, body);
+        container.replaceChildren(table);
+      }
+
       function renderReportFromData(data, payload) {
         const captured = payload.capture;
         const antecedentes = [
@@ -1350,7 +3076,6 @@
           ['Municipio', captured.municipio], ['Estado', captured.estado], ['Objeto del avalúo', captured.objetoAvaluo],
           ['Uso del avalúo', captured.usoAvaluo], ['Escritura pública', captured.numeroEscritura], ['Notario', captured.numeroNotario],
           ['Foja registral', captured.fojaRegistral], ['Registro Público / libertad de gravamen', captured.registroPublico],
-          ['Coordenadas', captured.coordenadas || (captured.latitud != null || captured.longitud != null ? `${captured.latitud ?? ''}, ${captured.longitud ?? ''}` : '')],
           ['Medidas y colindancias según', captured.medidasSegun]
         ];
         renderReportData('reportAntecedentes', antecedentes);
@@ -1366,6 +3091,7 @@
           ['Restricciones del plan territorial', 'urbRestricciones'], ['Contexto territorial y demográfico', 'urbContexto'], ['Entorno urbano y vialidad', 'urbEntorno']
         ].map(([label, key]) => [label, captured[key]]);
         urbanFields.push(['Proceso investigatorio', payload.urbanInvestigation]);
+        urbanFields.push(['Fuentes documentales urbanas', captured.fuentesUrbanas]);
         renderReportData('reportUrban', urbanFields);
 
         renderReportData('reportTerrain', [
@@ -1377,24 +3103,54 @@
         renderReportData('reportDescription', [
           ['Uso actual', captured.usoActual], ['Partido arquitectónico / áreas', captured.partidoArquitectonico],
           ['Calidad del proyecto', captured.calidadProyecto], ['Número de niveles', captured.niveles],
-          ['Superficie total de construcción (m²)', captured.superficieConstruccion], ['Tipo de construcción', captured.tipoConstruccion]
+          ['Superficie total de construcción (m²)', captured.superficieConstruccion], ['Condición general', captured.condicionGeneral],
+          ['Calidad y clasificación de construcción', captured.calidadConstruccion], ['Vida útil total estimada (años)', captured.vidaUtilTotal || captured.vidaUtilTotalCustom]
         ]);
 
         const buildingRowsData = payload.buildingItems;
-        document.getElementById('reportBuildingTable').innerHTML = `<table><thead><tr><th>Tipo, calidad y clasificación</th><th>Superficie (m²)</th><th>V.U.T.</th><th>Edad</th><th>Vida útil remanente</th><th>Estado</th><th>F.R.H. referencial</th></tr></thead><tbody>${buildingRowsData.map(row => `<tr><td>${escapeHtml([row.type, row.quality].filter(Boolean).join(' — ') || 'Sin especificar')}</td><td>${escapeHtml(row.surface ?? '—')}</td><td>${row.unitValue == null ? 'Pendiente' : money(row.unitValue)}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(row.conservation || 'Sin especificar')}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td></tr>`).join('')}</tbody></table>`;
+        document.getElementById('reportBuildingTable').innerHTML = `<table><thead><tr><th>Tipo</th><th>Calidad y clasificación</th><th>Superficie (m²)</th><th>Vida útil total (años)</th><th>V.R.N. ($/m²)</th><th>F.R.H.</th><th>V.N.R. ($/m²)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>Estado</th></tr></thead><tbody>${buildingRowsData.map(row => {
+          const netValue = typeof row.frh === 'number' && Number(row.unitValue) > 0 ? money(Number(row.unitValue) * row.frh) : 'Pendiente';
+          return `<tr><td>${escapeHtml(row.type || 'Sin especificar')}</td><td>${escapeHtml(row.quality || 'Sin especificar')}</td><td>${escapeHtml(row.surface ?? '—')}</td><td>${escapeHtml(row.totalUsefulLife ?? '—')}</td><td>${row.unitValue == null ? 'Pendiente' : money(row.unitValue)}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td><td>${netValue}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(row.conservation || 'Sin especificar')}</td></tr>`;
+        }).join('')}</tbody></table>`;
         const totalBuilt = buildingRowsData.reduce((sum, row) => sum + (Number(row.surface) || 0), 0);
         document.getElementById('buildingTotalSurface').textContent = `Superficie total desglosada: ${totalBuilt.toFixed(2)} m². Captura general: ${Number(captured.superficieConstruccion || 0).toFixed(2)} m².`;
 
-        document.getElementById('reportAccessoryTable').innerHTML = `<table><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso</th><th>V.U.T.</th><th>Edad</th><th>Vida útil remanente</th><th>F.R.H.</th><th>Estado</th><th>Coef. R-H</th></tr></thead><tbody>${payload.accessoryItems.length ? payload.accessoryItems.map(row => `<tr><td>${escapeHtml(row.description || '—')}</td><td>${escapeHtml(row.quantity ?? '—')}</td><td>${escapeHtml(row.unit || '—')}</td><td>${escapeHtml(row.indiviso ?? '—')}</td><td>${row.unitValue == null ? '—' : money(row.unitValue)}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : '—'}</td><td>${escapeHtml(row.conservation || '—')}</td><td>${row.rhCoefficient == null ? '—' : `${row.rhCoefficient.toFixed(2)}%`}</td></tr>`).join('') : '<tr><td colspan="10">Sin accesorios o instalaciones capturados.</td></tr>'}</tbody></table>`;
+        document.getElementById('reportAccessoryTable').innerHTML = `<table><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso (%)</th><th>Vida útil total (años)</th><th>V.R.N. ($/unidad)</th><th>F.R.H.</th><th>V.N.R. ($/unidad)</th><th>V.N.R. total ($)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>Estado</th><th>Coef. R-H (%)</th></tr></thead><tbody>${payload.accessoryItems.length ? payload.accessoryItems.map(row => {
+          const netUnitValue = typeof row.frh === 'number' && Number(row.unitValue) > 0 ? Number(row.unitValue) * row.frh : 0;
+          const indiviso = row.indiviso == null ? 1 : Number(row.indiviso) / 100;
+          const netTotalValue = netUnitValue * (Number(row.quantity) || 0) * indiviso;
+          return `<tr><td>${escapeHtml(row.description || '—')}</td><td>${escapeHtml(row.quantity ?? '—')}</td><td>${escapeHtml(row.unit || '—')}</td><td>${escapeHtml(row.indiviso ?? '—')}</td><td>${escapeHtml(row.totalUsefulLife ?? '—')}</td><td>${row.unitValue == null ? '—' : money(row.unitValue)}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td><td>${netUnitValue > 0 ? money(netUnitValue) : 'Pendiente'}</td><td>${netTotalValue > 0 ? money(netTotalValue) : 'Pendiente'}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(row.conservation || '—')}</td><td>${row.rhCoefficient == null ? '—' : `${row.rhCoefficient.toFixed(2)}%`}</td></tr>`;
+        }).join('') : '<tr><td colspan="13">Sin accesorios o instalaciones capturados.</td></tr>'}</tbody></table>`;
         renderReportData('reportConstructionDetail', [
           ['Descripción técnica por sistemas/áreas', payload.constructionElements], ['Calidad y clasificación', captured.calidadConstruccion],
           ['Edad del inmueble (años)', captured.edadInmueble], ['Estado general de conservación', captured.estadoConservacion],
-          ['Sistema estructural', captured.sistemaEstructural], ['Cimentación', captured.cimentacion],
+          ['Sistema estructural', captured.sistemaEstructural], ['Cimentación', captured.descripcionCimentacion || captured.cimentacion],
+          ['Estructura vertical', captured.descripcionEstructuraVertical || captured.estructuraVertical],
+          ['Entrepiso', captured.descripcionEntrepisos || captured.entrepisos], ['Techumbre', captured.descripcionTechumbres || captured.techumbres],
           ['Muros, entrepisos y escaleras', captured.murosEntrepisos], ['Cubierta y techumbre', captured.cubierta],
           ['Acabados por áreas', captured.acabadosAreas], ['Instalaciones hidrosanitarias', captured.instalacionesHidrosanitarias],
-          ['Instalación eléctrica', captured.instalacionElectrica], ['Instalación de gas', captured.instalacionGas],
-          ['Instalaciones especiales', captured.instalacionesEspeciales], ['Obra complementaria', captured.obraComplementaria],
-          ['Fuente de valores unitarios', captured.fuenteValoresUnitarios]
+          ['Instalación eléctrica', captured.descripcionElectrica || captured.instalacionElectrica], ['Instalación de gas', captured.descripcionGas || captured.instalacionGas],
+          ['Instalaciones especiales', captured.instalacionesEspecialesGeneradas || captured.instalacionesEspeciales], ['Obra complementaria', captured.obraComplementaria],
+          ['Instalación hidráulica', captured.descripcionHidraulica || captured.instalacionHidraulicaGeneral], ['Estado conservación hidráulica', captured.estadoConservacionHidraulica],
+          ['Abastecimiento hidráulico', captured.abastecimientoHidraulico], ['Almacenamiento hidráulico', captured.almacenamientoHidraulico],
+          ['Material red hidráulica', captured.materialRedHidraulica], ['Presurización hidráulica', captured.presurizacionHidraulica], ['Agua caliente', captured.aguaCalienteHidraulica],
+          ['Instalación sanitaria', captured.descripcionSanitaria || captured.instalacionSanitariaGeneral], ['Estado conservación sanitaria', captured.estadoConservacionSanitaria],
+          ['Sistema de desalojo sanitario', captured.sistemaDesalojoSanitario], ['Material tubería sanitaria', captured.materialTuberiaSanitaria],
+          ['Sistema pluvial', captured.sistemaPluvialSanitario], ['Drenaje interior sanitario', captured.drenajeInteriorSanitario], ['Registros sanitarios', captured.registrosSanitario],
+          ['Ventilación sanitaria', captured.ventilacionSanitaria], ['Trampa de grasas', captured.trampaGrasas],
+          ['Instalación de gas', captured.instalacionGasGeneral], ['Estado conservación gas', captured.estadoConservacionGas], ['Combustible gas', captured.combustibleGas],
+          ['Almacenamiento gas', captured.almacenamientoGas], ['Material tubería gas', captured.materialTuberiaGas], ['Equipos alimentados gas', captured.equiposGas],
+          ['Tipo instalación gas', captured.tipoInstalacionGas], ['Instalación eléctrica general', captured.instalacionElectricaGeneral], ['Estado conservación eléctrica', captured.estadoConservacionElectrica],
+          ['Alimentación eléctrica', captured.alimentacionElectrica], ['Conductores eléctricos', captured.conductoresElectricos], ['Canalización eléctrica', captured.canalizacionElectrica],
+          ['Tipo instalación eléctrica', captured.tipoInstalacionElectrica], ['Distribución eléctrica', captured.distribucionElectrica], ['Protección eléctrica', captured.proteccionElectrica],
+          ['Tierra física eléctrica', captured.tierraFisicaElectrica], ['Iluminación eléctrica', captured.iluminacionElectrica],
+          ['Instalaciones especiales generales', captured.instalacionesEspecialesGeneral], ['Estado conservación especial', captured.estadoConservacionEspecial],
+          ['Aire acondicionado especial', captured.aireAcondicionadoEspecial], ['Calefacción especial', captured.calefaccionEspecial], ['Alarma especial', captured.alarmaEspecial],
+          ['CCTV especial', captured.cctvEspecial], ['Control de acceso especial', captured.controlAccesoEspecial], ['Portero especial', captured.porteroEspecial],
+          ['Telefonía especial', captured.telefoniaEspecial], ['Datos especial', captured.datosEspecial], ['Antena especial', captured.antenaEspecial],
+          ['Extintores especial', captured.extintoresEspecial], ['Red contra incendio especial', captured.redContraIncendioEspecial], ['Fotovoltaica especial', captured.fotovoltaicaEspecial],
+          ['Elevador especial', captured.elevadorEspecial], ['Alberca especial', captured.albercaEspecial], ['Domótica especial', captured.domoticaEspecial],
+          ['Bombeo especial', captured.bombeoEspecial], ['Fuente de valores unitarios', captured.fuenteValoresUnitarios]
         ]);
         document.getElementById('reportAddress').textContent = `Dirección: ${[captured.calle, captured.colonia, captured.municipio, captured.estado].filter(Boolean).join(', ') || 'Sin información capturada.'}`;
         document.getElementById('reportPropertyType').textContent = captured.tipoInmueble || 'Pendiente de captura';
@@ -1412,16 +3168,17 @@
           constructionElementsText.value = data.constructionElements;
         }
 
-        document.getElementById('valorFisico').textContent = money(data.summary.valorFisico);
-        document.getElementById('valorMercado').textContent = money(data.summary.valorMercado);
-        document.getElementById('valorCapitalizacion').textContent = money(data.summary.valorCapitalizacion);
-        document.getElementById('valorFinal').textContent = money(data.summary.finalValue);
+        const showCalculatedAmount = value => Number(value) > 0 ? money(value) : 'Pendiente';
+        document.getElementById('valorFisico').textContent = showCalculatedAmount(data.summary.valorFisico);
+        document.getElementById('valorMercado').textContent = showCalculatedAmount(data.summary.valorMercado);
+        document.getElementById('valorCapitalizacion').textContent = showCalculatedAmount(data.summary.valorCapitalizacion);
+        document.getElementById('valorFinal').textContent = showCalculatedAmount(data.summary.finalValue);
 
         formulaDetail.textContent = [
-          'Promedio de valor unitario: ' + money(data.summary.averageUnitValuePerM2) + '/m²',
-          'Valor final estimado: ' + money(data.summary.finalValue),
-          'Valor físico: ' + money(data.summary.valorFisico),
-          'Valor de mercado: ' + money(data.summary.valorMercado)
+          'Promedio de valor unitario: ' + showCalculatedAmount(data.summary.averageUnitValuePerM2) + '/m²',
+          'Valor final estimado: ' + showCalculatedAmount(data.summary.finalValue),
+          'Valor físico: ' + showCalculatedAmount(data.summary.valorFisico),
+          'Valor de mercado: ' + showCalculatedAmount(data.summary.valorMercado)
         ].join(' | ');
 
         const rows = (data.homologationTable || data.comparables || []).filter(item => Number(item.salePrice) > 0 && Number(item.unitValuePerM2) > 0).map(item => {
@@ -1454,8 +3211,12 @@
             <tbody>${rows || '<tr><td colspan="6">Sin comparables completos; capture precio y superficie construida verificables.</td></tr>'}</tbody>
           </table>
         `;
+        renderSubjectCalculationTable(data, payload);
 
-        document.getElementById('reportConclusion').textContent = `Enfoque de mercado: ${money(data.summary.valorMercado)} (valor unitario promedio ${money(data.summary.averageUnitValuePerM2)}/m², superficie de construcción del sujeto ${Number(captured.superficieConstruccion || 0).toFixed(2)} m²). Enfoque físico/directo: ${money(data.summary.valorFisico)}. Enfoque de ingresos: ${money(data.summary.valorCapitalizacion)}. Valor concluido por referencia principal al mercado: ${money(data.summary.finalValue)}. ${data.summary.marketValuationStatus || ''} ${data.summary.physicalValuationStatus || ''} ${data.summary.incomeValuationStatus || ''} Corroborar comparables, fechas, fuentes, alcances y superficies; conclusión preliminar sujeta a revisión profesional.`;
+        const marketConclusion = data.summary.valorMercado > 0
+          ? `Valor concluido por referencia principal al mercado: ${money(data.summary.finalValue)}.`
+          : 'No se emitió conclusión cuantitativa de mercado por falta de comparables válidos o de superficie de construcción del sujeto.';
+        document.getElementById('reportConclusion').textContent = `Enfoque de mercado: ${showCalculatedAmount(data.summary.valorMercado)} (valor unitario promedio ${showCalculatedAmount(data.summary.averageUnitValuePerM2)}/m², superficie de construcción del sujeto ${Number(captured.superficieConstruccion || 0).toFixed(2)} m²). Enfoque físico/directo: ${showCalculatedAmount(data.summary.valorFisico)}. Enfoque de ingresos: ${showCalculatedAmount(data.summary.valorCapitalizacion)}. ${marketConclusion} ${data.summary.marketValuationStatus || ''} ${data.summary.physicalValuationStatus || ''} ${data.summary.incomeValuationStatus || ''} Corroborar comparables, fechas, fuentes, alcances y superficies; conclusión preliminar sujeta a revisión profesional.`;
         document.getElementById('reportMarketStatus').textContent = data.summary.marketValuationStatus;
 
         result.textContent = JSON.stringify({
@@ -1476,15 +3237,48 @@
 
       function buildPayload() {
         const formData = new FormData(form);
+        const vidaUtilTotal = formData.get('vidaUtilTotal') === 'custom' ? formData.get('vidaUtilTotalCustom') || '' : formData.get('vidaUtilTotal') || '';
         const capture = {};
         form.querySelectorAll('[name]').forEach(field => {
-          const value = formData.get(field.name);
-          capture[field.name] = field.type === 'number' ? (value === '' ? null : Number(value)) : String(value || '').trim();
+          const value = field instanceof HTMLSelectElement && field.multiple ? formData.getAll(field.name) : formData.get(field.name);
+          if (field.name === 'vidaUtilTotalCustom') return;
+          if (field.name === 'vidaUtilTotal') {
+            capture[field.name] = vidaUtilTotal === '' ? null : Number(vidaUtilTotal);
+            return;
+          }
+          capture[field.name] = Array.isArray(value)
+            ? value
+            : field.type === 'number' ? (value === '' ? null : Number(value)) : String(value || '').trim();
         });
-        const buildingItems = readEditableRows(buildingRows).map(row => ({
+        capture.instalacionHidraulicaGeneral = capture.abastecimientoHidraulico || '';
+        capture.instalacionSanitariaGeneral = capture.sistemaDesalojoSanitario || '';
+        capture.instalacionGasGeneral = capture.combustibleGas || '';
+        capture.instalacionElectricaGeneral = capture.alimentacionElectrica || '';
+        capture.fuentesUrbanas = urbanPlanAppliedSources
+          .map(source => `${source.field}: ${source.fileName}. Evidencia: ${source.evidence}`)
+          .join('\n');
+        capture.instalacionesEspecialesDetalle = specialInstallationItems.map(item => ({ ...item }));
+        capture.instalacionesEspecialesGeneradas = specialInstallationItems
+          .map(item => technicalDescriptions.generateSpecialDescription(item))
+          .filter(Boolean)
+          .join('\n');
+        const uncategorizedBuildingItems = readEditableRows(buildingRows);
+        const replacementUnitValue = Number(formData.get('valorUnitarioNuevo')) || 0;
+        const canApplyGlobalReplacementValue = uncategorizedBuildingItems.length === 1 &&
+          (uncategorizedBuildingItems[0].unitValue == null || uncategorizedBuildingItems[0].unitValueSource === 'V.U.N. de captura general') &&
+          replacementUnitValue > 0;
+        const buildingItems = uncategorizedBuildingItems.map(row => ({
           ...row,
+          unitValue: row.unitValue == null && canApplyGlobalReplacementValue ? replacementUnitValue : row.unitValue,
+          unitValueSource: canApplyGlobalReplacementValue ? 'V.U.N. de captura general' : 'costo capturado por partida',
           frh: rossHeideckeFactor(row.age, row.usefulLifeRemaining, row.conservation)
         }));
+        const terrainSurface = Number(formData.get('superficieTerreno')) || 0;
+        const applicableLandSurface = Number(formData.get('superficieAplicable')) || 0;
+        const landSurfaceUsed = applicableLandSurface > 0 ? applicableLandSurface : terrainSurface;
+        const declaredConstructionSurface = Number(formData.get('superficieConstruccion')) || 0;
+        const constructionBreakdownSurface = uncategorizedBuildingItems.reduce((sum, row) => sum + (Number(row.surface) || 0), 0);
+        capture.superficieConstruccionFuente = constructionSurfaceSource;
         const accessoryItems = readEditableRows(accessoryRows);
         const physicalConstructionValue = buildingItems.reduce((sum, row) => sum + (Number(row.surface) || 0) * (Number(row.unitValue) || 0) * (Number(row.frh) || 0), 0);
         const physicalAccessoryValue = accessoryItems.reduce((sum, row) => sum + (Number(row.quantity) || 0) * (Number(row.unitValue) || 0) * (row.indiviso == null ? 1 : Number(row.indiviso) / 100) * (Number(row.frh) || 0), 0);
@@ -1509,12 +3303,23 @@
             notario: formData.get('numeroNotario') || '',
             fojaRegistral: formData.get('fojaRegistral') || '',
             registroPublico: formData.get('registroPublico') || '',
-            coordenadas: formData.get('coordenadas') || '',
             medidasSegun: formData.get('medidasSegun') || ''
           },
+          surfaceSummary: {
+            terrainSurface,
+            applicableLandSurface,
+            landSurfaceUsed,
+            landSurfaceSource: applicableLandSurface > 0 ? 'Superficie aplicable' : 'Superficie del terreno',
+            declaredConstructionSurface,
+            constructionBreakdownSurface,
+            constructionSurfaceDifference: declaredConstructionSurface - constructionBreakdownSurface,
+            constructionSurfaceSource,
+            replacementUnitValue,
+            replacementUnitValueApplied: canApplyGlobalReplacementValue
+          },
           subject: {
-            surface: Number(formData.get('superficieTerreno')) || 0,
-            constructionSurface: Number(formData.get('superficieConstruccion')) || 0,
+            surface: landSurfaceUsed,
+            constructionSurface: declaredConstructionSurface,
             latitude: Number(formData.get('latitud')) || undefined,
             longitude: Number(formData.get('longitud')) || undefined,
             annualIncome: Number(formData.get('annualIncome')) || 0,
@@ -1541,6 +3346,20 @@
 
       const urbanInvestigationText = document.getElementById('urbanInvestigationText');
       const constructionElementsText = document.getElementById('constructionElementsText');
+      const vidaUtilTotalSelect = document.getElementById('vidaUtilTotalSelect');
+      const vidaUtilTotalCustom = document.getElementById('vidaUtilTotalCustom');
+
+      vidaUtilTotalSelect.addEventListener('change', () => {
+        const shouldShowCustom = vidaUtilTotalSelect.value === 'custom';
+        vidaUtilTotalCustom.style.display = shouldShowCustom ? 'block' : 'none';
+        if (!shouldShowCustom) vidaUtilTotalCustom.value = '';
+        updateAllBuildingRows();
+        updateAutomaticAccessoryLifeRows();
+      });
+      vidaUtilTotalCustom.addEventListener('input', () => {
+        updateAllBuildingRows();
+        updateAutomaticAccessoryLifeRows();
+      });
 
       function readPanelText(elementId) {
         const element = document.getElementById(elementId);
