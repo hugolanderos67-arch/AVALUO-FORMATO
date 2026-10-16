@@ -27,6 +27,15 @@ Formato para elaboración de avalúos inmobiliarios.
 - Valor final estimado del inmueble:
   - $V_f = V_u \times S_{objeto}$
 
+## Abrir el sistema como aplicación
+- Ícono "Avalúos" en el escritorio y en el menú Inicio (`scripts/iniciar-avaluo.ps1`): enciende el servidor en segundo plano si no está encendido (registros en `data/servidor.log` y `data/servidor-errores.log`) y abre el formato en una ventana propia de Chrome o Edge.
+- "Detener Avalúos" en el menú Inicio (`scripts/detener-avaluo.ps1`) apaga el servidor.
+- Los íconos se crean con `instalar.bat` (revisa que Node.js 24+ esté instalado) o con `scripts/crear-accesos-directos.ps1`.
+
+## Compartir con otra persona
+- Instalación propia (cada quien con su base de datos): `scripts/crear-paquete.ps1` genera en el escritorio un ZIP con la última versión guardada en git, sin la carpeta `data`. Quien lo recibe sigue `INSTALAR.txt`: instalar Node.js 24+, descomprimir y abrir `instalar.bat`.
+- Mismo sistema y mismos datos: compartir esta computadora por Tailscale (consola de Tailscale, "Machines", la PC, "Share…") y abrir `https://<nombre-de-la-pc>.<red>.ts.net`. No hay usuarios ni contraseñas: quien tenga acceso ve y edita todos los avalúos, y el perfil del valuador es uno solo.
+
 ## Ejecución
 - `npm test`
 - `node server.js`
