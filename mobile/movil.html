@@ -216,6 +216,8 @@
           <label class="field" id="visitFolioField">Folio o referencia del avalúo nuevo
             <input id="visitFolio" placeholder="Ej.: AV-2026-031 o calle y número" />
           </label>
+          <p id="continuationNote" class="note" hidden>Continuación de una visita anterior: los datos ya registrados aparecen precargados. Al sincronizar solo se envían los que cambie, para no borrar lo que se haya corregido en la oficina.</p>
+          <button type="button" class="primary" id="continueVisit" hidden style="width: 100%; margin-top: 10px;">✏️ Continuar esta visita (agregar o corregir datos)</button>
         </div>
         <div id="visitSections"></div>
         <details class="section" open>
@@ -462,7 +464,8 @@
           title.textContent = visit.avaluoLabel || visit.folio || 'Avalúo nuevo sin referencia';
           const details = document.createElement('span');
           const filled = Object.keys(visit.fields).length;
-          details.textContent = `${formatDate(visit.creadoEn)} · ${filled} dato(s) · ${visit.photos.length} foto(s) · ${visit.croquis.length} croquis`;
+          const dataText = visit.base ? `continuación · ${Object.keys(changedFields(visit)).length} cambio(s)` : `${filled} dato(s)`;
+          details.textContent = `${formatDate(visit.creadoEn)} · ${dataText} · ${visit.photos.length} foto(s) · ${visit.croquis.length} croquis`;
           const badge = document.createElement('span');
           badge.className = `badge ${visit.estado === 'sincronizada' ? 'synced' : 'pending'}`;
           badge.textContent = visit.estado === 'sincronizada' ? `✓ Sincronizada con el avalúo #${visit.resultado.id}` : 'Pendiente de sincronizar';
@@ -561,7 +564,8 @@
       function updateSectionCounts() {
         document.querySelectorAll('#visitSections details').forEach((details, index) => {
           const filled = schema[index].fields.filter(field => currentVisit.fields[field.name] !== undefined).length;
-          details.querySelector('.count').textContent = filled ? `${filled} capturado(s)` : '';
+          const changed = currentVisit.base ? schema[index].fields.filter(field => field.name in changedFields(currentVisit)).length : 0;
+          details.querySelector('.count').textContent = [filled ? `${filled} capturado(s)` : '', changed ? `${changed} cambiado(s)` : ''].filter(Boolean).join(' · ');
         });
       }
 
@@ -662,6 +666,50 @@
         views.visit.querySelectorAll('input, select, textarea, [data-pick], .thumb button').forEach(element => { element.disabled = readOnly; });
         document.getElementById('syncVisit').hidden = readOnly;
         document.getElementById('refreshAvaluos').hidden = readOnly;
+        document.getElementById('continueVisit').hidden = !readOnly;
+      }
+
+      // Una visita sincronizada no se modifica: para volver al inmueble se crea una continuación ligada al mismo avalúo.
+      async function continueVisit() {
+        const previous = currentVisit;
+        const names = new Set(schema.flatMap(section => section.fields.map(field => field.name)));
+        const hasValue = value => Array.isArray(value) ? value.length > 0 : String(value ?? '').trim() !== '';
+        let base = null;
+        if (await updateConnection()) {
+          try {
+            const response = await fetch(`/api/avaluos/${previous.resultado.id}`);
+            const record = await response.json();
+            if (response.ok) base = Object.fromEntries(Object.entries(record.datos.fields || {}).filter(([name, value]) => names.has(name) && hasValue(value)));
+          } catch {
+            // Sin respuesta del servidor: se usan los datos de la visita anterior.
+          }
+        }
+        const source = base ? 'del avalúo como está en la oficina' : 'de la visita anterior (sin conexión con la oficina)';
+        base = base || { ...previous.fields };
+        const visit = {
+          id: crypto.randomUUID(),
+          avaluoId: previous.resultado.id,
+          avaluoLabel: previous.avaluoLabel,
+          folio: previous.folio,
+          fields: JSON.parse(JSON.stringify(base)),
+          base,
+          photos: [],
+          croquis: [],
+          notas: '',
+          estado: 'pendiente',
+          continuaDe: previous.id,
+          creadoEn: Date.now(),
+          actualizadoEn: Date.now()
+        };
+        await db.put('visitas', visit);
+        await openVisit(visit.id);
+        setStatus(visitStatus, `Datos precargados ${source}. Corrija o agregue lo necesario y sincronice.`, 'ok');
+      }
+
+      // En una continuación solo viajan los datos que cambiaron respecto a lo precargado.
+      function changedFields(visit) {
+        if (!visit.base) return visit.fields;
+        return Object.fromEntries(Object.entries(visit.fields).filter(([name, value]) => JSON.stringify(value) !== JSON.stringify(visit.base[name])));
       }
 
       async function openVisit(id) {
@@ -675,6 +723,12 @@
         showView('visit');
         const synced = currentVisit.estado === 'sincronizada';
         setReadOnly(synced);
+        const isContinuation = Boolean(currentVisit.base);
+        document.getElementById('continuationNote').hidden = !isContinuation;
+        if (isContinuation) {
+          document.getElementById('visitAvaluo').disabled = true;
+          document.getElementById('refreshAvaluos').hidden = true;
+        }
         setStatus(visitStatus, synced
           ? `✓ Sincronizada el ${formatDate(currentVisit.sincronizadoEn)} con el avalúo #${currentVisit.resultado.id}. Solo lectura.`
           : 'Guardado en el celular', synced ? 'ok' : '');
@@ -726,7 +780,7 @@
             visitaId: visit.id,
             avaluoId: visit.avaluoId,
             folio: visit.folio,
-            fields: visit.fields,
+            fields: changedFields(visit),
             photos: uploaded.photos,
             croquis: uploaded.croquis,
             notas: visit.notas,
@@ -792,6 +846,7 @@
       document.getElementById('newVisit').addEventListener('click', newVisit);
       document.getElementById('syncAll').addEventListener('click', syncAllPending);
       document.getElementById('syncVisit').addEventListener('click', syncCurrentVisit);
+      document.getElementById('continueVisit').addEventListener('click', continueVisit);
       const backToList = async () => {
         clearTimeout(saveTimer);
         if (currentVisit && currentVisit.estado !== 'sincronizada') await db.put('visitas', currentVisit);
