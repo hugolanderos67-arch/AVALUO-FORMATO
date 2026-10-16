@@ -110,6 +110,17 @@
       .summary-panel img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid var(--line); }
       .summary-panel .panel-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
       .summary-panel .panel-actions a { color: var(--accent); font-weight: 700; font-size: 0.82rem; }
+      .evidence-editor { display: grid; gap: 6px; font-size: 0.75rem; font-weight: 700; color: var(--ink-2); }
+      .evidence-editor button { justify-self: start; }
+      .evidence-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+      .evidence-list li { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 400; min-width: 0; }
+      .evidence-list img, .evidence-list .evidence-icon { flex: none; width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: var(--danger); }
+      .evidence-list a, .evidence-list .evidence-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent); }
+      .evidence-list button { flex: none; width: 26px; height: 26px; padding: 0; border-radius: 50%; color: var(--danger); }
+      .evidence-gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+      .evidence-gallery a { display: block; }
+      .evidence-gallery img { width: 100%; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); margin: 0; }
+      .summary-panel h3 { margin: 14px 0 0; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
       tbody tr { cursor: pointer; }
       tbody tr.selected { background: rgba(31, 111, 181, 0.12); }
 
@@ -206,6 +217,12 @@
           <label>Longitud <input name="longitud" type="number" step="any" /></label>
           <label class="wide">Fuente o enlace <input name="fuente" placeholder="Portal y enlace del anuncio, inmobiliaria, notaría, contacto" /></label>
           <label class="wide">Notas <textarea name="notas" rows="2" placeholder="Verificación, características, observaciones"></textarea></label>
+          <div class="wide evidence-editor">
+            <span>Evidencias de la fuente (capturas de pantalla, imágenes o PDF)</span>
+            <button type="button" id="addEvidence">📎 Agregar evidencia</button>
+            <input type="file" id="evidenceInput" accept="image/*,application/pdf" multiple hidden />
+            <ul class="evidence-list" id="evidenceList"></ul>
+          </div>
         </div>
         <p class="error" id="formError" role="alert"></p>
         <div class="dialog-actions">
@@ -336,7 +353,7 @@
           container.replaceChildren(empty);
           return;
         }
-        const headers = [['Fecha'], ['Dirección y fuente'], ['Zona'], ...(category === 'terreno' ? [] : [['Tipo']]), ['Dato'], [config.price.replace(' ($)', ''), true], [config.surface.replace(' (m²)', ' (m²)'), true], [config.unit, true], ['Foto'], ['Origen'], ['']];
+        const headers = [['Fecha'], ['Dirección y fuente'], ['Zona'], ...(category === 'terreno' ? [] : [['Tipo']]), ['Dato'], [config.price.replace(' ($)', ''), true], [config.surface.replace(' (m²)', ' (m²)'), true], [config.unit, true], ['Foto y evidencias'], ['Origen'], ['']];
         const table = document.createElement('table');
         const headRow = document.createElement('tr');
         headers.forEach(([label, numeric]) => {
@@ -380,13 +397,14 @@
           row.appendChild(cell(money(item.precio), 'num'));
           row.appendChild(cell(area(item.superficie), 'num'));
           row.appendChild(cell(money(item.valor_unitario), 'num'));
+          const media = [];
           if (item.fotos.length) {
             const link = Object.assign(document.createElement('a'), { href: item.fotos[0], target: '_blank', rel: 'noopener' });
             link.appendChild(Object.assign(document.createElement('img'), { src: item.fotos[0], alt: `Foto de ${item.direccion || 'comparable'}`, className: 'thumb', loading: 'lazy' }));
-            row.appendChild(cell(link));
-          } else {
-            row.appendChild(cell('—'));
+            media.push(link);
           }
+          if (item.evidencias.length) media.push(small(`📎 ${item.evidencias.length} evidencia(s)`));
+          row.appendChild(cell(media.length ? media : '—'));
           row.appendChild(cell(item.origen_avaluo_id
             ? Object.assign(document.createElement('a'), { href: `/?avaluo=${item.origen_avaluo_id}`, textContent: `Avalúo #${item.origen_avaluo_id}` })
             : (item.origen_clave ? 'Avalúo eliminado' : 'Captura directa')));
@@ -474,6 +492,31 @@
 
         panel.replaceChildren(title, subtitle, headline, list);
         if (item.fotos.length) panel.appendChild(Object.assign(document.createElement('img'), { src: item.fotos[0], alt: `Foto de ${item.direccion || 'comparable'}` }));
+        if (item.evidencias.length) {
+          panel.appendChild(Object.assign(document.createElement('h3'), { textContent: `Evidencias de la fuente (${item.evidencias.length})` }));
+          const images = item.evidencias.filter(evidence => evidence.type.startsWith('image/'));
+          if (images.length) {
+            const gallery = document.createElement('div');
+            gallery.className = 'evidence-gallery';
+            images.forEach(evidence => {
+              const link = Object.assign(document.createElement('a'), { href: evidence.url, target: '_blank', rel: 'noopener', title: evidence.name });
+              link.appendChild(Object.assign(document.createElement('img'), { src: evidence.url, alt: evidence.name }));
+              gallery.appendChild(link);
+            });
+            panel.appendChild(gallery);
+          }
+          const documents = item.evidencias.filter(evidence => !evidence.type.startsWith('image/'));
+          if (documents.length) {
+            const listElement = document.createElement('ul');
+            listElement.className = 'evidence-list';
+            documents.forEach(evidence => {
+              const entry = document.createElement('li');
+              entry.append(Object.assign(document.createElement('span'), { className: 'evidence-icon', textContent: 'PDF' }), Object.assign(document.createElement('a'), { href: evidence.url, target: '_blank', rel: 'noopener', textContent: evidence.name }));
+              listElement.appendChild(entry);
+            });
+            panel.appendChild(listElement);
+          }
+        }
         panel.appendChild(actions);
       }
 
@@ -511,14 +554,75 @@
           if (comparableForm.elements[name] && name !== 'categoria') comparableForm.elements[name].value = value ?? '';
         });
         if (item?.origen_avaluo_id) document.getElementById('formError').textContent = 'Este comparable viene de un avalúo: al guardar los cambios aquí, el banco ya no lo actualizará desde ese avalúo.';
+        dialogEvidence = (item?.evidencias || []).map(evidence => ({ ...evidence }));
+        renderDialogEvidence();
         dialog.showModal();
       }
+
+      // --- Evidencias en el formulario: se suben al elegirlas y se guardan con el comparable ---
+      let dialogEvidence = [];
+      let evidenceUploads = 0;
+      const evidenceInput = document.getElementById('evidenceInput');
+
+      function renderDialogEvidence() {
+        document.getElementById('evidenceList').replaceChildren(...dialogEvidence.map((evidence, index) => {
+          const entry = document.createElement('li');
+          if (evidence.url && evidence.type.startsWith('image/')) entry.appendChild(Object.assign(document.createElement('img'), { src: evidence.url, alt: evidence.name }));
+          else entry.appendChild(Object.assign(document.createElement('span'), { className: 'evidence-icon', textContent: evidence.type === 'application/pdf' ? 'PDF' : '…' }));
+          entry.appendChild(evidence.url
+            ? Object.assign(document.createElement('a'), { href: evidence.url, target: '_blank', rel: 'noopener', textContent: evidence.name })
+            : Object.assign(document.createElement('span'), { className: 'evidence-name', textContent: `${evidence.name} — ${evidence.status || 'subiendo…'}` }));
+          const remove = Object.assign(document.createElement('button'), { type: 'button', textContent: '×', title: `Quitar ${evidence.name}` });
+          remove.setAttribute('aria-label', `Quitar ${evidence.name}`);
+          remove.addEventListener('click', () => {
+            dialogEvidence.splice(index, 1);
+            renderDialogEvidence();
+          });
+          entry.appendChild(remove);
+          return entry;
+        }));
+      }
+
+      document.getElementById('addEvidence').addEventListener('click', () => evidenceInput.click());
+      evidenceInput.addEventListener('change', () => {
+        const files = Array.from(evidenceInput.files || []);
+        evidenceInput.value = '';
+        files.forEach(async file => {
+          if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+            document.getElementById('formError').textContent = `"${file.name}" no se agregó: las evidencias deben ser imágenes o PDF.`;
+            return;
+          }
+          const entry = { name: file.name, type: file.type, size: file.size, url: '' };
+          dialogEvidence.push(entry);
+          evidenceUploads += 1;
+          renderDialogEvidence();
+          try {
+            const body = new FormData();
+            body.append('archivo', file, file.name);
+            const response = await fetch('/api/cargas', { method: 'POST', body });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'error del servidor');
+            entry.url = result.url;
+          } catch (error) {
+            dialogEvidence.splice(dialogEvidence.indexOf(entry), 1);
+            document.getElementById('formError').textContent = `No se pudo subir "${file.name}": ${error.message}`;
+          } finally {
+            evidenceUploads -= 1;
+            renderDialogEvidence();
+          }
+        });
+      });
 
       comparableForm.elements.categoria.addEventListener('change', event => applyCategoryToForm(event.target.value));
       document.getElementById('cancelDialog').addEventListener('click', () => dialog.close());
       comparableForm.addEventListener('submit', async event => {
         event.preventDefault();
+        if (evidenceUploads > 0) {
+          document.getElementById('formError').textContent = 'Espere a que terminen de subir las evidencias.';
+          return;
+        }
         const data = Object.fromEntries(new FormData(comparableForm).entries());
+        data.evidencias = dialogEvidence.filter(evidence => evidence.url).map(({ name, type, size, url }) => ({ name, type, size, url }));
         const response = await fetch(editingId ? `/api/comparables/${editingId}` : '/api/comparables', {
           method: editingId ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },

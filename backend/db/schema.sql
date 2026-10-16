@@ -70,6 +70,18 @@ CREATE TABLE IF NOT EXISTS banco_comparables (
 
 CREATE INDEX IF NOT EXISTS idx_banco_categoria ON banco_comparables(categoria, municipio);
 
+-- Archivos propios del banco (evidencias y fotos): los capturados directamente en el banco y las copias
+-- de los de un avalúo eliminado, para que la evidencia de la fuente no se pierda.
+CREATE TABLE IF NOT EXISTS banco_archivos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  comparable_id INTEGER,
+  nombre TEXT,
+  tipo_mime TEXT NOT NULL,
+  ruta TEXT NOT NULL,
+  bytes INTEGER NOT NULL,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Datos predeterminados del valuador (un solo registro) que se cargan en cada avalúo nuevo.
 -- Logotipo y firma se guardan como data URL dentro de `datos`.
 CREATE TABLE IF NOT EXISTS perfil_valuador (

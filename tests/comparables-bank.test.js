@@ -106,13 +106,55 @@ test('lo editado o quitado en el banco se respeta en los siguientes guardados', 
   assert.equal(bank.list({ categoria: 'renta' }).length, 0, 'el quitado no regresa');
 });
 
-test('al eliminar el avalúo sus comparables se conservan sin fotos', t => {
+test('al eliminar el avalúo sus comparables se conservan con copia de fotos y evidencias', t => {
   const context = createTempRepository(t);
-  const saved = context.repository.save(null, { datos: avaluoWithComparables() });
+  const datos = avaluoWithComparables();
+  datos.comparableEvidence = { construction: [[{ name: 'captura-portal.png', type: 'image/png', size: 70, url: PNG }]] };
+  const saved = context.repository.save(null, { datos });
+  const before = context.repository.bank.list({ categoria: 'construccion' })[0];
+  assert.match(before.evidencias[0].url, /^\/api\/archivos\/\d+$/);
+  assert.equal(before.evidencias[0].name, 'captura-portal.png');
+
   context.repository.remove(saved.id);
   const bank = context.repository.bank.list();
   assert.equal(bank.length, 3);
-  assert.ok(bank.every(item => item.origen_avaluo_id === null && item.fotos.length === 0));
+  assert.ok(bank.every(item => item.origen_avaluo_id === null));
+  const construction = bank.find(item => item.categoria === 'construccion');
+  assert.match(construction.fotos[0], /^\/api\/banco-archivos\/\d+$/);
+  assert.match(construction.evidencias[0].url, /^\/api\/banco-archivos\/\d+$/);
+  const file = context.repository.bank.getFile(construction.evidencias[0].url.split('/').pop());
+  assert.ok(fs.existsSync(file.path), 'la evidencia sobrevive al borrado del avalúo');
+});
+
+test('evidencias capturadas directamente en el banco: subir, conservar y quitar', t => {
+  const context = createTempRepository(t);
+  const { bank } = context.repository;
+  const upload = kind => {
+    const mime = kind === 'pdf' ? 'application/pdf' : 'image/png';
+    const target = context.repository.createUploadTarget(mime);
+    fs.writeFileSync(target.absolutePath, kind === 'pdf' ? '%PDF-1.4' : 'png');
+    return { name: `captura.${kind}`, type: mime, size: 3, url: context.repository.registerUpload(mime, target.relativePath, 3) };
+  };
+  const created = bank.create({ categoria: 'terreno', precio: 500000, superficie: 250, evidencias: [upload('png'), upload('pdf')] });
+  assert.equal(created.evidencias.length, 2);
+  assert.ok(created.evidencias.every(item => /^\/api\/banco-archivos\/\d+$/.test(item.url)));
+  assert.equal(created.evidencias[1].type, 'application/pdf');
+
+  const kept = created.evidencias[1];
+  const removedFile = bank.getFile(created.evidencias[0].url.split('/').pop());
+  const updated = bank.update(created.id, { categoria: 'terreno', precio: 500000, superficie: 250, evidencias: [kept] });
+  assert.deepEqual(updated.evidencias.map(item => item.url), [kept.url]);
+  assert.equal(fs.existsSync(removedFile.path), false, 'la evidencia quitada se borra del disco');
+
+  const word = context.repository.createUploadTarget('application/msword');
+  fs.writeFileSync(word.absolutePath, 'doc');
+  const wordUrl = context.repository.registerUpload('application/msword', word.relativePath, 3);
+  assert.throws(() => bank.update(created.id, { categoria: 'terreno', precio: 500000, superficie: 250, evidencias: [{ name: 'a.doc', url: wordUrl }] }), error => error.statusCode === 415);
+  assert.deepEqual(bank.get(created.id).evidencias.map(item => item.url), [kept.url], 'un error no altera las evidencias');
+
+  const keptFile = bank.getFile(kept.url.split('/').pop());
+  bank.remove(created.id);
+  assert.equal(fs.existsSync(keptFile.path), false, 'al quitar un comparable capturado a mano se borran sus archivos');
 });
 
 test('sin coordenadas propias ni del inmueble sujeto, el comparable queda sin ubicación', t => {

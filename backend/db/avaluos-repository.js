@@ -52,7 +52,7 @@ function openDatabase(filePath) {
 function createAvaluosRepository({ databasePath, filesDir }) {
   const db = openDatabase(databasePath);
   fs.mkdirSync(filesDir, { recursive: true });
-  const bank = createComparablesBank(db);
+  const bank = createComparablesBank(db, { filesDir });
 
   function summaryColumns(datos, resumen) {
     const fields = datos?.fields || {};
@@ -354,9 +354,10 @@ function createAvaluosRepository({ databasePath, filesDir }) {
 
   function remove(id) {
     const avaluoId = Number(id);
-    const result = db.prepare('DELETE FROM avaluos WHERE id = ?').run(avaluoId);
-    if (!result.changes) return false;
+    if (!db.prepare('SELECT id FROM avaluos WHERE id = ?').get(avaluoId)) return false;
+    // Primero el banco copia las fotos y evidencias de sus comparables; después se borran el avalúo y sus archivos.
     bank.detachAvaluo(avaluoId);
+    db.prepare('DELETE FROM avaluos WHERE id = ?').run(avaluoId);
     fs.rmSync(path.join(filesDir, String(avaluoId)), { recursive: true, force: true });
     return true;
   }

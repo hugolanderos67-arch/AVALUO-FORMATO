@@ -1,7 +1,14 @@
 // Banco de comparables: reúne los comparables de todos los avalúos guardados y los capturados directamente.
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+
 const CATEGORIES = { construction: 'construccion', land: 'terreno', rent: 'renta' };
 const CATEGORY_VALUES = Object.values(CATEGORIES);
-const FILE_URL = /^\/api\/archivos\/\d+$/;
+const FILE_URL = /^\/api\/archivos\/(\d+)$/;
+const UPLOAD_URL = /^\/api\/cargas\/(\d+)$/;
+const BANK_FILE_URL = /^\/api\/banco-archivos\/(\d+)$/;
+const EVIDENCE_TYPES = /^(image\/(png|jpeg|gif|webp|bmp)|application\/pdf)$/;
 
 function httpError(statusCode, message) {
   const error = new Error(message);
@@ -26,6 +33,13 @@ function round2(value) {
   return Math.round(value * 100) / 100;
 }
 
+// Evidencia: { name, type, size, url } de una captura de pantalla, imagen o PDF de la fuente del dato.
+function evidenceList(items, allowed = [FILE_URL]) {
+  return (Array.isArray(items) ? items : [])
+    .map(item => ({ name: text(item?.name) || 'evidencia', type: text(item?.type), size: Number(item?.size) || 0, url: text(item?.url) }))
+    .filter(item => allowed.some(pattern => pattern.test(item.url)));
+}
+
 // Convierte los comparables de la captura de un avalúo en registros del banco.
 function extractFromAvaluo(avaluoId, datos) {
   const fields = datos?.fields || {};
@@ -48,6 +62,7 @@ function extractFromAvaluo(avaluoId, datos) {
       const latitude = coordinate(card.latitud, 90);
       const longitude = coordinate(card.longitud, 180);
       const ownLocation = latitude !== null && longitude !== null;
+      const subjectLocated = subjectLatitude !== null && subjectLongitude !== null;
       records.push({
         origen_clave: `${avaluoId}:${group}:${index}`,
         categoria: CATEGORIES[group],
@@ -57,9 +72,9 @@ function extractFromAvaluo(avaluoId, datos) {
         colonia: text(fields.colonia) || null,
         municipio: text(fields.municipio) || null,
         estado: text(fields.estado) || null,
-        latitud: ownLocation ? latitude : (subjectLatitude !== null && subjectLongitude !== null ? subjectLatitude : null),
-        longitud: ownLocation ? longitude : (subjectLatitude !== null && subjectLongitude !== null ? subjectLongitude : null),
-        ubicacion_aproximada: !ownLocation && subjectLatitude !== null && subjectLongitude !== null ? 1 : 0,
+        latitud: ownLocation ? latitude : (subjectLocated ? subjectLatitude : null),
+        longitud: ownLocation ? longitude : (subjectLocated ? subjectLongitude : null),
+        ubicacion_aproximada: !ownLocation && subjectLocated ? 1 : 0,
         precio: price,
         superficie: surface,
         superficie_terreno: group === 'construction' ? positive(card.superficieTerreno) : null,
@@ -67,7 +82,8 @@ function extractFromAvaluo(avaluoId, datos) {
         valor_unitario: round2(price / surface),
         fecha_dato: text(card.fechaDato) || text(fields.fechaAvaluo) || new Date().toISOString().slice(0, 10),
         fuente: text(card.fuente) || null,
-        fotos: JSON.stringify((datos?.comparablePhotos?.[group]?.[index] || []).map(photo => photo?.preview).filter(url => FILE_URL.test(url || '')))
+        fotos: JSON.stringify((datos?.comparablePhotos?.[group]?.[index] || []).map(photo => photo?.preview).filter(url => FILE_URL.test(url || ''))),
+        evidencias: JSON.stringify(evidenceList(datos?.comparableEvidence?.[group]?.[index]))
       });
     });
   });
@@ -75,9 +91,60 @@ function extractFromAvaluo(avaluoId, datos) {
 }
 
 const COLUMNS = ['categoria', 'tipo_inmueble', 'tipo_dato', 'direccion', 'colonia', 'municipio', 'estado', 'latitud', 'longitud',
-  'ubicacion_aproximada', 'precio', 'superficie', 'superficie_terreno', 'edad', 'valor_unitario', 'fecha_dato', 'fuente', 'fotos'];
+  'ubicacion_aproximada', 'precio', 'superficie', 'superficie_terreno', 'edad', 'valor_unitario', 'fecha_dato', 'fuente', 'fotos', 'evidencias'];
 
-function createComparablesBank(db) {
+function createComparablesBank(db, { filesDir }) {
+  // Migración: columna de evidencias para bancos creados antes de esta función.
+  const columns = db.prepare('PRAGMA table_info(banco_comparables)').all().map(column => column.name);
+  if (!columns.includes('evidencias')) db.exec("ALTER TABLE banco_comparables ADD COLUMN evidencias TEXT NOT NULL DEFAULT '[]'");
+  const bankDir = path.join(filesDir, 'banco');
+  fs.mkdirSync(bankDir, { recursive: true });
+
+  // --- Archivos propios del banco ---
+  function storeBankFile(comparableId, { sourcePath, mimeType, bytes, name, move }) {
+    const relativePath = path.posix.join('banco', `${crypto.randomUUID()}${path.extname(sourcePath).toLowerCase()}`);
+    const target = path.join(filesDir, relativePath);
+    if (move) fs.renameSync(sourcePath, target);
+    else fs.copyFileSync(sourcePath, target);
+    const id = Number(db.prepare('INSERT INTO banco_archivos (comparable_id, nombre, tipo_mime, ruta, bytes) VALUES (?, ?, ?, ?, ?)').run(comparableId, name || null, mimeType, relativePath, bytes).lastInsertRowid);
+    return `/api/banco-archivos/${id}`;
+  }
+
+  // Una subida directa (/api/cargas) pasa a ser archivo del banco.
+  function claimUpload(comparableId, item) {
+    const upload = db.prepare('SELECT id, tipo_mime, ruta, bytes FROM cargas WHERE id = ?').get(Number(item.url.match(UPLOAD_URL)[1]));
+    if (!upload) return null;
+    if (!EVIDENCE_TYPES.test(upload.tipo_mime)) throw httpError(415, `La evidencia "${item.name}" debe ser una imagen o un PDF.`);
+    const url = storeBankFile(comparableId, { sourcePath: path.join(filesDir, upload.ruta), mimeType: upload.tipo_mime, bytes: upload.bytes, name: item.name, move: true });
+    db.prepare('DELETE FROM cargas WHERE id = ?').run(upload.id);
+    return { ...item, type: upload.tipo_mime, size: upload.bytes, url };
+  }
+
+  // Copia un archivo de un avalúo al banco (al eliminar el avalúo, sus evidencias y fotos se conservan aquí).
+  function copyAvaluoFile(comparableId, url, name) {
+    const file = db.prepare('SELECT tipo_mime, ruta, bytes FROM archivos WHERE id = ?').get(Number(url.match(FILE_URL)[1]));
+    if (!file) return null;
+    try {
+      return storeBankFile(comparableId, { sourcePath: path.join(filesDir, file.ruta), mimeType: file.tipo_mime, bytes: file.bytes, name, move: false });
+    } catch {
+      return null;
+    }
+  }
+
+  function removeBankFiles(comparableId, keepUrls = []) {
+    const keep = new Set(keepUrls);
+    db.prepare('SELECT id, ruta FROM banco_archivos WHERE comparable_id = ?').all(comparableId).forEach(file => {
+      if (keep.has(`/api/banco-archivos/${file.id}`)) return;
+      db.prepare('DELETE FROM banco_archivos WHERE id = ?').run(file.id);
+      fs.rmSync(path.join(filesDir, file.ruta), { force: true });
+    });
+  }
+
+  function getFile(id) {
+    const file = db.prepare('SELECT tipo_mime, ruta FROM banco_archivos WHERE id = ?').get(Number(id));
+    return file ? { mimeType: file.tipo_mime, path: path.join(filesDir, file.ruta) } : null;
+  }
+
   // Se llama dentro de la transacción del guardado del avalúo.
   function syncFromAvaluo(avaluoId, datos) {
     const records = extractFromAvaluo(avaluoId, datos);
@@ -98,13 +165,28 @@ function createComparablesBank(db) {
     existing.forEach(row => { if (!row.editado && !row.excluido) remove.run(row.id); });
   }
 
-  // Al eliminar un avalúo sus comparables se conservan; solo pierden las fotos, que se borran con él.
+  // Al eliminar un avalúo sus comparables se conservan, con copia propia de sus fotos y evidencias.
+  // Se llama antes de borrar los archivos del avalúo.
   function detachAvaluo(avaluoId) {
-    db.prepare("UPDATE banco_comparables SET origen_avaluo_id = NULL, fotos = '[]' WHERE origen_avaluo_id = ?").run(avaluoId);
+    db.prepare('SELECT id, fotos, evidencias FROM banco_comparables WHERE origen_avaluo_id = ?').all(avaluoId).forEach(row => {
+      const photos = JSON.parse(row.fotos || '[]').map(url => (FILE_URL.test(url) ? copyAvaluoFile(row.id, url, 'foto') : url)).filter(Boolean);
+      const evidences = JSON.parse(row.evidencias || '[]').map(item => {
+        if (!FILE_URL.test(item.url)) return item;
+        const url = copyAvaluoFile(row.id, item.url, item.name);
+        return url ? { ...item, url } : null;
+      }).filter(Boolean);
+      db.prepare('UPDATE banco_comparables SET origen_avaluo_id = NULL, fotos = ?, evidencias = ? WHERE id = ?').run(JSON.stringify(photos), JSON.stringify(evidences), row.id);
+    });
   }
 
   function parse(row) {
-    return { ...row, fotos: JSON.parse(row.fotos || '[]'), ubicacion_aproximada: Boolean(row.ubicacion_aproximada), editado: Boolean(row.editado) };
+    return {
+      ...row,
+      fotos: JSON.parse(row.fotos || '[]'),
+      evidencias: JSON.parse(row.evidencias || '[]'),
+      ubicacion_aproximada: Boolean(row.ubicacion_aproximada),
+      editado: Boolean(row.editado)
+    };
   }
 
   function list({ categoria, tipo, municipio, q } = {}) {
@@ -155,10 +237,40 @@ function createComparablesBank(db) {
     };
   }
 
+  // Evidencias capturadas en el banco: las subidas nuevas se vuelven archivos del banco; se conservan las existentes.
+  function storeEvidence(comparableId, items) {
+    const allowed = [FILE_URL, UPLOAD_URL, BANK_FILE_URL];
+    const evidence = evidenceList(items, allowed);
+    // Se revisan todos los tipos antes de mover archivos, para no dejar ninguno a medias si uno no es válido.
+    evidence.filter(item => UPLOAD_URL.test(item.url)).forEach(item => {
+      const upload = db.prepare('SELECT tipo_mime FROM cargas WHERE id = ?').get(Number(item.url.match(UPLOAD_URL)[1]));
+      if (upload && !EVIDENCE_TYPES.test(upload.tipo_mime)) throw httpError(415, `La evidencia "${item.name}" debe ser una imagen o un PDF.`);
+    });
+    const stored = evidence.map(item => (UPLOAD_URL.test(item.url) ? claimUpload(comparableId, item) : item)).filter(Boolean);
+    removeBankFiles(comparableId, stored.map(item => item.url).concat(JSON.parse(db.prepare('SELECT fotos FROM banco_comparables WHERE id = ?').get(comparableId)?.fotos || '[]')));
+    db.prepare('UPDATE banco_comparables SET evidencias = ? WHERE id = ?').run(JSON.stringify(stored), comparableId);
+  }
+
+  function withTransaction(work) {
+    db.exec('BEGIN');
+    try {
+      const result = work();
+      db.exec('COMMIT');
+      return result;
+    } catch (error) {
+      db.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
   function create(input) {
     const record = normalizeInput(input);
     const columns = Object.keys(record);
-    const id = Number(db.prepare(`INSERT INTO banco_comparables (${columns.join(', ')}, editado) VALUES (${columns.map(() => '?').join(', ')}, 1)`).run(...columns.map(column => record[column])).lastInsertRowid);
+    const id = withTransaction(() => {
+      const newId = Number(db.prepare(`INSERT INTO banco_comparables (${columns.join(', ')}, editado) VALUES (${columns.map(() => '?').join(', ')}, 1)`).run(...columns.map(column => record[column])).lastInsertRowid);
+      if (Array.isArray(input.evidencias)) storeEvidence(newId, input.evidencias);
+      return newId;
+    });
     return get(id);
   }
 
@@ -166,7 +278,10 @@ function createComparablesBank(db) {
     if (!get(id)) throw httpError(404, 'El comparable no existe.');
     const record = normalizeInput(input);
     const columns = Object.keys(record);
-    db.prepare(`UPDATE banco_comparables SET ${columns.map(column => `${column} = ?`).join(', ')}, editado = 1, actualizado_en = datetime('now') WHERE id = ?`).run(...columns.map(column => record[column]), Number(id));
+    withTransaction(() => {
+      db.prepare(`UPDATE banco_comparables SET ${columns.map(column => `${column} = ?`).join(', ')}, editado = 1, actualizado_en = datetime('now') WHERE id = ?`).run(...columns.map(column => record[column]), Number(id));
+      if (Array.isArray(input.evidencias)) storeEvidence(Number(id), input.evidencias);
+    });
     return get(id);
   }
 
@@ -174,8 +289,12 @@ function createComparablesBank(db) {
   function remove(id) {
     const row = db.prepare('SELECT id, origen_clave FROM banco_comparables WHERE id = ? AND excluido = 0').get(Number(id));
     if (!row) return false;
-    if (row.origen_clave) db.prepare("UPDATE banco_comparables SET excluido = 1, actualizado_en = datetime('now') WHERE id = ?").run(row.id);
-    else db.prepare('DELETE FROM banco_comparables WHERE id = ?').run(row.id);
+    if (row.origen_clave) {
+      db.prepare("UPDATE banco_comparables SET excluido = 1, actualizado_en = datetime('now') WHERE id = ?").run(row.id);
+    } else {
+      db.prepare('DELETE FROM banco_comparables WHERE id = ?').run(row.id);
+      removeBankFiles(row.id);
+    }
     return true;
   }
 
@@ -183,7 +302,7 @@ function createComparablesBank(db) {
     return db.prepare('SELECT COUNT(*) AS total FROM banco_comparables').get().total === 0;
   }
 
-  return { syncFromAvaluo, detachAvaluo, list, get, create, update, remove, isEmpty };
+  return { syncFromAvaluo, detachAvaluo, list, get, create, update, remove, isEmpty, getFile };
 }
 
 module.exports = { createComparablesBank, extractFromAvaluo };

@@ -446,6 +446,73 @@
         margin-top: 8px;
       }
 
+      .comparable-evidence {
+        margin-top: 10px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .evidence-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+      }
+
+      .evidence-list li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        min-width: 0;
+      }
+
+      .evidence-list img,
+      .evidence-list .evidence-icon {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #d9e7f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.65rem;
+        color: #8a1c1c;
+        background: #f9fbff;
+      }
+
+      .evidence-list a,
+      .evidence-list span:not(.evidence-icon) {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #0f4c81;
+      }
+
+      .evidence-list button {
+        flex: none;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: #8a1c1c;
+        color: #ffffff;
+        cursor: pointer;
+      }
+
+      .evidence-documents {
+        margin: 6px 0 10px;
+        padding-left: 18px;
+        font-size: 0.8rem;
+      }
+
       .comparable-extra {
         margin-top: 10px;
         border-top: 1px solid #dfeaf3;
@@ -4191,14 +4258,99 @@
               createField(config.surfaceLabel, 'surface', { type: 'number', min: '0', step: '0.01' }),
               factors,
               createBankDetails(group, index),
-              createComparablePhotoField(group, index)
+              createComparablePhotoField(group, index),
+              createComparableEvidenceField(group, index)
             );
             grid.appendChild(card);
           }
         });
         document.querySelectorAll('#constructionComparables .comparable-card').forEach((card, index) => {
-          card.append(createBankDetails('construction', index), createComparablePhotoField('construction', index));
+          card.append(createBankDetails('construction', index), createComparablePhotoField('construction', index), createComparableEvidenceField('construction', index));
         });
+      }
+
+      // Evidencias de la fuente del dato (capturas de pantalla del portal, imágenes o PDF), por comparable.
+      const comparableEvidence = { construction: [], land: [], rent: [] };
+      const comparableEvidenceRenderers = { construction: [], land: [], rent: [] };
+      const isEvidenceFile = file => file.type.startsWith('image/') || file.type === 'application/pdf';
+
+      function createComparableEvidenceField(group, index) {
+        comparableEvidence[group][index] = [];
+        const wrapper = document.createElement('div');
+        wrapper.className = 'comparable-evidence';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'secondary-button';
+        button.textContent = '📎 Agregar evidencia (captura o PDF)';
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*,application/pdf';
+        input.multiple = true;
+        input.className = 'hidden-file-input';
+        const list = document.createElement('ul');
+        list.className = 'evidence-list';
+
+        const render = () => {
+          list.replaceChildren(...comparableEvidence[group][index].map((item, itemIndex) => {
+            const row = document.createElement('li');
+            if (item.url && item.type.startsWith('image/')) {
+              row.appendChild(Object.assign(document.createElement('img'), { src: item.url, alt: item.name }));
+            } else {
+              row.appendChild(Object.assign(document.createElement('span'), { className: 'evidence-icon', textContent: item.type === 'application/pdf' ? 'PDF' : '📎' }));
+            }
+            const name = item.url
+              ? Object.assign(document.createElement('a'), { href: item.url, target: '_blank', rel: 'noopener', textContent: item.name })
+              : Object.assign(document.createElement('span'), { textContent: `${item.name} — ${item.status || 'Subiendo…'}` });
+            const remove = Object.assign(document.createElement('button'), { type: 'button', textContent: '×', title: `Quitar ${item.name}` });
+            remove.setAttribute('aria-label', `Quitar ${item.name}`);
+            remove.addEventListener('click', () => {
+              comparableEvidence[group][index].splice(itemIndex, 1);
+              render();
+              renderComparablePhotoGalleries();
+            });
+            row.append(name, remove);
+            return row;
+          }));
+        };
+        comparableEvidenceRenderers[group][index] = render;
+
+        button.addEventListener('click', () => input.click());
+        input.addEventListener('change', () => {
+          const files = Array.from(input.files || []);
+          input.value = '';
+          files.forEach(async file => {
+            const entry = { name: file.name, type: file.type, size: file.size, url: '' };
+            if (!isEvidenceFile(file)) {
+              entry.status = 'no se agregó: use una imagen o un PDF';
+              comparableEvidence[group][index].push(entry);
+              render();
+              setTimeout(() => {
+                const position = comparableEvidence[group][index].indexOf(entry);
+                if (position >= 0) comparableEvidence[group][index].splice(position, 1);
+                render();
+              }, 4000);
+              return;
+            }
+            comparableEvidence[group][index].push(entry);
+            pendingUploads += 1;
+            render();
+            try {
+              entry.url = await uploadAttachment(file);
+            } catch (error) {
+              entry.status = `no se pudo subir: ${error.message}`;
+            } finally {
+              pendingUploads -= 1;
+            }
+            if (!entry.url) comparableEvidence[group][index].splice(comparableEvidence[group][index].indexOf(entry), 1);
+            render();
+            renderComparablePhotoGalleries();
+          });
+        });
+        const note = document.createElement('p');
+        note.className = 'technical-note';
+        note.textContent = 'Capturas de pantalla del anuncio o PDF que respaldan el dato. Pasan al banco de comparables.';
+        wrapper.append(button, input, list, note);
+        return wrapper;
       }
 
       // Datos que el banco de comparables necesita para buscar y depurar comparables en avalúos futuros.
@@ -4283,16 +4435,42 @@
             figure.append(image, caption);
             return figure;
           }));
-          if (!figures.length) {
-            container.replaceChildren();
-            return;
+          // Evidencias de la fuente: las imágenes en galería y los PDF como lista con enlace.
+          const evidence = (comparableEvidence[group] || []).flatMap((items, index) => (items || []).filter(item => item.url).map(item => ({ ...item, index })));
+          const evidenceFigures = evidence.filter(item => item.type.startsWith('image/')).map(item => {
+            const figure = document.createElement('figure');
+            figure.appendChild(Object.assign(document.createElement('img'), { src: item.url, alt: item.name }));
+            figure.appendChild(Object.assign(document.createElement('figcaption'), { textContent: `Comparable ${item.index + 1} · ${item.name}` }));
+            return figure;
+          });
+          const evidenceDocuments = evidence.filter(item => !item.type.startsWith('image/')).map(item => {
+            const entry = document.createElement('li');
+            entry.append(`Comparable ${item.index + 1}: `, Object.assign(document.createElement('a'), { href: item.url, target: '_blank', rel: 'noopener', textContent: item.name }));
+            return entry;
+          });
+          const blocks = [];
+          if (figures.length) {
+            const gallery = document.createElement('div');
+            gallery.className = 'comparable-gallery';
+            gallery.append(...figures);
+            blocks.push(Object.assign(document.createElement('h5'), { textContent: titleText }), gallery);
           }
-          const title = document.createElement('h5');
-          title.textContent = titleText;
-          const gallery = document.createElement('div');
-          gallery.className = 'comparable-gallery';
-          gallery.append(...figures);
-          container.replaceChildren(title, gallery);
+          if (evidenceFigures.length || evidenceDocuments.length) {
+            blocks.push(Object.assign(document.createElement('h5'), { textContent: titleText.replace('Fotografías', 'Evidencias de la fuente') }));
+            if (evidenceFigures.length) {
+              const gallery = document.createElement('div');
+              gallery.className = 'comparable-gallery';
+              gallery.append(...evidenceFigures);
+              blocks.push(gallery);
+            }
+            if (evidenceDocuments.length) {
+              const listElement = document.createElement('ul');
+              listElement.className = 'evidence-documents';
+              listElement.append(...evidenceDocuments);
+              blocks.push(listElement);
+            }
+          }
+          container.replaceChildren(...blocks);
         });
       }
 
@@ -5424,6 +5602,7 @@
           documentSources: documentExtractionSources.map(source => ({ ...source })),
           attachments: Object.fromEntries(ATTACHMENT_COLLECTIONS.map(name => [name, attachmentState[name].map(item => ({ ...item }))])),
           comparablePhotos: Object.fromEntries(Object.entries(comparablePhotos).map(([group, cards]) => [group, cards.map(photos => (photos || []).map(photo => ({ ...photo })))])),
+          comparableEvidence: Object.fromEntries(Object.entries(comparableEvidence).map(([group, cards]) => [group, cards.map(items => (items || []).filter(item => item.url).map(({ name, type, size, url }) => ({ name, type, size, url })))])),
           valuerSignature,
           valuerLogo,
           panels: { urbanInvestigation: urbanInvestigationText.value, constructionElements: constructionElementsText.value }
@@ -5513,6 +5692,12 @@
               comparablePhotoRenderers[group][index]?.();
             });
           });
+          Object.entries(comparableEvidence).forEach(([group, cards]) => {
+            cards.forEach((items, index) => {
+              items.splice(0, items.length, ...(datos.comparableEvidence?.[group]?.[index] || []));
+              comparableEvidenceRenderers[group][index]?.();
+            });
+          });
           renderComparablePhotoGalleries();
 
           setValuerSignature(datos.valuerSignature || '');
@@ -5547,6 +5732,14 @@
             photos.forEach((photo, photoIndex) => {
               const stored = saved.comparablePhotos?.[group]?.[index]?.[photoIndex];
               if (stored) photo.preview = stored.preview;
+            });
+          });
+        });
+        Object.entries(comparableEvidence).forEach(([group, cards]) => {
+          cards.forEach((items, index) => {
+            const storedItems = saved.comparableEvidence?.[group]?.[index] || [];
+            items.filter(item => item.url).forEach((item, itemIndex) => {
+              if (storedItems[itemIndex]) item.url = storedItems[itemIndex].url;
             });
           });
         });

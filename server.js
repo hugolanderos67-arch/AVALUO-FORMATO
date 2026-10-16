@@ -405,9 +405,11 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const storedFileMatch = pathname.match(/^\/api\/(archivos|cargas)\/(\d+)$/);
+  const storedFileMatch = pathname.match(/^\/api\/(archivos|cargas|banco-archivos)\/(\d+)$/);
   if (storedFileMatch && req.method === 'GET') {
-    handleStoredFile(req, res, storedFileMatch[1] === 'archivos' ? avaluos.getFile(storedFileMatch[2]) : avaluos.getUpload(storedFileMatch[2]));
+    const [, kind, fileId] = storedFileMatch;
+    const file = kind === 'archivos' ? avaluos.getFile(fileId) : kind === 'cargas' ? avaluos.getUpload(fileId) : avaluos.bank.getFile(fileId);
+    handleStoredFile(req, res, file);
     return;
   }
 
