@@ -8,6 +8,7 @@ const { lookupUrbanEquipment } = require('./backend/valuation/urban-equipment');
 const { extractUrbanPlanDocument, MAX_DOCUMENT_BYTES } = require('./backend/valuation/urban-plan-documents');
 const { createAvaluosRepository, MAX_UPLOAD_BYTES } = require('./backend/db/avaluos-repository');
 const { createDocumentExtractor } = require('./backend/valuation/document-extraction');
+const { importComparables, templateCsv } = require('./backend/db/comparables-import');
 
 const documentExtractor = createDocumentExtractor();
 
@@ -178,10 +179,62 @@ async function handleAvaluosApi(req, res, pathname, searchParams) {
   }
 }
 
+// Recibe un archivo pequeño en memoria (campo "archivo") junto con campos de texto, para importaciones.
+function readMultipartFile(req, maxBytes) {
+  return new Promise((resolve, reject) => {
+    let parser;
+    try {
+      parser = Busboy({ headers: req.headers, limits: { files: 1, fileSize: maxBytes, fields: 10 } });
+    } catch {
+      reject(httpFailure(400, 'La solicitud debe incluir un archivo.'));
+      return;
+    }
+    const fields = {};
+    let upload = null;
+    let tooLarge = false;
+    parser.on('field', (name, value) => { fields[name] = value; });
+    parser.on('file', (fieldName, file, info) => {
+      if (fieldName !== 'archivo') {
+        file.resume();
+        return;
+      }
+      const chunks = [];
+      file.on('data', chunk => chunks.push(chunk));
+      file.on('limit', () => { tooLarge = true; });
+      file.on('end', () => { upload = { fileName: info.filename, buffer: Buffer.concat(chunks) }; });
+    });
+    parser.on('error', reject);
+    parser.on('finish', () => {
+      if (tooLarge) reject(httpFailure(413, `El archivo debe pesar ${Math.round(maxBytes / 1024 / 1024)} MB o menos.`));
+      else if (!upload) reject(httpFailure(400, 'Seleccione un archivo.'));
+      else resolve({ ...upload, fields });
+    });
+    req.pipe(parser);
+  });
+}
+
 async function handleComparablesApi(req, res, pathname, searchParams) {
   const idMatch = pathname.match(/^\/api\/comparables\/(\d+)$/);
   const { bank } = avaluos;
   try {
+    if (pathname === '/api/comparables/plantilla.csv' && req.method === 'GET') {
+      res.writeHead(200, {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="plantilla-comparables.csv"'
+      });
+      res.end(templateCsv());
+      return;
+    }
+    if (pathname === '/api/comparables/importar' && req.method === 'POST') {
+      const upload = await readMultipartFile(req, 20 * 1024 * 1024);
+      sendJson(res, 200, await importComparables(bank, {
+        buffer: upload.buffer,
+        fileName: upload.fileName,
+        defaultCategory: upload.fields.categoria || 'construccion',
+        commit: upload.fields.confirmar === '1'
+      }));
+      return;
+    }
     if (pathname === '/api/comparables' && req.method === 'GET') {
       const filters = Object.fromEntries(['categoria', 'tipo', 'municipio', 'q'].map(key => [key, searchParams.get(key) || '']));
       sendJson(res, 200, { comparables: bank.list(filters) });

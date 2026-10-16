@@ -302,7 +302,32 @@ function createComparablesBank(db, { filesDir }) {
     return db.prepare('SELECT COUNT(*) AS total FROM banco_comparables').get().total === 0;
   }
 
-  return { syncFromAvaluo, detachAvaluo, list, get, create, update, remove, isEmpty, getFile };
+  // --- Importación masiva ---
+  // Mismo comparable = misma categoría, dirección, precio, superficie y fecha del dato.
+  function duplicateKey(record) {
+    const address = String(record.direccion || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+    return [record.categoria, address, Number(record.precio), Number(record.superficie), record.fecha_dato].join('|');
+  }
+
+  function duplicateKeys() {
+    return db.prepare('SELECT categoria, direccion, precio, superficie, fecha_dato FROM banco_comparables WHERE excluido = 0').all().map(duplicateKey);
+  }
+
+  function createMany(inputs) {
+    return withTransaction(() => {
+      inputs.forEach(input => {
+        const record = normalizeInput(input);
+        const columns = Object.keys(record);
+        db.prepare(`INSERT INTO banco_comparables (${columns.join(', ')}, editado) VALUES (${columns.map(() => '?').join(', ')}, 1)`).run(...columns.map(column => record[column]));
+      });
+      return inputs.length;
+    });
+  }
+
+  return {
+    syncFromAvaluo, detachAvaluo, list, get, create, update, remove, isEmpty, getFile,
+    validate: normalizeInput, duplicateKey, duplicateKeys, createMany
+  };
 }
 
 module.exports = { createComparablesBank, extractFromAvaluo };

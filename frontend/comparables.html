@@ -110,6 +110,14 @@
       .summary-panel img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid var(--line); }
       .summary-panel .panel-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
       .summary-panel .panel-actions a { color: var(--accent); font-weight: 700; font-size: 0.82rem; }
+      .import-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+      .import-summary div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+      .import-summary strong { display: block; font-size: 1.3rem; }
+      .import-summary span { font-size: 0.75rem; color: var(--muted); }
+      .import-section { margin-top: 10px; }
+      .import-section h3 { margin: 0 0 4px; font-size: 0.82rem; color: var(--ink-2); }
+      .import-section ul { margin: 0; padding-left: 18px; font-size: 0.8rem; max-height: 160px; overflow-y: auto; }
+      .import-section .table-scroll { max-height: 220px; overflow: auto; }
       .evidence-editor { display: grid; gap: 6px; font-size: 0.75rem; font-weight: 700; color: var(--ink-2); }
       .evidence-editor button { justify-self: start; }
       .evidence-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
@@ -150,6 +158,7 @@
         </div>
         <div class="actions">
           <button type="button" id="exportCsv">Exportar CSV</button>
+          <button type="button" id="openImport">⬆ Importar Excel / CSV</button>
           <button type="button" class="primary" id="addComparable">+ Agregar comparable</button>
         </div>
       </div>
@@ -231,6 +240,28 @@
         </div>
       </form>
     </dialog>
+    <dialog id="importDialog" aria-labelledby="importTitle">
+      <h2 id="importTitle">Importar comparables desde Excel o CSV</h2>
+      <p class="note">Use la plantilla: una fila por comparable, con <strong>precio</strong> y <strong>superficie</strong> obligatorios. También se reconocen encabezados equivalentes ("Precio de oferta", "Renta mensual", "Superficie construida", "Ubicación"…). Se admiten archivos .xlsx y .csv de hasta 5,000 filas.</p>
+      <p><a href="/api/comparables/plantilla.csv" download>⬇ Descargar plantilla (se abre en Excel)</a></p>
+      <div class="form-grid">
+        <label class="wide">Archivo <input type="file" id="importFile" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" /></label>
+        <label class="wide">Filas sin "Tipo de comparable" se importan como
+          <select id="importCategory">
+            <option value="construccion">Construcción</option>
+            <option value="terreno">Terreno</option>
+            <option value="renta">Renta</option>
+          </select>
+        </label>
+      </div>
+      <p class="error" id="importError" role="alert"></p>
+      <div id="importPreview"></div>
+      <div class="dialog-actions">
+        <button type="button" id="closeImport">Cerrar</button>
+        <button type="button" id="reviewImport">Revisar archivo</button>
+        <button type="button" class="primary" id="confirmImport" hidden>Importar</button>
+      </div>
+    </dialog>
     <datalist id="propertyTypes"></datalist>
     <datalist id="municipalities"></datalist>
 
@@ -278,7 +309,7 @@
         document.getElementById('municipalities').replaceChildren(...distinct('municipio').map(value => new Option(value)));
         document.getElementById('filterType').closest('label').hidden = category === 'terreno';
         render();
-        refreshCounts();
+        await refreshCounts();
       }
 
       async function refreshCounts() {
@@ -673,6 +704,123 @@
       document.getElementById('filterText').addEventListener('input', render);
       document.getElementById('addComparable').addEventListener('click', () => openDialog(null));
       document.getElementById('exportCsv').addEventListener('click', exportCsv);
+
+      // --- Importación masiva: primero se revisa el archivo y después se confirma ---
+      const importDialog = document.getElementById('importDialog');
+      const importFile = document.getElementById('importFile');
+      const importError = document.getElementById('importError');
+      const importPreview = document.getElementById('importPreview');
+      const confirmImport = document.getElementById('confirmImport');
+      const CATEGORY_LABELS = { construccion: 'Construcción', terreno: 'Terreno', renta: 'Renta' };
+
+      function resetImport() {
+        importError.textContent = '';
+        importPreview.replaceChildren();
+        confirmImport.hidden = true;
+      }
+
+      async function sendImport(confirm) {
+        const file = importFile.files?.[0];
+        if (!file) {
+          importError.textContent = 'Seleccione un archivo .xlsx o .csv.';
+          return null;
+        }
+        const body = new FormData();
+        body.append('categoria', document.getElementById('importCategory').value);
+        body.append('confirmar', confirm ? '1' : '0');
+        body.append('archivo', file, file.name);
+        const response = await fetch('/api/comparables/importar', { method: 'POST', body });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'No se pudo leer el archivo.');
+        return result;
+      }
+
+      function section(titleText, content) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'import-section';
+        wrapper.append(Object.assign(document.createElement('h3'), { textContent: titleText }), content);
+        return wrapper;
+      }
+
+      function renderImportPreview(result) {
+        const summary = document.createElement('div');
+        summary.className = 'import-summary';
+        [[result.validos, 'listos para importar'], [result.errores.length, 'con errores (no se importan)'], [result.duplicados.length, 'duplicados (se omiten)']].forEach(([count, label]) => {
+          const box = document.createElement('div');
+          box.append(Object.assign(document.createElement('strong'), { textContent: integer(count) }), Object.assign(document.createElement('span'), { textContent: label }));
+          summary.appendChild(box);
+        });
+        const blocks = [summary];
+        if (result.columnasIgnoradas.length) {
+          blocks.push(Object.assign(document.createElement('p'), { className: 'note', textContent: `Columnas no reconocidas (se ignoran): ${result.columnasIgnoradas.join(', ')}.` }));
+        }
+        if (result.errores.length) {
+          const list = document.createElement('ul');
+          result.errores.forEach(error => list.appendChild(Object.assign(document.createElement('li'), { textContent: `Fila ${error.fila}: ${error.problemas.join('; ')}` })));
+          blocks.push(section('Filas con errores (corríjalas en el archivo y vuelva a revisarlo)', list));
+        }
+        if (result.duplicados.length) {
+          const list = document.createElement('ul');
+          result.duplicados.forEach(item => list.appendChild(Object.assign(document.createElement('li'), { textContent: `Fila ${item.fila}${item.direccion ? ` (${item.direccion})` : ''}: ${item.motivo}` })));
+          blocks.push(section('Duplicados', list));
+        }
+        if (result.muestra.length) {
+          const table = document.createElement('table');
+          table.innerHTML = '<thead><tr><th>Fila</th><th>Tipo</th><th>Dirección</th><th>Municipio</th><th class="num">Precio</th><th class="num">Superficie</th><th class="num">Unitario</th><th>Fecha</th></tr></thead>';
+          const tbody = document.createElement('tbody');
+          result.muestra.forEach(item => {
+            const row = document.createElement('tr');
+            [item.fila, CATEGORY_LABELS[item.categoria], item.direccion || '—', item.municipio || '—', money(item.precio), area(item.superficie), money(item.valor_unitario), item.fecha_dato].forEach((value, index) => {
+              row.appendChild(Object.assign(document.createElement('td'), { textContent: value, className: index >= 4 && index <= 6 ? 'num' : '' }));
+            });
+            tbody.appendChild(row);
+          });
+          table.appendChild(tbody);
+          const scroll = document.createElement('div');
+          scroll.className = 'table-scroll';
+          scroll.appendChild(table);
+          blocks.push(section(`Vista previa${result.validos > result.muestra.length ? ` (primeras ${result.muestra.length} de ${integer(result.validos)})` : ''}`, scroll));
+        }
+        importPreview.replaceChildren(...blocks);
+        confirmImport.hidden = result.validos === 0;
+        confirmImport.textContent = `Importar ${integer(result.validos)} comparable(s)`;
+      }
+
+      document.getElementById('openImport').addEventListener('click', () => {
+        importFile.value = '';
+        document.getElementById('importCategory').value = category;
+        resetImport();
+        importDialog.showModal();
+      });
+      document.getElementById('closeImport').addEventListener('click', () => importDialog.close());
+      importFile.addEventListener('change', resetImport);
+      document.getElementById('importCategory').addEventListener('change', resetImport);
+      document.getElementById('reviewImport').addEventListener('click', async () => {
+        resetImport();
+        importPreview.textContent = 'Revisando el archivo…';
+        try {
+          const result = await sendImport(false);
+          if (result) renderImportPreview(result);
+          else importPreview.replaceChildren();
+        } catch (error) {
+          importPreview.replaceChildren();
+          importError.textContent = error.message;
+        }
+      });
+      confirmImport.addEventListener('click', async () => {
+        confirmImport.disabled = true;
+        try {
+          const result = await sendImport(true);
+          if (!result) return;
+          importDialog.close();
+          await load();
+          document.getElementById('headerInfo').textContent = `✓ Se importaron ${integer(result.importados)} comparable(s) desde ${result.archivo}.`;
+        } catch (error) {
+          importError.textContent = error.message;
+        } finally {
+          confirmImport.disabled = false;
+        }
+      });
 
       load().catch(showLoadError);
     </script>
