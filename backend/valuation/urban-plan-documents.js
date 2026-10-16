@@ -2,7 +2,7 @@ const path = require('path');
 const mammoth = require('mammoth');
 const { PDFParse } = require('pdf-parse');
 
-const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024;
+const MAX_DOCUMENT_BYTES = 100 * 1024 * 1024;
 const MAX_EXTRACTED_TEXT_LENGTH = 5_000_000;
 
 const FIELD_RULES = [
@@ -26,8 +26,6 @@ const FIELD_RULES = [
   { field: 'urbRecreacion', label: 'Recreación y deporte', expression: /^(?:recreaci[oó]n(?:\s+y\s+deporte)?|equipamiento\s+recreativo)\s*[:\-–]\s*(.+)$/i },
   { field: 'urbSeguridad', label: 'Seguridad pública', expression: /^(?:seguridad\s+p[uú]blica|equipamiento\s+de\s+seguridad)\s*[:\-–]\s*(.+)$/i },
   { field: 'urbServicios', label: 'Infraestructura y servicios', expression: /^(?:infraestructura(?:\s+y\s+servicios?)?|servicios\s+urbanos)\s*[:\-–]\s*(.+)$/i },
-  { field: 'urbDivisibilidad', label: 'Definición de divisibilidad', expression: /^(?:divisibilidad|divisi[oó]n\s+del\s+predio)\s*[:\-–]\s*(.+)$/i },
-  { field: 'urbRestricciones', label: 'Restricciones del plan territorial', expression: /^(?:restricciones(?:\s+(?:del\s+plan\s+territorial|urbanas|de\s+uso\s+de\s+suelo))?|afectaciones\s+y\s+servidumbres)\s*[:\-–]\s*(.+)$/i },
   { field: 'urbContexto', label: 'Contexto territorial y demográfico', expression: /^(?:contexto\s+(?:territorial|demogr[aá]fico)|caracter[ií]sticas\s+del\s+entorno)\s*[:\-–]\s*(.+)$/i }
 ];
 
@@ -64,7 +62,7 @@ async function extractDocumentText(fileName, buffer) {
     throw error;
   }
   if (buffer.length > MAX_DOCUMENT_BYTES) {
-    const error = new Error('Cada documento debe pesar 15 MB o menos.');
+    const error = new Error('Cada documento debe pesar 100 MB o menos.');
     error.statusCode = 413;
     throw error;
   }

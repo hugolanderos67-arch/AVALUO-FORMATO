@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f4c81" />
+    <link rel="manifest" href="/movil.webmanifest" />
+    <link rel="apple-touch-icon" href="/movil/icon-192.png" />
+    <title>Avalúo en campo</title>
+    <style>
+      :root {
+        --blue: #0f4c81;
+        --blue-dark: #0a2f4f;
+        --ink: #18293a;
+        --muted: #4b6680;
+        --line: #d2dbe6;
+        --soft: #f4f8fc;
+        --ok: #1d6b35;
+        --warn: #8a5300;
+        --danger: #8a1c1c;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--soft);
+        color: var(--ink);
+        font-size: 16px;
+      }
+
+      .app-bar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+        background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+        color: #fff;
+      }
+
+      .app-bar strong { display: block; font-size: 1.05rem; }
+      .app-bar span { font-size: 0.75rem; opacity: 0.9; }
+
+      .app-bar button {
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+
+      main { padding: 16px 16px calc(110px + env(safe-area-inset-bottom)); max-width: 720px; margin: 0 auto; }
+
+      button {
+        font: inherit;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--blue);
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+      button.danger { color: var(--danger); }
+      button.link { border: none; background: none; padding: 6px 0; font-weight: 600; text-decoration: underline; }
+      button:disabled { opacity: 0.5; }
+
+      .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+      .note { color: var(--muted); font-size: 0.85rem; line-height: 1.4; }
+      .note.is-error { color: var(--danger); font-weight: 600; }
+      .note.is-ok { color: var(--ok); font-weight: 600; }
+
+      .card, details.section {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      details.section > summary {
+        cursor: pointer;
+        font-weight: 800;
+        color: var(--blue);
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      details.section > summary::-webkit-details-marker { display: none; }
+      details.section > summary::after { content: '▾'; }
+      details.section[open] > summary::after { content: '▴'; }
+      details.section > summary .count { margin-left: auto; color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+
+      .field { display: grid; gap: 6px; margin-top: 14px; font-weight: 700; font-size: 0.9rem; }
+
+      input, select, textarea {
+        font: inherit;
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        font-weight: 400;
+      }
+
+      textarea { min-height: 84px; resize: vertical; }
+
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-weight: 500;
+        font-size: 0.88rem;
+        background: #fff;
+      }
+
+      .chip input { width: auto; margin: 0; }
+      .chip:has(input:checked) { background: #e3f0fc; border-color: var(--blue); color: var(--blue); font-weight: 700; }
+
+      .visit-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
+
+      .visit-item {
+        display: grid;
+        gap: 4px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        text-align: left;
+        color: var(--ink);
+        font-weight: 400;
+      }
+
+      .visit-item strong { color: var(--blue); }
+
+      .badge { justify-self: start; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+      .badge.pending { background: #fff1d6; color: var(--warn); }
+      .badge.synced { background: #e3f4e8; color: var(--ok); }
+
+      .thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+      .thumb { position: relative; aspect-ratio: 1; }
+      .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+
+      .thumb button {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border-radius: 50%;
+        background: rgba(138, 28, 28, 0.9);
+        color: #fff;
+        border: none;
+      }
+
+      .bottom-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        display: grid;
+        gap: 6px;
+        padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+        background: #fff;
+        border-top: 1px solid var(--line);
+        box-shadow: 0 -4px 14px rgba(15, 76, 129, 0.08);
+      }
+
+      .bottom-bar .note { margin: 0; text-align: center; }
+      .bottom-bar .buttons { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <header class="app-bar">
+      <div>
+        <strong id="appTitle">Avalúo en campo</strong>
+        <span id="connectionStatus">Comprobando conexión…</span>
+      </div>
+      <button type="button" id="backToList" hidden>← Visitas</button>
+    </header>
+
+    <main>
+      <section id="listView">
+        <div class="actions">
+          <button type="button" class="primary" id="newVisit">+ Nueva visita</button>
+          <button type="button" id="syncAll">Sincronizar pendientes</button>
+        </div>
+        <p id="listStatus" class="note" role="status" aria-live="polite"></p>
+        <ul id="visitList" class="visit-list"></ul>
+      </section>
+
+      <section id="visitView" hidden>
+        <div class="card">
+          <label class="field">Avalúo al que pertenece la visita
+            <select id="visitAvaluo"></select>
+          </label>
+          <button type="button" class="link" id="refreshAvaluos">Actualizar lista de avalúos</button>
+          <label class="field" id="visitFolioField">Folio o referencia del avalúo nuevo
+            <input id="visitFolio" placeholder="Ej.: AV-2026-031 o calle y número" />
+          </label>
+        </div>
+        <div id="visitSections"></div>
+        <details class="section" open>
+          <summary>📷 Fotos del inmueble <span class="count" id="photosCount"></span></summary>
+          <input type="file" id="photosInput" accept="image/*" capture="environment" multiple hidden />
+          <input type="file" id="photosGalleryInput" accept="image/*" multiple hidden />
+          <div class="actions" style="margin-top: 10px;">
+            <button type="button" data-pick="photosInput">Tomar foto</button>
+            <button type="button" data-pick="photosGalleryInput">De la galería</button>
+          </div>
+          <div class="thumbs" id="photosThumbs"></div>
+        </details>
+        <details class="section">
+          <summary>✏️ Croquis <span class="count" id="croquisCount"></span></summary>
+          <input type="file" id="croquisInput" accept="image/*" capture="environment" multiple hidden />
+          <input type="file" id="croquisGalleryInput" accept="image/*" multiple hidden />
+          <div class="actions" style="margin-top: 10px;">
+            <button type="button" data-pick="croquisInput">Fotografiar croquis</button>
+            <button type="button" data-pick="croquisGalleryInput">De la galería</button>
+          </div>
+          <div class="thumbs" id="croquisThumbs"></div>
+        </details>
+        <details class="section" open>
+          <summary>📝 Notas de la visita</summary>
+          <label class="field">Observaciones para la oficina (no se imprimen en el dictamen)
+            <textarea id="visitNotes" rows="4" placeholder="Daños, humedades, ampliaciones, accesos, lo que conviene revisar…"></textarea>
+          </label>
+        </details>
+        <button type="button" class="danger" id="deleteVisit" style="width: 100%;">Eliminar esta visita del celular</button>
+      </section>
+    </main>
+
+    <div class="bottom-bar" id="visitBar" hidden>
+      <p id="visitStatus" class="note" role="status" aria-live="polite">Guardado en el celular</p>
+      <div class="buttons">
+        <button type="button" id="closeVisit">Listo</button>
+        <button type="button" class="primary" id="syncVisit">Sincronizar esta visita</button>
+      </div>
+    </div>
+
+    <script src="/frontend/technical-descriptions.js"></script>
+    <script src="/frontend/finishes-catalog.js"></script>
+    <script>
+      // --- Almacenamiento en el celular (IndexedDB): visitas con sus fotos, y copia de catálogos para trabajar sin señal ---
+      const DB_NAME = 'avaluo-movil';
+      let dbPromise;
+
+      function openDb() {
+        dbPromise = dbPromise || new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, 1);
+          request.onupgradeneeded = () => {
+            request.result.createObjectStore('visitas', { keyPath: 'id' });
+            request.result.createObjectStore('catalogo', { keyPath: 'key' });
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        return dbPromise;
+      }
+
+      async function dbRequest(store, mode, operation) {
+        const db = await openDb();
+        return new Promise((resolve, reject) => {
+          const request = operation(db.transaction(store, mode).objectStore(store));
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      const db = {
+        all: store => dbRequest(store, 'readonly', objectStore => objectStore.getAll()),
+        get: (store, key) => dbRequest(store, 'readonly', objectStore => objectStore.get(key)),
+        put: (store, value) => dbRequest(store, 'readwrite', objectStore => objectStore.put(value)),
+        delete: (store, key) => dbRequest(store, 'readwrite', objectStore => objectStore.delete(key))
+      };
+
+      // --- Catálogos: se leen del propio formato de avalúo para que las opciones siempre coincidan ---
+      const INSTALLATION_GROUPS = {
+        hydraulic: 'Instalación hidráulica',
+        sanitary: 'Instalación sanitaria',
+        gas: 'Instalación de gas',
+        electric: 'Instalación eléctrica'
+      };
+
+      function labelText(label) {
+        return Array.from(label.childNodes)
+          .filter(node => node.nodeType === Node.TEXT_NODE)
+          .map(node => node.textContent)
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      // Se revisan los contenedores: el selector original de las listas múltiples está oculto a propósito en el formato.
+      function isHiddenInForm(element) {
+        return Boolean(element.parentElement?.closest('[hidden], .legacy-system-alias, .legacy-special-fields'));
+      }
+
+      // notasVisita es la casilla de oficina donde llegan las notas; en el celular se capturan aparte.
+      const EXCLUDED_FIELDS = ['notasVisita'];
+
+      function describeField(control, label) {
+        if (control.type === 'file' || control.disabled || control.dataset.descriptionFor !== undefined || EXCLUDED_FIELDS.includes(control.name) || isHiddenInForm(control)) return null;
+        let text = label;
+        if (control.name === 'vidaUtilTotalCustom') text = 'Vida útil total: otro valor (años)';
+        if (control.tagName === 'SELECT') {
+          const options = control.dataset.conservationState !== undefined
+            ? TechnicalDescriptions.CONSERVATION_STATES.map(state => ({ value: state.value, label: state.label }))
+            : Array.from(control.options).filter(option => option.value !== '').map(option => ({ value: option.value, label: option.textContent.trim() }));
+          return { name: control.name, label: text, kind: control.multiple ? 'multi' : 'select', options };
+        }
+        if (control.tagName === 'TEXTAREA') return { name: control.name, label: text, kind: 'textarea' };
+        return { name: control.name, label: text, kind: control.type === 'number' ? 'number' : 'text', min: control.getAttribute('min'), step: control.getAttribute('step') };
+      }
+
+      function collectFields(container) {
+        const fields = [];
+        container.querySelectorAll('label, .multi-select-field').forEach(holder => {
+          if (holder.matches('.multi-select-field')) {
+            const select = holder.querySelector('select[name]');
+            const field = select && describeField(select, holder.querySelector('span')?.textContent.trim() || select.name);
+            if (field) fields.push(field);
+            return;
+          }
+          if (holder.closest('.multi-select-field')) return;
+          const text = labelText(holder);
+          holder.querySelectorAll('[name]').forEach(control => {
+            const field = describeField(control, text);
+            if (field && !fields.some(existing => existing.name === field.name)) fields.push(field);
+          });
+        });
+        return fields;
+      }
+
+      async function loadSchema() {
+        try {
+          const response = await fetch('/', { cache: 'no-cache' });
+          if (!response.ok) throw new Error('sin respuesta');
+          const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+          const sections = [];
+          const generalTitle = page.getElementById('capture-building');
+          sections.push({ title: '🏠 Descripción general', fields: collectFields(generalTitle.nextElementSibling) });
+          const elementsTitle = page.getElementById('capture-construction-elements');
+          sections.push({ title: '🧱 Elementos de la construcción', fields: collectFields(elementsTitle.nextElementSibling) });
+
+          FinishesCatalog.FINISH_GROUPS.forEach(group => {
+            sections.push({
+              title: `🎨 ${group.title.replace(/^[A-Z]\.- \) /, '')}`,
+              fields: group.fields.map(([name, label, options]) => ({ name, label, kind: 'multi', options: options.map(value => ({ value, label: value })) }))
+            });
+          });
+
+          const installations = Array.from(page.querySelectorAll('.fieldset')).find(fieldset => fieldset.querySelector(':scope > .section-title')?.textContent.includes('Instalaciones del inmueble'));
+          let pending = [];
+          Array.from(installations.children).forEach(child => {
+            const editor = child.matches('.description-editor') ? child.querySelector('[data-description-for]') : null;
+            if (editor) {
+              if (pending.length) sections.push({ title: `🔧 ${INSTALLATION_GROUPS[editor.dataset.descriptionFor] || 'Instalaciones'}`, fields: pending });
+              pending = [];
+              return;
+            }
+            if (child.matches('[hidden], .legacy-special-fields')) return;
+            if (child.matches('label')) {
+              const field = child.querySelector('[name]') && describeField(child.querySelector('[name]'), labelText(child));
+              if (field) pending.push(field);
+            } else if (child.matches('.row')) {
+              pending.push(...collectFields(child));
+            }
+          });
+          const schema = sections.filter(section => section.fields.length);
+          await db.put('catalogo', { key: 'schema', sections: schema, updatedAt: Date.now() });
+          return schema;
+        } catch {
+          const cached = await db.get('catalogo', 'schema');
+          if (cached) return cached.sections;
+          throw new Error('No se pudieron cargar los catálogos. Abra la app una vez con conexión al servidor.');
+        }
+      }
+
+      // --- Estado de la app ---
+      const views = { list: document.getElementById('listView'), visit: document.getElementById('visitView') };
+      const visitBar = document.getElementById('visitBar');
+      const visitStatus = document.getElementById('visitStatus');
+      const listStatus = document.getElementById('listStatus');
+      const connectionStatus = document.getElementById('connectionStatus');
+      let schema = [];
+      let avaluos = [];
+      let currentVisit = null;
+      let saveTimer;
+      const objectUrls = [];
+
+      function setStatus(element, message, state = '') {
+        element.textContent = message;
+        element.className = `note${state ? ` is-${state}` : ''}`;
+      }
+
+      async function serverReachable() {
+        try {
+          const response = await fetch('/health', { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+          return response.ok;
+        } catch {
+          return false;
+        }
+      }
+
+      async function updateConnection() {
+        const online = navigator.onLine && await serverReachable();
+        connectionStatus.textContent = online ? '🟢 Conectado al servidor' : '⚪ Sin conexión: se guarda en el celular';
+        return online;
+      }
+
+      async function loadAvaluos(fromServer) {
+        if (fromServer) {
+          try {
+            const response = await fetch('/api/avaluos');
+            const result = await response.json();
+            if (response.ok) {
+              avaluos = result.avaluos.map(item => ({ id: item.id, label: [item.folio || `#${item.id}`, [item.calle, item.colonia].filter(Boolean).join(', ')].filter(Boolean).join(' · ') }));
+              await db.put('catalogo', { key: 'avaluos', items: avaluos, updatedAt: Date.now() });
+              return true;
+            }
+          } catch {
+            // Sin conexión: se usa la última lista guardada.
+          }
+        }
+        avaluos = (await db.get('catalogo', 'avaluos'))?.items || [];
+        return false;
+      }
+
+      // --- Lista de visitas ---
+      function formatDate(value) {
+        return new Date(value).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+      }
+
+      async function renderList() {
+        const visits = (await db.all('visitas')).sort((a, b) => b.actualizadoEn - a.actualizadoEn);
+        const list = document.getElementById('visitList');
+        list.replaceChildren(...visits.map(visit => {
+          const item = document.createElement('li');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'visit-item';
+          const title = document.createElement('strong');
+          title.textContent = visit.avaluoLabel || visit.folio || 'Avalúo nuevo sin referencia';
+          const details = document.createElement('span');
+          const filled = Object.keys(visit.fields).length;
+          details.textContent = `${formatDate(visit.creadoEn)} · ${filled} dato(s) · ${visit.photos.length} foto(s) · ${visit.croquis.length} croquis`;
+          const badge = document.createElement('span');
+          badge.className = `badge ${visit.estado === 'sincronizada' ? 'synced' : 'pending'}`;
+          badge.textContent = visit.estado === 'sincronizada' ? `✓ Sincronizada con el avalúo #${visit.resultado.id}` : 'Pendiente de sincronizar';
+          button.append(title, details, badge);
+          button.addEventListener('click', () => openVisit(visit.id));
+          item.appendChild(button);
+          return item;
+        }));
+        const pending = visits.filter(visit => visit.estado !== 'sincronizada').length;
+        document.getElementById('syncAll').disabled = pending === 0;
+        if (!visits.length) setStatus(listStatus, 'Aún no hay visitas. Use "Nueva visita" al llegar al inmueble; funciona sin señal.');
+        else if (!listStatus.textContent) setStatus(listStatus, `${pending} visita(s) pendiente(s) de sincronizar.`);
+      }
+
+      function showView(name) {
+        views.list.hidden = name !== 'list';
+        views.visit.hidden = name !== 'visit';
+        visitBar.hidden = name !== 'visit';
+        document.getElementById('backToList').hidden = name !== 'visit';
+        window.scrollTo(0, 0);
+      }
+
+      // --- Formulario de la visita ---
+      function scheduleSave() {
+        if (!currentVisit) return;
+        currentVisit.actualizadoEn = Date.now();
+        setStatus(visitStatus, 'Guardando en el celular…');
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(async () => {
+          await db.put('visitas', currentVisit);
+          setStatus(visitStatus, 'Guardado en el celular');
+        }, 400);
+      }
+
+      function setFieldValue(name, value) {
+        const empty = Array.isArray(value) ? !value.length : !String(value).trim();
+        if (empty) delete currentVisit.fields[name];
+        else currentVisit.fields[name] = value;
+        updateSectionCounts();
+        scheduleSave();
+      }
+
+      function renderField(field) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'field';
+        const value = currentVisit.fields[field.name];
+        if (field.kind === 'multi') {
+          wrapper.appendChild(document.createTextNode(field.label));
+          const chips = document.createElement('div');
+          chips.className = 'chips';
+          field.options.forEach(option => {
+            const chip = document.createElement('label');
+            chip.className = 'chip';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = Array.isArray(value) && value.includes(option.value);
+            checkbox.addEventListener('change', () => {
+              const selected = Array.from(chips.querySelectorAll('input'))
+                .map((input, index) => input.checked ? field.options[index].value : null)
+                .filter(Boolean);
+              setFieldValue(field.name, selected);
+            });
+            chip.append(checkbox, option.label);
+            chips.appendChild(chip);
+          });
+          wrapper.appendChild(chips);
+          return wrapper;
+        }
+        const label = document.createElement('label');
+        label.className = 'field';
+        label.appendChild(document.createTextNode(field.label));
+        let control;
+        if (field.kind === 'select') {
+          control = document.createElement('select');
+          control.appendChild(new Option('—', ''));
+          field.options.forEach(option => control.appendChild(new Option(option.label, option.value)));
+          if (value && !field.options.some(option => option.value === value)) control.appendChild(new Option(value, value));
+        } else if (field.kind === 'textarea') {
+          control = document.createElement('textarea');
+          control.rows = 3;
+        } else {
+          control = document.createElement('input');
+          control.type = field.kind === 'number' ? 'number' : 'text';
+          if (field.kind === 'number') {
+            control.inputMode = 'decimal';
+            if (field.min) control.min = field.min;
+            control.step = field.step || 'any';
+          }
+        }
+        control.value = value || '';
+        control.addEventListener(field.kind === 'select' ? 'change' : 'input', () => setFieldValue(field.name, control.value));
+        label.appendChild(control);
+        return label;
+      }
+
+      function updateSectionCounts() {
+        document.querySelectorAll('#visitSections details').forEach((details, index) => {
+          const filled = schema[index].fields.filter(field => currentVisit.fields[field.name] !== undefined).length;
+          details.querySelector('.count').textContent = filled ? `${filled} capturado(s)` : '';
+        });
+      }
+
+      function renderSections() {
+        document.getElementById('visitSections').replaceChildren(...schema.map((section, index) => {
+          const details = document.createElement('details');
+          details.className = 'section';
+          details.open = index === 0;
+          const summary = document.createElement('summary');
+          summary.textContent = section.title;
+          const count = document.createElement('span');
+          count.className = 'count';
+          summary.appendChild(count);
+          details.appendChild(summary);
+          section.fields.forEach(field => details.appendChild(renderField(field)));
+          return details;
+        }));
+        updateSectionCounts();
+      }
+
+      function renderPhotos(collection) {
+        objectUrls.splice(0).forEach(url => URL.revokeObjectURL(url));
+        ['photos', 'croquis'].forEach(name => {
+          const container = document.getElementById(`${name}Thumbs`);
+          document.getElementById(`${name}Count`).textContent = currentVisit[name].length ? `${currentVisit[name].length}` : '';
+          container.replaceChildren(...currentVisit[name].map((photo, index) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'thumb';
+            const image = document.createElement('img');
+            const url = URL.createObjectURL(photo.blob);
+            objectUrls.push(url);
+            image.src = url;
+            image.alt = photo.name;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.textContent = '×';
+            remove.setAttribute('aria-label', `Quitar ${photo.name}`);
+            remove.addEventListener('click', () => {
+              currentVisit[name].splice(index, 1);
+              renderPhotos();
+              scheduleSave();
+            });
+            thumb.append(image, remove);
+            return thumb;
+          }));
+        });
+      }
+
+      // Las fotos se reducen a 1600 px y JPEG para que ocupen poco en el celular y suban rápido.
+      function compressImage(file) {
+        return new Promise((resolve, reject) => {
+          const image = new Image();
+          const url = URL.createObjectURL(file);
+          image.onload = () => {
+            const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(image.naturalWidth * scale);
+            canvas.height = Math.round(image.naturalHeight * scale);
+            canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(url);
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('No se pudo procesar la imagen.')), 'image/jpeg', 0.82);
+          };
+          image.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('No se pudo leer la imagen.'));
+          };
+          image.src = url;
+        });
+      }
+
+      async function addPhotos(collection, files) {
+        if (!currentVisit || currentVisit.estado === 'sincronizada') return;
+        setStatus(visitStatus, 'Procesando fotos…');
+        for (const file of files) {
+          try {
+            const blob = await compressImage(file);
+            const baseName = (file.name || 'foto').replace(/\.[^.]+$/, '');
+            currentVisit[collection].push({ id: crypto.randomUUID(), name: `${baseName}.jpg`, type: 'image/jpeg', size: blob.size, blob });
+          } catch (error) {
+            setStatus(visitStatus, error.message, 'error');
+          }
+        }
+        renderPhotos();
+        scheduleSave();
+      }
+
+      function avaluoOptions() {
+        const select = document.getElementById('visitAvaluo');
+        select.replaceChildren(new Option('➕ Avalúo nuevo', ''), ...avaluos.map(item => new Option(item.label, String(item.id))));
+        if (currentVisit.avaluoId && !avaluos.some(item => item.id === currentVisit.avaluoId)) {
+          select.appendChild(new Option(currentVisit.avaluoLabel || `#${currentVisit.avaluoId}`, String(currentVisit.avaluoId)));
+        }
+        select.value = currentVisit.avaluoId ? String(currentVisit.avaluoId) : '';
+        document.getElementById('visitFolioField').hidden = Boolean(currentVisit.avaluoId);
+      }
+
+      function setReadOnly(readOnly) {
+        views.visit.querySelectorAll('input, select, textarea, [data-pick], .thumb button').forEach(element => { element.disabled = readOnly; });
+        document.getElementById('syncVisit').hidden = readOnly;
+        document.getElementById('refreshAvaluos').hidden = readOnly;
+      }
+
+      async function openVisit(id) {
+        currentVisit = await db.get('visitas', id);
+        if (!currentVisit) return;
+        renderSections();
+        avaluoOptions();
+        document.getElementById('visitFolio').value = currentVisit.folio || '';
+        document.getElementById('visitNotes').value = currentVisit.notas || '';
+        renderPhotos();
+        showView('visit');
+        const synced = currentVisit.estado === 'sincronizada';
+        setReadOnly(synced);
+        setStatus(visitStatus, synced
+          ? `✓ Sincronizada el ${formatDate(currentVisit.sincronizadoEn)} con el avalúo #${currentVisit.resultado.id}. Solo lectura.`
+          : 'Guardado en el celular', synced ? 'ok' : '');
+      }
+
+      async function newVisit() {
+        const visit = {
+          id: crypto.randomUUID(),
+          avaluoId: null,
+          avaluoLabel: '',
+          folio: '',
+          fields: {},
+          photos: [],
+          croquis: [],
+          notas: '',
+          estado: 'pendiente',
+          creadoEn: Date.now(),
+          actualizadoEn: Date.now()
+        };
+        await db.put('visitas', visit);
+        await openVisit(visit.id);
+      }
+
+      // --- Sincronización: sube fotos y croquis, y después envía la visita al servidor ---
+      async function uploadPhoto(photo) {
+        const body = new FormData();
+        body.append('archivo', new File([photo.blob], photo.name, { type: photo.type }));
+        const response = await fetch('/api/cargas', { method: 'POST', body });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'No se pudo subir una foto.');
+        return { name: photo.name, type: photo.type, size: photo.size, url: result.url };
+      }
+
+      async function syncVisit(visit, report) {
+        const total = visit.photos.length + visit.croquis.length;
+        let done = 0;
+        const uploaded = { photos: [], croquis: [] };
+        for (const collection of ['photos', 'croquis']) {
+          for (const photo of visit[collection]) {
+            report(`Subiendo fotos ${++done} de ${total}…`);
+            uploaded[collection].push(await uploadPhoto(photo));
+          }
+        }
+        report('Enviando la visita…');
+        const response = await fetch('/api/visitas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            visitaId: visit.id,
+            avaluoId: visit.avaluoId,
+            folio: visit.folio,
+            fields: visit.fields,
+            photos: uploaded.photos,
+            croquis: uploaded.croquis,
+            notas: visit.notas,
+            capturadoEn: new Date(visit.creadoEn).toISOString()
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'El servidor no aceptó la visita.');
+        // Ya en el servidor: se liberan las fotos del celular y se conserva el resumen.
+        visit.estado = 'sincronizada';
+        visit.sincronizadoEn = Date.now();
+        visit.resultado = { id: result.id, folio: result.folio };
+        visit.avaluoId = result.id;
+        visit.avaluoLabel = visit.avaluoLabel || result.folio || `#${result.id}`;
+        visit.photos = [];
+        visit.croquis = [];
+        await db.put('visitas', visit);
+        return result;
+      }
+
+      async function syncCurrentVisit() {
+        clearTimeout(saveTimer);
+        await db.put('visitas', currentVisit);
+        if (!await updateConnection()) {
+          setStatus(visitStatus, 'Sin conexión con el servidor. La visita quedó guardada en el celular; sincronice cuando tenga señal y la PC esté encendida.', 'error');
+          return;
+        }
+        const button = document.getElementById('syncVisit');
+        button.disabled = true;
+        try {
+          const result = await syncVisit(currentVisit, message => setStatus(visitStatus, message));
+          await openVisit(currentVisit.id);
+          setStatus(visitStatus, `✓ Sincronizada con el avalúo #${result.id}${result.folio ? ` (${result.folio})` : ''}. Ábralo en la computadora para revisarlo.`, 'ok');
+        } catch (error) {
+          setStatus(visitStatus, `No se sincronizó: ${error.message} La visita sigue guardada en el celular.`, 'error');
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function syncAllPending() {
+        if (!await updateConnection()) {
+          setStatus(listStatus, 'Sin conexión con el servidor. Las visitas siguen guardadas en el celular.', 'error');
+          return;
+        }
+        const pending = (await db.all('visitas')).filter(visit => visit.estado !== 'sincronizada');
+        let synced = 0;
+        const failures = [];
+        for (const visit of pending) {
+          try {
+            await syncVisit(visit, message => setStatus(listStatus, `${visit.avaluoLabel || visit.folio || 'Visita'}: ${message}`));
+            synced += 1;
+          } catch (error) {
+            failures.push(`${visit.avaluoLabel || visit.folio || 'Visita'}: ${error.message}`);
+          }
+        }
+        await loadAvaluos(true);
+        setStatus(listStatus, failures.length ? `Se sincronizaron ${synced}. Con error: ${failures.join(' · ')}` : `✓ Se sincronizaron ${synced} visita(s).`, failures.length ? 'error' : 'ok');
+        await renderList();
+      }
+
+      // --- Eventos ---
+      document.getElementById('newVisit').addEventListener('click', newVisit);
+      document.getElementById('syncAll').addEventListener('click', syncAllPending);
+      document.getElementById('syncVisit').addEventListener('click', syncCurrentVisit);
+      const backToList = async () => {
+        clearTimeout(saveTimer);
+        if (currentVisit && currentVisit.estado !== 'sincronizada') await db.put('visitas', currentVisit);
+        currentVisit = null;
+        setStatus(listStatus, '');
+        await renderList();
+        showView('list');
+      };
+      document.getElementById('backToList').addEventListener('click', backToList);
+      document.getElementById('closeVisit').addEventListener('click', backToList);
+      document.getElementById('deleteVisit').addEventListener('click', async () => {
+        const pending = currentVisit.estado !== 'sincronizada';
+        if (!confirm(pending ? 'Esta visita NO se ha sincronizado. ¿Eliminarla con sus fotos? No se puede deshacer.' : '¿Quitar esta visita del celular? Ya está guardada en el avalúo.')) return;
+        await db.delete('visitas', currentVisit.id);
+        currentVisit = null;
+        await backToList();
+      });
+      document.getElementById('visitAvaluo').addEventListener('change', event => {
+        const id = Number(event.target.value) || null;
+        currentVisit.avaluoId = id;
+        currentVisit.avaluoLabel = id ? event.target.selectedOptions[0].textContent : '';
+        document.getElementById('visitFolioField').hidden = Boolean(id);
+        scheduleSave();
+      });
+      document.getElementById('refreshAvaluos').addEventListener('click', async () => {
+        const updated = await loadAvaluos(true);
+        avaluoOptions();
+        setStatus(visitStatus, updated ? 'Lista de avalúos actualizada.' : 'Sin conexión: se muestra la última lista descargada.', updated ? 'ok' : 'error');
+      });
+      document.getElementById('visitFolio').addEventListener('input', event => {
+        currentVisit.folio = event.target.value;
+        scheduleSave();
+      });
+      document.getElementById('visitNotes').addEventListener('input', event => {
+        currentVisit.notas = event.target.value;
+        scheduleSave();
+      });
+      document.querySelectorAll('[data-pick]').forEach(button => {
+        button.addEventListener('click', () => document.getElementById(button.dataset.pick).click());
+      });
+      [['photosInput', 'photos'], ['photosGalleryInput', 'photos'], ['croquisInput', 'croquis'], ['croquisGalleryInput', 'croquis']].forEach(([id, collection]) => {
+        const input = document.getElementById(id);
+        input.addEventListener('change', async () => {
+          const files = Array.from(input.files || []);
+          input.value = '';
+          await addPhotos(collection, files);
+        });
+      });
+      window.addEventListener('online', updateConnection);
+      window.addEventListener('offline', updateConnection);
+
+      // --- Inicio ---
+      (async () => {
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/movil-sw.js', { scope: '/movil' }).catch(() => {});
+        // Pide al navegador no borrar los datos guardados (fotos de visitas pendientes) cuando falte espacio.
+        navigator.storage?.persist?.().catch(() => {});
+        const online = await updateConnection();
+        try {
+          schema = await loadSchema();
+        } catch (error) {
+          setStatus(listStatus, error.message, 'error');
+          document.getElementById('newVisit').disabled = true;
+        }
+        await loadAvaluos(online);
+        await renderList();
+      })();
+    </script>
+  </body>
+</html>

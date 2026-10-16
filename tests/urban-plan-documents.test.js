@@ -73,7 +73,7 @@ test('extrae texto TXT en memoria y restringe tipos y tamaños', async () => {
   const result = await extractUrbanPlanDocument('plan.txt', Buffer.from('Uso de suelo: H3', 'utf8'));
   assert.equal(result.matches[0].field, 'usoSueloPot');
   await assert.rejects(extractUrbanPlanDocument('plan.doc', Buffer.from('contenido')), /PDF, DOCX o TXT/);
-  await assert.rejects(extractUrbanPlanDocument('plan.txt', Buffer.alloc(MAX_DOCUMENT_BYTES + 1)), /15 MB/);
+  await assert.rejects(extractUrbanPlanDocument('plan.txt', Buffer.alloc(MAX_DOCUMENT_BYTES + 1)), /100 MB/);
 });
 
 test('extrae una etiqueta territorial desde un PDF con texto seleccionable', async () => {

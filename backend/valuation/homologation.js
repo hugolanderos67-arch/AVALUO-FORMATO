@@ -1,3 +1,12 @@
+const { calculateIncomeApproach } = require('./income-approach');
+const { homologateComparables, LAND_FACTOR_KEYS, RENT_FACTOR_KEYS } = require('./market-comparables');
+
+const FINAL_APPROACH_LABELS = {
+  market: 'Comparativo de mercado',
+  physical: 'Físico o directo',
+  income: 'Ingresos (capitalización de rentas)'
+};
+
 function roundCurrency(value) {
   return Number(value.toFixed(2));
 }
@@ -41,16 +50,18 @@ function calculateHomologation(input) {
   const constructionValue = roundCurrency(Number(subject.physicalConstructionValue) > 0 ? Number(subject.physicalConstructionValue) : 0);
   const accessoryValue = roundCurrency(Number(subject.physicalAccessoryValue) || 0);
   const valorFisico = roundCurrency(terrainValue + constructionValue + accessoryValue);
-  const annualIncome = Number(subject.annualIncome) > 0 ? Number(subject.annualIncome) : 0;
-  const capRate = Number(subject.capRate) > 0 ? Number(subject.capRate) : 0;
-  const valorCapitalizacion = annualIncome > 0 && capRate > 0 ? roundCurrency(annualIncome / capRate) : 0;
-  const hasIncomeInputs = Number(subject.annualIncome) > 0 && Number(subject.capRate) > 0;
-  const finalValue = valorMercado;
+  const incomeApproach = calculateIncomeApproach(subject);
+  const valorCapitalizacion = incomeApproach.value;
+  const approachValues = { market: valorMercado, physical: valorFisico, income: valorCapitalizacion };
+  const finalApproach = Object.hasOwn(FINAL_APPROACH_LABELS, subject.finalApproach) ? subject.finalApproach : 'market';
+  const finalValue = approachValues[finalApproach];
 
   return {
     summary: {
       averageUnitValuePerM2: roundCurrency(averageUnitValue),
       finalValue,
+      finalApproach,
+      finalApproachLabel: FINAL_APPROACH_LABELS[finalApproach],
       valorTerreno: terrainValue,
       valorConstruccion: constructionValue,
       valorFisico,
@@ -65,11 +76,12 @@ function calculateHomologation(input) {
       physicalValuationStatus: terrainValue > 0 || constructionValue > 0 || accessoryValue > 0
         ? `El enfoque físico incluye solo los componentes capturados. ${terrainSurface > 0 && Number(subject.unitLandValue) <= 0 ? 'Falta valor unitario documentado de terreno. ' : ''}${constructionSurface > 0 && constructionValue <= 0 ? 'Falta costo nuevo de reposición y depreciación documentados para construcción. ' : ''}${accessoryValue <= 0 ? 'No se capturó valor depreciado de accesorios. ' : ''}Verificar fuentes, fecha, depreciación y alcance.`
         : 'Enfoque físico pendiente: capture superficies y valores unitarios documentados de terreno, construcción o accesorios; no se estimó costo de reposición.',
-      incomeValuationStatus: hasIncomeInputs
-        ? 'Capitalización calculada con ingreso anual neto y tasa capturados; verificar soporte y tasa aplicable.'
-        : 'Capitalización pendiente: capture ingreso anual neto y tasa documentados; no se estimó renta ni tasa.',
+      incomeValuationStatus: incomeApproach.status,
       weights
     },
+    incomeApproach,
+    landComparables: homologateComparables(input.landComparables, LAND_FACTOR_KEYS),
+    rentComparables: homologateComparables(input.rentComparables, RENT_FACTOR_KEYS),
     homologationTable: homologatedValues.map(item => ({
       id: item.id,
       address: item.address,

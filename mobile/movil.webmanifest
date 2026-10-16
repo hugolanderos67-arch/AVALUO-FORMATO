@@ -1,0 +1,17 @@
+{
+  "name": "Avalúo en campo",
+  "short_name": "Avalúo campo",
+  "description": "Captura de construcción, instalaciones, fotos y croquis durante la visita al inmueble.",
+  "lang": "es-MX",
+  "start_url": "/movil",
+  "scope": "/movil",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f8fc",
+  "theme_color": "#0f4c81",
+  "icons": [
+    { "src": "/movil/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/movil/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/movil/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

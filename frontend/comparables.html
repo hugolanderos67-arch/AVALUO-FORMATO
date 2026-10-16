@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Banco de comparables</title>
+    <style>
+      :root {
+        --surface: #ffffff;
+        --page: #f4f8fc;
+        --line: #dfe7f0;
+        --ink: #18293a;
+        --ink-2: #33506b;
+        --muted: #5d7590;
+        --accent: #0f4c81;
+        --warn: #8a5300;
+        --warn-bg: #fff1d6;
+        --danger: #8a1c1c;
+        --header: linear-gradient(135deg, #0a2f4f 0%, #0f4c81 100%);
+        color-scheme: light;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --surface: #1a1a19;
+          --page: #111312;
+          --line: #2e3438;
+          --ink: #e8edf2;
+          --ink-2: #c3ceda;
+          --muted: #93a3b5;
+          --accent: #8cbdf0;
+          --warn: #f2c26b;
+          --warn-bg: #3a2c12;
+          --danger: #f19a9a;
+          --header: linear-gradient(135deg, #0a1a2a 0%, #123456 100%);
+          color-scheme: dark;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+      header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 24px; background: var(--header); color: #fff; }
+      header h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.04em; }
+      header p { margin: 2px 0 0; font-size: 0.8rem; opacity: 0.85; }
+      header nav { display: flex; gap: 16px; }
+      header a { color: #fff; font-weight: 700; font-size: 0.85rem; }
+
+      main { max-width: 1320px; margin: 0 auto; padding: 18px 16px 40px; }
+
+      .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+
+      .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+      .segmented button { border: none; border-radius: 0; padding: 9px 16px; color: var(--muted); }
+      .segmented button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+
+      .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; padding: 12px 14px; margin-bottom: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+      .filters label { display: grid; gap: 4px; font-size: 0.72rem; font-weight: 700; color: var(--ink-2); flex: 1 1 170px; }
+      .filters .spacer { flex: 1 1 0; }
+
+      select, button, input, textarea { font: inherit; font-size: 0.88rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+      .filters select, .filters input { width: 100%; }
+      button { cursor: pointer; font-weight: 700; color: var(--accent); }
+      button.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+
+      .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+      .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+      .tile .label { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+      .tile .value { font-size: 1.45rem; font-weight: 650; }
+      .tile .sub { font-size: 0.75rem; color: var(--muted); }
+
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+      .table-scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+      th, td { padding: 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+      td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      td a { color: var(--accent); font-weight: 600; }
+      td small { display: block; color: var(--muted); }
+      .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; background: var(--warn-bg); color: var(--warn); white-space: nowrap; }
+      .actions { display: flex; gap: 6px; white-space: nowrap; }
+      .actions button { padding: 4px 8px; font-size: 0.75rem; }
+      .actions .remove { color: var(--danger); }
+      .thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: block; }
+      .empty { padding: 28px 8px; text-align: center; color: var(--muted); }
+      .note { font-size: 0.8rem; color: var(--muted); }
+
+      dialog { width: min(760px, calc(100vw - 24px)); border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: var(--surface); color: var(--ink); }
+      dialog::backdrop { background: rgba(10, 47, 79, 0.45); }
+      dialog h2 { margin: 0 0 12px; font-size: 1.05rem; color: var(--accent); }
+      .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .form-grid label { display: grid; gap: 4px; font-size: 0.75rem; font-weight: 700; color: var(--ink-2); }
+      .form-grid label.wide { grid-column: 1 / -1; }
+      .form-grid input, .form-grid select, .form-grid textarea { width: 100%; }
+      .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+      .error { color: var(--danger); font-weight: 600; font-size: 0.82rem; }
+
+      @media (max-width: 760px) {
+        .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .form-grid { grid-template-columns: minmax(0, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Banco de comparables</h1>
+        <p id="headerInfo">Cargando…</p>
+      </div>
+      <nav><a href="/">← Formato</a><a href="/estadisticas">Estadísticas</a></nav>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <div class="segmented" role="group" aria-label="Tipo de comparable">
+          <button type="button" data-category="construccion" aria-pressed="true">Construcción</button>
+          <button type="button" data-category="terreno" aria-pressed="false">Terreno</button>
+          <button type="button" data-category="renta" aria-pressed="false">Renta</button>
+        </div>
+        <div class="actions">
+          <button type="button" id="exportCsv">Exportar CSV</button>
+          <button type="button" class="primary" id="addComparable">+ Agregar comparable</button>
+        </div>
+      </div>
+
+      <section class="filters" aria-label="Filtros">
+        <label>Tipo de inmueble <select id="filterType"></select></label>
+        <label>Municipio <select id="filterMunicipality"></select></label>
+        <label>Antigüedad del dato
+          <select id="filterAge">
+            <option value="">Todos</option>
+            <option value="6">Últimos 6 meses</option>
+            <option value="12">Últimos 12 meses</option>
+            <option value="24">Últimos 24 meses</option>
+          </select>
+        </label>
+        <label>Buscar <input id="filterText" type="search" placeholder="Dirección, colonia, fuente o notas" /></label>
+      </section>
+
+      <section class="tiles" aria-label="Resumen">
+        <div class="tile"><span class="label">Comparables</span><span class="value" id="tileCount">—</span><span class="sub" id="tileCountSub"></span></div>
+        <div class="tile"><span class="label">Valor unitario mediano</span><span class="value" id="tileMedian">—</span><span class="sub" id="tileUnit"></span></div>
+        <div class="tile"><span class="label">Valor unitario promedio</span><span class="value" id="tileAverage">—</span><span class="sub">De los comparables filtrados</span></div>
+        <div class="tile"><span class="label">Rango</span><span class="value" id="tileRange">—</span><span class="sub">Mínimo – máximo</span></div>
+      </section>
+
+      <section class="card">
+        <div class="table-scroll" id="comparablesTable"></div>
+        <p class="note">Los comparables de cada avalúo se agregan solos al guardarlo, y se actualizan cada vez que se vuelve a guardar. Lo que edite o quite aquí se respeta en los siguientes guardados. Ubicación: "📍 ubicado" tiene coordenadas propias; "📍 aprox." se ubicó en la zona del inmueble valuado porque no tiene coordenadas propias; "sin coordenadas" no podrá localizarse por distancia.</p>
+      </section>
+    </main>
+
+    <dialog id="comparableDialog" aria-labelledby="dialogTitle">
+      <form id="comparableForm" method="dialog">
+        <h2 id="dialogTitle">Agregar comparable</h2>
+        <div class="form-grid">
+          <label>Tipo de comparable
+            <select name="categoria" required>
+              <option value="construccion">Construcción (venta u oferta)</option>
+              <option value="terreno">Terreno</option>
+              <option value="renta">Renta</option>
+            </select>
+          </label>
+          <label data-hide-for="terreno">Tipo de inmueble <input name="tipoInmueble" list="propertyTypes" placeholder="Casa habitación, departamento…" /></label>
+          <label>Tipo de dato <select name="tipoDato"></select></label>
+          <label>Fecha del dato <input name="fechaDato" type="date" /></label>
+          <label class="wide">Dirección <input name="direccion" placeholder="Calle, número" /></label>
+          <label>Colonia <input name="colonia" /></label>
+          <label>Municipio <input name="municipio" list="municipalities" /></label>
+          <label>Estado <input name="estado" /></label>
+          <label><span id="priceLabel">Precio ($)</span> <input name="precio" type="number" min="0" step="0.01" required /></label>
+          <label><span id="surfaceLabel">Superficie construida (m²)</span> <input name="superficie" type="number" min="0" step="0.01" required /></label>
+          <label data-show-for="construccion">Superficie de terreno (m²) <input name="superficieTerreno" type="number" min="0" step="0.01" /></label>
+          <label data-show-for="construccion">Edad (años) <input name="edad" type="number" min="0" step="1" /></label>
+          <label>Latitud <input name="latitud" type="number" step="any" /></label>
+          <label>Longitud <input name="longitud" type="number" step="any" /></label>
+          <label class="wide">Fuente o enlace <input name="fuente" placeholder="Portal y enlace del anuncio, inmobiliaria, notaría, contacto" /></label>
+          <label class="wide">Notas <textarea name="notas" rows="2" placeholder="Verificación, características, observaciones"></textarea></label>
+        </div>
+        <p class="error" id="formError" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" id="cancelDialog">Cancelar</button>
+          <button type="submit" class="primary" id="saveComparable">Guardar comparable</button>
+        </div>
+      </form>
+    </dialog>
+    <datalist id="propertyTypes"></datalist>
+    <datalist id="municipalities"></datalist>
+
+    <script>
+      const CATEGORY = {
+        construccion: { price: 'Precio ($)', surface: 'Superficie construida (m²)', unit: '$/m²', dataTypes: ['Oferta', 'Venta'] },
+        terreno: { price: 'Precio ($)', surface: 'Superficie de terreno (m²)', unit: '$/m²', dataTypes: ['Oferta', 'Venta'] },
+        renta: { price: 'Renta mensual ($)', surface: 'Superficie rentable (m²)', unit: '$/m² mensual', dataTypes: ['Oferta de renta', 'Renta contratada'] }
+      };
+      const money = value => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(value);
+      const integer = value => new Intl.NumberFormat('es-MX').format(value);
+      const area = value => value ? new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(value) : '';
+      const median = values => {
+        if (!values.length) return null;
+        const sorted = [...values].sort((a, b) => a - b);
+        const middle = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+      };
+      const monthsAgo = date => {
+        const [year, month] = String(date).split('-').map(Number);
+        const today = new Date();
+        return (today.getFullYear() - year) * 12 + (today.getMonth() + 1 - month);
+      };
+
+      let category = 'construccion';
+      let all = [];
+      let editingId = null;
+
+      async function load() {
+        const response = await fetch(`/api/comparables?${new URLSearchParams({ categoria: category })}`);
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        all = result.comparables;
+        const fill = (select, values) => {
+          const previous = select.value;
+          select.replaceChildren(new Option('Todos', ''), ...values.map(value => new Option(value, value)));
+          if (values.includes(previous)) select.value = previous;
+        };
+        const distinct = key => [...new Set(all.map(item => item[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+        fill(document.getElementById('filterType'), distinct('tipo_inmueble'));
+        fill(document.getElementById('filterMunicipality'), distinct('municipio'));
+        document.getElementById('propertyTypes').replaceChildren(...distinct('tipo_inmueble').map(value => new Option(value)));
+        document.getElementById('municipalities').replaceChildren(...distinct('municipio').map(value => new Option(value)));
+        document.getElementById('filterType').closest('label').hidden = category === 'terreno';
+        render();
+        refreshCounts();
+      }
+
+      async function refreshCounts() {
+        try {
+          const counts = await Promise.all(Object.keys(CATEGORY).map(async key => (await (await fetch(`/api/comparables?categoria=${key}`)).json()).comparables.length));
+          document.getElementById('headerInfo').textContent = `${integer(counts[0])} de construcción · ${integer(counts[1])} de terreno · ${integer(counts[2])} de renta`;
+        } catch {
+          // El conteo del encabezado es informativo; la tabla ya se mostró.
+        }
+      }
+
+      function filtered() {
+        const type = document.getElementById('filterType').value;
+        const municipality = document.getElementById('filterMunicipality').value;
+        const age = Number(document.getElementById('filterAge').value);
+        const query = document.getElementById('filterText').value.trim().toLocaleLowerCase('es-MX');
+        return all.filter(item => {
+          if (type && item.tipo_inmueble !== type) return false;
+          if (municipality && item.municipio !== municipality) return false;
+          if (age && monthsAgo(item.fecha_dato) > age) return false;
+          if (query && ![item.direccion, item.colonia, item.municipio, item.fuente, item.notas].some(value => String(value || '').toLocaleLowerCase('es-MX').includes(query))) return false;
+          return true;
+        });
+      }
+
+      function cell(content, className) {
+        const td = document.createElement('td');
+        if (className) td.className = className;
+        if (content instanceof Node) td.appendChild(content);
+        else if (Array.isArray(content)) td.append(...content);
+        else td.textContent = content ?? '';
+        return td;
+      }
+
+      function small(text) {
+        const element = document.createElement('small');
+        element.textContent = text;
+        return element;
+      }
+
+      function render() {
+        const items = filtered();
+        const config = CATEGORY[category];
+        const unitValues = items.map(item => item.valor_unitario);
+        document.getElementById('tileCount').textContent = integer(items.length);
+        const recent = items.filter(item => monthsAgo(item.fecha_dato) <= 12).length;
+        document.getElementById('tileCountSub').textContent = `${integer(recent)} con dato de los últimos 12 meses`;
+        document.getElementById('tileMedian').textContent = items.length ? money(median(unitValues)) : '—';
+        document.getElementById('tileUnit').textContent = config.unit;
+        document.getElementById('tileAverage').textContent = items.length ? money(unitValues.reduce((sum, value) => sum + value, 0) / items.length) : '—';
+        document.getElementById('tileRange').textContent = items.length ? `${money(Math.min(...unitValues))} – ${money(Math.max(...unitValues))}` : '—';
+
+        const container = document.getElementById('comparablesTable');
+        if (!items.length) {
+          const empty = document.createElement('p');
+          empty.className = 'empty';
+          empty.textContent = all.length
+            ? 'Ningún comparable coincide con los filtros.'
+            : 'Aún no hay comparables de este tipo. Se agregan solos al guardar avalúos con comparables capturados, o use "+ Agregar comparable".';
+          container.replaceChildren(empty);
+          return;
+        }
+        const headers = [['Fecha'], ['Dirección y fuente'], ['Zona'], ...(category === 'terreno' ? [] : [['Tipo']]), ['Dato'], [config.price.replace(' ($)', ''), true], [config.surface.replace(' (m²)', ' (m²)'), true], [config.unit, true], ['Foto'], ['Origen'], ['']];
+        const table = document.createElement('table');
+        const headRow = document.createElement('tr');
+        headers.forEach(([label, numeric]) => {
+          const th = document.createElement('th');
+          th.textContent = label;
+          if (numeric) th.className = 'num';
+          headRow.appendChild(th);
+        });
+        const thead = document.createElement('thead');
+        thead.appendChild(headRow);
+        const tbody = document.createElement('tbody');
+        items.forEach(item => {
+          const row = document.createElement('tr');
+          const [year, month, day] = String(item.fecha_dato).split('-');
+          const dateCell = [`${day}/${month}/${year}`];
+          if (monthsAgo(item.fecha_dato) > 12) {
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = 'Más de 12 meses';
+            dateCell.push(document.createElement('br'), badge);
+          }
+          row.appendChild(cell(dateCell));
+
+          const addressParts = [item.direccion || 'Sin dirección'];
+          if (item.fuente) {
+            const source = /^https?:\/\//i.test(item.fuente) ? Object.assign(document.createElement('a'), { href: item.fuente, target: '_blank', rel: 'noopener noreferrer', textContent: 'Ver fuente' }) : small(item.fuente);
+            if (source.tagName === 'A') addressParts.push(document.createElement('br'));
+            addressParts.push(source);
+          }
+          if (item.notas) addressParts.push(small(item.notas));
+          row.appendChild(cell(addressParts));
+          const locationNote = item.latitud === null ? 'sin coordenadas' : item.ubicacion_aproximada ? '📍 aprox.' : '📍 ubicado';
+          row.appendChild(cell([[item.colonia, item.municipio].filter(Boolean).join(', ') || '—', small(locationNote)]));
+          if (category !== 'terreno') row.appendChild(cell(item.tipo_inmueble || '—'));
+          row.appendChild(cell(item.tipo_dato || '—'));
+          row.appendChild(cell(money(item.precio), 'num'));
+          row.appendChild(cell(area(item.superficie), 'num'));
+          row.appendChild(cell(money(item.valor_unitario), 'num'));
+          if (item.fotos.length) {
+            const link = Object.assign(document.createElement('a'), { href: item.fotos[0], target: '_blank', rel: 'noopener' });
+            link.appendChild(Object.assign(document.createElement('img'), { src: item.fotos[0], alt: `Foto de ${item.direccion || 'comparable'}`, className: 'thumb', loading: 'lazy' }));
+            row.appendChild(cell(link));
+          } else {
+            row.appendChild(cell('—'));
+          }
+          row.appendChild(cell(item.origen_avaluo_id
+            ? Object.assign(document.createElement('a'), { href: `/?avaluo=${item.origen_avaluo_id}`, textContent: `Avalúo #${item.origen_avaluo_id}` })
+            : (item.origen_clave ? 'Avalúo eliminado' : 'Captura directa')));
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+          const edit = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Editar' });
+          edit.addEventListener('click', () => openDialog(item));
+          const remove = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Quitar', className: 'remove' });
+          remove.addEventListener('click', () => removeComparable(item));
+          actions.append(edit, remove);
+          row.appendChild(cell(actions));
+          tbody.appendChild(row);
+        });
+        table.append(thead, tbody);
+        container.replaceChildren(table);
+      }
+
+      // --- Captura y edición ---
+      const dialog = document.getElementById('comparableDialog');
+      const comparableForm = document.getElementById('comparableForm');
+
+      function applyCategoryToForm(selected) {
+        const config = CATEGORY[selected];
+        document.getElementById('priceLabel').textContent = config.price;
+        document.getElementById('surfaceLabel').textContent = config.surface;
+        const dataType = comparableForm.elements.tipoDato;
+        const previous = dataType.value;
+        dataType.replaceChildren(new Option('Seleccione', ''), ...config.dataTypes.map(value => new Option(value, value)));
+        if (config.dataTypes.includes(previous)) dataType.value = previous;
+        comparableForm.querySelectorAll('[data-show-for]').forEach(label => { label.hidden = label.dataset.showFor !== selected; });
+        comparableForm.querySelectorAll('[data-hide-for]').forEach(label => { label.hidden = label.dataset.hideFor === selected; });
+      }
+
+      function openDialog(item) {
+        editingId = item?.id || null;
+        comparableForm.reset();
+        document.getElementById('formError').textContent = '';
+        document.getElementById('dialogTitle').textContent = item ? 'Editar comparable' : 'Agregar comparable';
+        const values = item ? {
+          categoria: item.categoria, tipoInmueble: item.tipo_inmueble, tipoDato: item.tipo_dato, fechaDato: item.fecha_dato,
+          direccion: item.direccion, colonia: item.colonia, municipio: item.municipio, estado: item.estado, precio: item.precio,
+          superficie: item.superficie, superficieTerreno: item.superficie_terreno, edad: item.edad,
+          latitud: item.ubicacion_aproximada ? '' : item.latitud, longitud: item.ubicacion_aproximada ? '' : item.longitud,
+          fuente: item.fuente, notas: item.notas
+        } : { categoria: category, fechaDato: new Date().toISOString().slice(0, 10) };
+        comparableForm.elements.categoria.value = values.categoria;
+        applyCategoryToForm(values.categoria);
+        Object.entries(values).forEach(([name, value]) => {
+          if (comparableForm.elements[name] && name !== 'categoria') comparableForm.elements[name].value = value ?? '';
+        });
+        if (item?.origen_avaluo_id) document.getElementById('formError').textContent = 'Este comparable viene de un avalúo: al guardar los cambios aquí, el banco ya no lo actualizará desde ese avalúo.';
+        dialog.showModal();
+      }
+
+      comparableForm.elements.categoria.addEventListener('change', event => applyCategoryToForm(event.target.value));
+      document.getElementById('cancelDialog').addEventListener('click', () => dialog.close());
+      comparableForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(comparableForm).entries());
+        const response = await fetch(editingId ? `/api/comparables/${editingId}` : '/api/comparables', {
+          method: editingId ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          document.getElementById('formError').textContent = result.error || 'No se pudo guardar el comparable.';
+          return;
+        }
+        dialog.close();
+        if (result.categoria !== category) selectCategory(result.categoria);
+        else await load();
+      });
+
+      async function removeComparable(item) {
+        if (!confirm(`¿Quitar del banco el comparable "${item.direccion || 'sin dirección'}"?${item.origen_avaluo_id ? ' No se borra del avalúo de donde vino, pero ya no regresará al banco.' : ''}`)) return;
+        const response = await fetch(`/api/comparables/${item.id}`, { method: 'DELETE' });
+        if (response.ok) await load();
+      }
+
+      function exportCsv() {
+        const config = CATEGORY[category];
+        const headers = ['Fecha del dato', 'Tipo de dato', 'Tipo de inmueble', 'Dirección', 'Colonia', 'Municipio', 'Estado', 'Latitud', 'Longitud', 'Ubicación aproximada', config.price, config.surface, 'Superficie de terreno (m2)', 'Edad (años)', `Valor unitario (${config.unit})`, 'Fuente', 'Notas', 'Avalúo de origen'];
+        const quote = value => {
+          const text = value === null || value === undefined ? '' : String(value);
+          return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+        };
+        const lines = filtered().map(item => [item.fecha_dato, item.tipo_dato, item.tipo_inmueble, item.direccion, item.colonia, item.municipio, item.estado, item.latitud, item.longitud, item.ubicacion_aproximada ? 'Sí' : 'No', item.precio, item.superficie, item.superficie_terreno, item.edad, item.valor_unitario, item.fuente, item.notas, item.origen_avaluo_id].map(quote).join(','));
+        const blob = new Blob(['﻿' + [headers.map(quote).join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+        const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `comparables-${category}-${new Date().toISOString().slice(0, 10)}.csv` });
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      }
+
+      function selectCategory(selected) {
+        category = selected;
+        document.querySelectorAll('[data-category]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.category === selected)));
+        load().catch(showLoadError);
+      }
+
+      function showLoadError(error) {
+        document.getElementById('headerInfo').textContent = `No se pudo cargar el banco: ${error.message || 'error del servidor'}`;
+      }
+
+      document.querySelectorAll('[data-category]').forEach(button => button.addEventListener('click', () => selectCategory(button.dataset.category)));
+      ['filterType', 'filterMunicipality', 'filterAge'].forEach(id => document.getElementById(id).addEventListener('change', render));
+      document.getElementById('filterText').addEventListener('input', render);
+      document.getElementById('addComparable').addEventListener('click', () => openDialog(null));
+      document.getElementById('exportCsv').addEventListener('click', exportCsv);
+
+      load().catch(showLoadError);
+    </script>
+  </body>
+</html>

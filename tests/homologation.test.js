@@ -87,7 +87,7 @@ test('no inventa costo físico, renta ni tasa cuando faltan datos documentados',
   assert.equal(result.summary.valorFisico, 0);
   assert.equal(result.summary.valorCapitalizacion, 0);
   assert.match(result.summary.physicalValuationStatus, /no se estimó costo de reposición/);
-  assert.match(result.summary.incomeValuationStatus, /no se estimó renta ni tasa/);
+  assert.match(result.summary.incomeValuationStatus, /no se estimó renta/);
 });
 
 test('deja pendiente mercado si falta superficie de construcción del sujeto', () => {
@@ -117,4 +117,30 @@ test('usa costos capturados para el enfoque físico', () => {
   assert.equal(result.summary.valorFisico, 1400000);
   assert.equal(result.summary.valorMercado, 1800000);
   assert.match(result.summary.physicalValuationStatus, /componentes capturados/);
+});
+
+test('concluye con el enfoque seleccionado y usa mercado por omisión', () => {
+  const subject = {
+    surface: 100,
+    constructionSurface: 90,
+    unitLandValue: 5000,
+    physicalConstructionValue: 800000,
+    capRate: 0.08,
+    income: { monthlyRent: 10000 }
+  };
+  const comparableSales = [{ id: 1, address: 'Comparable', salePrice: 2000000, surface: 100 }];
+
+  const byDefault = calculateHomologation({ subject, comparableSales });
+  assert.equal(byDefault.summary.finalApproach, 'market');
+  assert.equal(byDefault.summary.finalValue, 1800000);
+
+  const physical = calculateHomologation({ subject: { ...subject, finalApproach: 'physical' }, comparableSales });
+  assert.equal(physical.summary.finalValue, 1300000);
+  assert.equal(physical.summary.finalApproachLabel, 'Físico o directo');
+
+  const income = calculateHomologation({ subject: { ...subject, finalApproach: 'income' }, comparableSales });
+  assert.equal(income.summary.finalValue, 1500000);
+
+  const unknown = calculateHomologation({ subject: { ...subject, finalApproach: 'otro' }, comparableSales });
+  assert.equal(unknown.summary.finalApproach, 'market');
 });

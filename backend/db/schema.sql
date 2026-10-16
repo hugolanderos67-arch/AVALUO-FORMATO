@@ -1,47 +1,82 @@
+-- Esquema SQLite. La captura completa se guarda como JSON en `datos`; las columnas
+-- sueltas son las que se usan para listar y buscar avalúos.
 CREATE TABLE IF NOT EXISTS avaluos (
-  id SERIAL PRIMARY KEY,
-  solicitante VARCHAR(255) NOT NULL,
-  cuenta_predial VARCHAR(50),
-  clave_catastral VARCHAR(50),
-  numero_escritura VARCHAR(50),
-  notario VARCHAR(255),
-  tomo VARCHAR(50),
-  fecha_inscripcion DATE,
-  calle VARCHAR(255),
-  numero VARCHAR(20),
-  colonia VARCHAR(255),
-  codigo_postal VARCHAR(10),
-  municipio VARCHAR(255),
-  estado VARCHAR(255),
-  latitud DECIMAL(10,7),
-  longitud DECIMAL(10,7),
-  superficie_terreno DECIMAL(12,2),
-  superficie_construccion DECIMAL(12,2),
-  edad_inmueble INT,
-  estado_conservacion VARCHAR(100),
-  calidad_proyecto VARCHAR(100),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  folio TEXT,
+  fecha_avaluo TEXT,
+  tipo_inmueble TEXT,
+  solicitante TEXT,
+  propietario TEXT,
+  calle TEXT,
+  colonia TEXT,
+  municipio TEXT,
+  estado TEXT,
+  valor_concluido REAL,
+  enfoque_concluido TEXT,
+  datos TEXT NOT NULL,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now')),
+  actualizado_en TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS comparables (
-  id SERIAL PRIMARY KEY,
-  avaluo_id INT REFERENCES avaluos(id),
-  direccion VARCHAR(255),
-  precio_venta DECIMAL(12,2),
-  superficie DECIMAL(12,2),
-  zona_factor DECIMAL(8,4),
-  ubicacion_factor DECIMAL(8,4),
-  terreno_factor DECIMAL(8,4),
-  edad_factor DECIMAL(8,4),
-  forma_factor DECIMAL(8,4),
-  valor_homologado DECIMAL(12,2)
+-- Archivos de la captura (fotos, comparables, firma, logotipo y documentos PDF o Word) guardados en disco.
+CREATE TABLE IF NOT EXISTS archivos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  avaluo_id INTEGER NOT NULL REFERENCES avaluos(id) ON DELETE CASCADE,
+  tipo_mime TEXT NOT NULL,
+  ruta TEXT NOT NULL,
+  bytes INTEGER NOT NULL,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS fotos (
-  id SERIAL PRIMARY KEY,
-  avaluo_id INT REFERENCES avaluos(id),
-  tipo VARCHAR(100) NOT NULL,
-  ruta_archivo VARCHAR(500) NOT NULL,
-  etiqueta_shf VARCHAR(100),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Anexos subidos directamente que aún no se guardan en un avalúo; al guardarlo pasan a `archivos`.
+CREATE TABLE IF NOT EXISTS cargas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tipo_mime TEXT NOT NULL,
+  ruta TEXT NOT NULL,
+  bytes INTEGER NOT NULL,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Banco de comparables: se alimenta de los comparables de cada avalúo guardado y de capturas directas.
+-- `origen_clave` ("avalúo:grupo:índice") permite actualizar el mismo comparable en lugar de duplicarlo.
+CREATE TABLE IF NOT EXISTS banco_comparables (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  categoria TEXT NOT NULL CHECK (categoria IN ('construccion', 'terreno', 'renta')),
+  tipo_inmueble TEXT,
+  tipo_dato TEXT,
+  direccion TEXT,
+  colonia TEXT,
+  municipio TEXT,
+  estado TEXT,
+  latitud REAL,
+  longitud REAL,
+  ubicacion_aproximada INTEGER NOT NULL DEFAULT 0,
+  precio REAL NOT NULL,
+  superficie REAL NOT NULL,
+  superficie_terreno REAL,
+  edad REAL,
+  valor_unitario REAL NOT NULL,
+  fecha_dato TEXT,
+  fuente TEXT,
+  notas TEXT,
+  fotos TEXT NOT NULL DEFAULT '[]',
+  origen_avaluo_id INTEGER,
+  origen_clave TEXT UNIQUE,
+  editado INTEGER NOT NULL DEFAULT 0,
+  excluido INTEGER NOT NULL DEFAULT 0,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now')),
+  actualizado_en TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_banco_categoria ON banco_comparables(categoria, municipio);
+
+-- Datos predeterminados del valuador (un solo registro) que se cargan en cada avalúo nuevo.
+-- Logotipo y firma se guardan como data URL dentro de `datos`.
+CREATE TABLE IF NOT EXISTS perfil_valuador (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  datos TEXT NOT NULL,
+  actualizado_en TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_archivos_avaluo ON archivos(avaluo_id);
+CREATE INDEX IF NOT EXISTS idx_avaluos_actualizado ON avaluos(actualizado_en);

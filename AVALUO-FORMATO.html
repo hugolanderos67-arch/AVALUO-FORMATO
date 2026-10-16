@@ -52,6 +52,29 @@
         text-transform: uppercase;
       }
 
+      .institutional-header .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-logo {
+        max-height: 56px;
+        max-width: 180px;
+        object-fit: contain;
+      }
+
+      .report-footer {
+        padding: 10px 24px;
+        border-top: 1px solid #dfeaf3;
+        background: #f7fbff;
+        color: #49627a;
+        font-size: 0.7rem;
+        line-height: 1.5;
+        text-align: center;
+        white-space: pre-line;
+      }
+
       .institutional-header .meta {
         text-align: right;
         font-size: 0.72rem;
@@ -191,6 +214,71 @@
 
       textarea { min-height: 82px; resize: vertical; }
 
+      .multi-select-field {
+        display: grid;
+        gap: 6px;
+        align-content: start;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #2b3d52;
+      }
+
+      .multi-select {
+        position: relative;
+      }
+
+      .multi-select summary {
+        list-style: none;
+        padding: 9px 30px 9px 10px;
+        border: 1px solid #c8d4e2;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 400;
+        background: #ffffff;
+        color: #18293a;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .multi-select summary::-webkit-details-marker { display: none; }
+
+      .multi-select summary::after {
+        content: '▾';
+        position: absolute;
+        right: 10px;
+        top: 9px;
+        color: #4b6680;
+      }
+
+      .multi-select-options {
+        position: absolute;
+        z-index: 20;
+        left: 0;
+        right: 0;
+        margin-top: 4px;
+        padding: 6px;
+        border: 1px solid #c8d4e2;
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 6px 18px rgba(24, 41, 58, 0.12);
+      }
+
+      .multi-select-options label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+        font-size: 0.9rem;
+        font-weight: 400;
+        cursor: pointer;
+      }
+
+      .multi-select-options input {
+        width: auto;
+      }
+
       .comparable-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(240px, 1fr));
@@ -215,6 +303,254 @@
 
       .button-row {
         margin-top: 18px;
+      }
+
+      .record-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 25;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin: -18px -18px 12px;
+        padding: 10px 18px;
+        background: #ffffff;
+        border-bottom: 1px solid #d2dbe6;
+        box-shadow: 0 2px 8px rgba(15, 76, 129, 0.08);
+      }
+
+      .record-info {
+        display: grid;
+        gap: 2px;
+        font-size: 0.8rem;
+        color: #18293a;
+      }
+
+      .record-info span {
+        font-size: 0.72rem;
+        color: #4b6680;
+      }
+
+      .record-info span.is-dirty {
+        color: #9a5b00;
+        font-weight: 700;
+      }
+
+      .record-info span.is-error {
+        color: #8a1c1c;
+        font-weight: 700;
+      }
+
+      .record-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .valuations-dialog {
+        width: min(960px, calc(100vw - 32px));
+        max-height: calc(100vh - 48px);
+        border: 1px solid #c8d4e2;
+        border-radius: 12px;
+        padding: 16px;
+        color: #18293a;
+      }
+
+      .valuations-dialog::backdrop {
+        background: rgba(10, 47, 79, 0.45);
+      }
+
+      .valuations-dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .valuations-dialog-header h2 {
+        margin: 0;
+        font-size: 1rem;
+        color: #0f4c81;
+      }
+
+      .valuations-dialog td {
+        font-size: 0.8rem;
+        vertical-align: top;
+      }
+
+      .valuations-dialog .record-row-actions {
+        display: flex;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .capture-target {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        scroll-margin-top: 80px;
+      }
+
+      .capture-index-title {
+        scroll-margin-top: 80px;
+      }
+
+      .back-to-index {
+        flex: none;
+        background: #ebf5ff;
+        border: 1px solid #cfe4fc;
+        color: #124a7d;
+        font-size: 0.66rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        padding: 4px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      .back-to-index:hover {
+        background: #d6eaff;
+      }
+
+      .floating-index-button {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 30;
+        padding: 10px 14px;
+        border: none;
+        border-radius: 999px;
+        background: #0f4c81;
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 800;
+        box-shadow: 0 6px 18px rgba(15, 76, 129, 0.3);
+        cursor: pointer;
+      }
+
+      .floating-index-button[hidden] {
+        display: none;
+      }
+
+      .capture-subtitle {
+        margin: 0 0 10px;
+        color: #0f4c81;
+        font-size: 0.85rem;
+      }
+
+      .comparable-card label + label {
+        margin-top: 8px;
+      }
+
+      .comparable-extra {
+        margin-top: 10px;
+        border-top: 1px solid #dfeaf3;
+        padding-top: 8px;
+      }
+
+      .comparable-extra summary {
+        cursor: pointer;
+        color: #0f4c81;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .comparable-factors {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .comparable-factors label + label {
+        margin-top: 0;
+      }
+
+      .comparable-photos {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .comparable-photo-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .comparable-photo {
+        position: relative;
+        width: 72px;
+        height: 72px;
+      }
+
+      .comparable-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #d9e7f6;
+      }
+
+      .comparable-photo button {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: #8a1c1c;
+        color: #ffffff;
+        font-size: 0.8rem;
+        line-height: 22px;
+        cursor: pointer;
+      }
+
+      .market-comparable-result {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .market-comparable-result p {
+        flex: 1 1 260px;
+        margin: 0;
+      }
+
+      .comparable-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin: 10px 0;
+      }
+
+      .comparable-gallery figure {
+        margin: 0;
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        padding: 6px;
+        background: #f9fbff;
+      }
+
+      .comparable-gallery img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 6px;
+      }
+
+      .comparable-gallery figcaption {
+        margin-top: 4px;
+        font-size: 0.72rem;
+        color: #314b67;
       }
 
       button {
@@ -321,6 +657,23 @@
         margin: 10px 0 14px;
       }
 
+      .finish-group-title {
+        margin: 16px 0 8px;
+        color: #0f4c81;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+      }
+
+      .finish-field {
+        display: grid;
+        gap: 6px;
+        align-content: start;
+      }
+
+      .finish-field .secondary-button {
+        justify-self: start;
+      }
+
       .description-editor textarea {
         width: 100%;
         box-sizing: border-box;
@@ -375,6 +728,10 @@
         overflow-wrap: anywhere;
         font-size: 0.78rem;
         line-height: 1.45;
+      }
+
+      .report-data-item span {
+        white-space: pre-line;
       }
 
       .report-data-item strong {
@@ -506,9 +863,134 @@
 
       .signature-row {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
         margin-top: 18px;
+      }
+
+      .signature-image-slot {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        min-height: 64px;
+      }
+
+      .signature-image-slot img {
+        max-width: 100%;
+        max-height: 60px;
+        object-fit: contain;
+      }
+
+      .signature-line {
+        border-top: 1px solid #34516d;
+        margin: 4px 0 6px;
+      }
+
+      .signature-place {
+        margin: 0;
+        color: #34516d;
+        font-size: 0.8rem;
+      }
+
+      .report-valuer {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        background: #f9fbff;
+        font-size: 0.8rem;
+        color: #33506b;
+      }
+
+      .report-valuer:empty {
+        display: none;
+      }
+
+      .report-valuer p {
+        margin: 2px 0;
+      }
+
+      .considerations-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .consideration-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        background: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 400;
+        color: #18293a;
+      }
+
+      .consideration-item input {
+        width: auto;
+        margin-top: 2px;
+      }
+
+      .consideration-item span {
+        flex: 1;
+      }
+
+      .consideration-item button {
+        flex: none;
+        border: none;
+        background: none;
+        color: #8a1c1c;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .consideration-add {
+        display: grid;
+        gap: 6px;
+        margin-top: 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #2b3d52;
+      }
+
+      .consideration-add button {
+        justify-self: start;
+      }
+
+      .signature-upload {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #2b3d52;
+      }
+
+      .signature-upload-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .signature-upload img {
+        max-width: 240px;
+        max-height: 80px;
+        object-fit: contain;
+        border: 1px solid #d9e7f6;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 4px;
+      }
+
+      .report-considerations {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 0.85rem;
+        color: #33506b;
+        line-height: 1.6;
       }
 
       .signature-box {
@@ -614,6 +1096,107 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      .attachment-icon {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #8a1c1c;
+      }
+
+      .attachment-details {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .attachment-details small {
+        color: #9a5b00;
+      }
+
+      .attachment-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .attachment-actions a {
+        color: #0f4c81;
+        font-weight: 700;
+      }
+
+      .attachment-actions .secondary-button {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+      }
+
+      .document-extraction {
+        margin-top: 14px;
+        padding: 14px;
+        border: 1px solid #cfe4fc;
+        border-radius: 12px;
+        background: #f4f9ff;
+      }
+
+      .document-extraction[hidden] {
+        display: none;
+      }
+
+      .extraction-match {
+        display: grid;
+        gap: 4px;
+        padding: 8px 10px;
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        background: #ffffff;
+        font-size: 0.8rem;
+      }
+
+      .extraction-match label {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
+      .extraction-match input {
+        width: auto;
+        margin-top: 2px;
+      }
+
+      .extraction-match small {
+        color: #4b6680;
+      }
+
+      .verification-badge {
+        justify-self: start;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+
+      .verification-badge.is-ok {
+        background: #e3f4e8;
+        color: #1d6b35;
+      }
+
+      .verification-badge.is-warning {
+        background: #fff1d6;
+        color: #8a5300;
+      }
+
+      .extraction-matches {
+        display: grid;
+        gap: 8px;
+        margin: 10px 0;
       }
 
       table {
@@ -750,6 +1333,20 @@
           padding: 0;
         }
 
+        .back-to-index,
+        .floating-index-button,
+        .valuations-dialog,
+        .capture,
+        .report-footer,
+        #result,
+        #resultTitle {
+          display: none !important;
+        }
+
+        .main-grid {
+          grid-template-columns: minmax(0, 1fr) !important;
+        }
+
         .sheet {
           max-width: none;
           border-radius: 0;
@@ -808,8 +1405,8 @@
     <div class="sheet">
       <div class="topbar">Dictamen de Avalúo Inmobiliario</div>
       <div class="institutional-header">
-        <div class="brand">Avalúo de Inmuebles</div>
-        <div class="meta">Folio: <span id="reportHeaderFolio">Pendiente</span><br />Fecha de emisión: 05/10/2026</div>
+        <div class="brand"><img id="reportValuerLogo" class="brand-logo" alt="Logotipo del valuador" hidden /><span id="reportBrandName">Avalúo de Inmuebles</span></div>
+        <div class="meta">Folio: <span id="reportHeaderFolio">Pendiente</span><br />Fecha de emisión: <span id="reportHeaderDate">Pendiente</span></div>
       </div>
 
       <div class="document-banner">
@@ -820,7 +1417,7 @@
         <div class="doc-meta">
           <div><strong>Tipo:</strong> <span id="reportPropertyType">Inmueble residencial</span></div>
           <div><strong>Región:</strong> <span id="reportRegion">Pendiente de confirmar</span></div>
-          <div><strong>Procedimiento:</strong> Comparación de ventas</div>
+          <div><strong>Procedimiento:</strong> <span id="reportProcedure">Comparativo de mercado</span></div>
         </div>
       </div>
 
@@ -828,25 +1425,60 @@
         <div class="meta-pill"><strong>Expediente</strong><span id="reportFolio">Pendiente de captura</span></div>
         <div class="meta-pill"><strong>Propiedad</strong><span id="reportPropertyMeta">Residencial</span></div>
         <div class="meta-pill"><strong>Municipio</strong><span id="reportHeaderMunicipality">Pendiente de captura</span></div>
-        <div class="meta-pill"><strong>Fecha</strong><span>05/10/2026</span></div>
+        <div class="meta-pill"><strong>Fecha</strong><span id="reportDate">Pendiente</span></div>
       </div>
 
       <div class="main-grid">
         <div class="capture">
+          <div class="record-toolbar">
+            <div class="record-info">
+              <strong id="recordTitle">Avalúo nuevo</strong>
+              <span id="recordStatus" role="status" aria-live="polite">Sin guardar</span>
+            </div>
+            <div class="record-actions">
+              <button type="button" class="secondary-button" onclick="window.open('/estadisticas', '_blank')">📊 Estadísticas</button>
+              <button type="button" class="secondary-button" onclick="window.open('/comparables', '_blank')">🏘️ Comparables</button>
+              <button type="button" class="secondary-button" id="newValuation">Nuevo</button>
+              <button type="button" class="secondary-button" id="openValuations">Abrir…</button>
+              <button type="button" id="saveValuation" title="Guardar (Ctrl+S)">Guardar avalúo</button>
+            </div>
+          </div>
+          <dialog id="valuationsDialog" class="valuations-dialog" aria-labelledby="valuationsDialogTitle">
+            <div class="valuations-dialog-header">
+              <h2 id="valuationsDialogTitle">Avalúos guardados</h2>
+              <button type="button" class="secondary-button" id="closeValuationsDialog">Cerrar</button>
+            </div>
+            <input id="valuationsSearch" type="search" placeholder="Buscar por folio, solicitante, propietario, calle, colonia o municipio" aria-label="Buscar avalúos" />
+            <p id="valuationsMessage" class="technical-note" role="status"></p>
+            <div class="table-scroll">
+              <table class="capture-table">
+                <thead><tr><th>Folio</th><th>Fecha</th><th>Solicitante / propietario</th><th>Ubicación</th><th>Valor concluido</th><th>Modificado</th><th></th></tr></thead>
+                <tbody id="valuationsList"></tbody>
+              </table>
+            </div>
+          </dialog>
           <form id="valuationForm">
+            <div class="section-title capture-index-title" id="capture-index" tabindex="-1">Índice del formato</div>
             <div class="formal-tabs" aria-label="Navegación de captura">
-              <button type="button" class="formal-tab active" data-section-target="capture-general">General</button>
-              <button type="button" class="formal-tab" data-section-target="capture-location">Ubicación</button>
-              <button type="button" class="formal-tab" data-section-target="capture-terrain">Terreno</button>
-              <button type="button" class="formal-tab" data-section-target="capture-building">Construcción</button>
-              <button type="button" class="formal-tab" data-section-target="capture-values">Valores</button>
-              <button type="button" class="formal-tab" data-section-target="capture-comparables">Comparables</button>
+              <button type="button" class="formal-tab active" data-section-target="capture-general">I. Antecedentes</button>
+              <button type="button" class="formal-tab" data-section-target="capture-location">II. Características urbanas</button>
+              <button type="button" class="formal-tab" data-section-target="capture-terrain">III. Terreno</button>
+              <button type="button" class="formal-tab" data-section-target="capture-building">IV. Descripción general</button>
+              <button type="button" class="formal-tab" data-section-target="capture-construction-elements">V. Elementos de construcción</button>
+              <button type="button" class="formal-tab" data-section-target="capture-considerations">VI. Consideraciones previas</button>
+              <button type="button" class="formal-tab" data-section-target="capture-comparables">VII. Enfoque de mercado</button>
+              <button type="button" class="formal-tab" data-section-target="capture-physical">VIII. Enfoque físico</button>
+              <button type="button" class="formal-tab" data-section-target="capture-income">IX. Enfoque de ingresos</button>
+              <button type="button" class="formal-tab" data-section-target="capture-conclusion">X. Conclusión</button>
+              <button type="button" class="formal-tab" data-section-target="capture-observations">XI. Observaciones</button>
+              <button type="button" class="formal-tab" data-section-target="capture-valuer">Datos del valuador</button>
               <button type="button" class="formal-tab" data-section-target="capture-annexes">Anexos</button>
             </div>
 
             <div class="section-title capture-target" id="capture-general" tabindex="-1">I.- ANTECEDENTES</div>
             <div class="fieldset">
               <div class="row">
+                <label>Fecha del avalúo <input name="fechaAvaluo" type="date" /></label>
                 <label>Tipo de inmueble
                   <select name="tipoInmueble">
                     <option value="">Seleccione</option>
@@ -955,6 +1587,10 @@
                 <label>Equipamiento urbano y distancias a puntos importantes <textarea name="equipamientoUrbano" placeholder="Anote equipamiento y distancia aproximada desde el inmueble; indique la fuente o fecha de verificación."></textarea></label>
               </div>
               <p id="urbanLookupStatus" class="technical-note" role="status" aria-live="polite">Capture latitud y longitud para buscar la referencia de ubicación.</p>
+              <div class="market-comparable-result">
+                <p id="urbanEquipmentStatus" class="technical-note" role="status" aria-live="polite">Al capturar las coordenadas se buscará el equipamiento urbano en un radio de 2 km y se llenarán las casillas de "Elementos y cobertura técnica del entorno".</p>
+                <button type="button" class="secondary-button" id="refreshUrbanEquipment">Buscar equipamiento urbano</button>
+              </div>
               <p class="technical-note">La geocodificación inversa completa únicamente datos encontrados en la fuente; no determina zonificación oficial, densidad ni cifras censales. Fuente cartográfica: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>. Consulta sujeta a la <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noreferrer">política de uso de Nominatim</a>.</p>
               <div id="urbanMapPanel" class="urban-map-panel" hidden>
                 <div id="urbanMap" class="urban-map-frame" role="img" aria-label="Mapa de OpenStreetMap con marcador en la coordenada capturada">
@@ -978,17 +1614,15 @@
             <div class="section-title">Elementos y cobertura técnica del entorno</div>
             <div class="fieldset">
               <div class="row">
-                <label>Educación y distancias <textarea name="urbEducacion"></textarea></label>
-                <label>Cultura y distancias <textarea name="urbCultura"></textarea></label>
-                <label>Salud y distancias <textarea name="urbSalud"></textarea></label>
+                <label>Educación <textarea name="urbEducacion"></textarea></label>
+                <label>Cultura <textarea name="urbCultura"></textarea></label>
+                <label>Salud <textarea name="urbSalud"></textarea></label>
                 <label>Comercio y abasto <textarea name="urbComercio"></textarea></label>
                 <label>Transporte <textarea name="urbTransporte"></textarea></label>
                 <label>Recreación y deporte <textarea name="urbRecreacion"></textarea></label>
                 <label>Seguridad pública <textarea name="urbSeguridad"></textarea></label>
                 <label>Infraestructura y servicios <textarea name="urbServicios"></textarea></label>
                 <label>Ubicación y georreferenciación <textarea name="urbGeorreferenciacion"></textarea></label>
-                <label>Definición de divisibilidad <textarea name="urbDivisibilidad"></textarea></label>
-                <label>Restricciones del plan territorial <textarea name="urbRestricciones"></textarea></label>
                 <label>Contexto territorial y demográfico <textarea name="urbContexto"></textarea></label>
                 <label>Entorno urbano y vialidad <textarea name="urbEntorno"></textarea></label>
               </div>
@@ -1092,6 +1726,12 @@
                     <option>Ruinoso inutilizable</option>
                   </select>
                 </label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-construction-elements" tabindex="-1">V.- ELEMENTOS DE LA CONSTRUCCIÓN</div>
+            <div class="fieldset">
+              <div class="row">
                 <label>Cimentación
                   <select name="cimentacion">
                     <option value="">Seleccione</option>
@@ -1164,7 +1804,14 @@
                 </div>
                 <label>Acabados por áreas o elementos arquitectónicos <textarea name="acabadosAreas" placeholder="Ej.: sala/comedor, cocina, recámaras, baños, fachada; describa pisos, muros, plafones y recubrimientos observados."></textarea></label>
                 <label>Obra complementaria <textarea name="obraComplementaria"></textarea></label>
+                <label>Notas de la visita de campo <textarea name="notasVisita" placeholder="Llegan desde la app móvil; uso interno, no se imprimen en el dictamen."></textarea></label>
               </div>
+            </div>
+
+            <div class="fieldset">
+              <div class="section-title">Acabados y componentes de la construcción</div>
+              <p class="technical-note">Seleccione en cada lista los acabados observados; la descripción se redacta sola y puede editarse. Use "Restablecer descripción automática" para volver al texto generado.</p>
+              <div id="finishesCatalog"></div>
             </div>
 
             <div class="fieldset">
@@ -1402,15 +2049,16 @@
                     <option>No visible</option>
                   </select>
                 </label>
-                <label>Equipos de consumo (selección múltiple)
-                  <select name="equiposGas" multiple size="4">
+                <div class="multi-select-field">
+                  <span id="equiposGasLabel">Equipos de consumo</span>
+                  <select name="equiposGas" multiple hidden data-multi-select aria-labelledby="equiposGasLabel">
                     <option>Calentador</option>
                     <option>Estufa</option>
                     <option>Horno</option>
                     <option>Secadora</option>
                     <option>Otros</option>
                   </select>
-                </label>
+                </div>
                 <label>Otros equipos de consumo <input name="otrosEquiposGas" type="text" /></label>
                 <label>Tipo de instalación gas
                   <select name="tipoInstalacionGas">
@@ -1797,24 +2445,92 @@
               </table>
             </div>
 
-            <div class="section-title">Tabla de clasificación de construcción</div>
-            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Tipo</th><th>Calidad y clasificación</th><th>Superficie (m²)</th><th>Vida útil total (años)</th><th>V.R.N. ($/m²)</th><th>V.N.R. ($/m²)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>Estado de conservación</th><th></th></tr></thead><tbody id="buildingRows"></tbody></table></div>
-            <div class="button-row"><button type="button" class="secondary-button" id="addBuildingRow">Agregar tipo de construcción</button></div>
+            <div class="section-title capture-target" id="capture-considerations" tabindex="-1">VI.- CONSIDERACIONES PREVIAS AL AVALÚO</div>
+            <div class="fieldset">
+              <p class="technical-note">Marque las consideraciones que aplican a este avalúo. Puede agregar otras propias del caso; las marcadas se integran numeradas al dictamen.</p>
+              <div id="previousConsiderationsList" class="considerations-list"></div>
+              <div class="consideration-add">
+                <label for="newConsiderationText">Agregar otra consideración</label>
+                <textarea id="newConsiderationText" rows="2" placeholder="Redacte la consideración particular del caso"></textarea>
+                <button type="button" class="secondary-button" id="addConsideration">Agregar consideración</button>
+              </div>
+            </div>
 
-            <div class="section-title">Elementos accesorios, obra complementaria e instalaciones especiales</div>
-            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso (%)</th><th>Vida útil total (años)</th><th>V.R.N. ($/unidad)</th><th>V.N.R. ($/unidad)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>V.N.R. total ($)</th><th>Estado de conservación</th><th>Coef. R-H (%)</th><th></th></tr></thead><tbody id="accessoryRows"></tbody></table></div>
-            <div class="button-row"><button type="button" class="secondary-button" id="addAccessoryRow">Agregar accesorio/instalación</button></div>
+            <div class="section-title capture-target" id="capture-comparables" tabindex="-1">VII.- ENFOQUE COMPARATIVO DE MERCADO</div>
+            <h3 class="capture-subtitle">Comparables de construcción</h3>
+            <p class="technical-note">Al guardar el avalúo, los comparables con precio y superficie (de construcción, terreno y renta) se agregan al banco de comparables. Complete "Datos para el banco de comparables" en cada uno para poder localizarlos y depurarlos en avalúos futuros.</p>
+            <div class="comparable-grid" id="constructionComparables">
+              <div class="comparable-card">
+                <h3>Comparable 1</h3>
+                <label>Dirección <input data-comparable="0" data-field="address" placeholder="Calle, número y colonia" /></label>
+                <label>Precio venta ($) <input data-comparable="0" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="0" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="0" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="0" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="0" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="0" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="0" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
 
-            <div class="section-title capture-target" id="capture-values" tabindex="-1">III. Datos de mercado y valuación</div>
+              <div class="comparable-card">
+                <h3>Comparable 2</h3>
+                <label>Dirección <input data-comparable="1" data-field="address" placeholder="Calle, número y colonia" /></label>
+                <label>Precio venta ($) <input data-comparable="1" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="1" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="1" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="1" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="1" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="1" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="1" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
+
+              <div class="comparable-card">
+                <h3>Comparable 3</h3>
+                <label>Dirección <input data-comparable="2" data-field="address" placeholder="Calle, número y colonia" /></label>
+                <label>Precio venta ($) <input data-comparable="2" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="2" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="2" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="2" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="2" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="2" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="2" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
+
+              <div class="comparable-card">
+                <h3>Comparable 4</h3>
+                <label>Dirección <input data-comparable="3" data-field="address" placeholder="Calle, número y colonia" /></label>
+                <label>Precio venta ($) <input data-comparable="3" data-field="salePrice" type="number" min="0" step="0.01" /></label>
+                <label>Factor zona <input data-comparable="3" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor ubicación <input data-comparable="3" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor construcción <input data-comparable="3" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor edad <input data-comparable="3" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
+                <label>Factor acabado <input data-comparable="3" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
+                <label>Superficie construida (m²) <input data-comparable="3" data-field="surface" type="number" min="0" step="0.01" /></label>
+              </div>
+            </div>
             <div class="fieldset">
               <div class="row">
-                <label>Tasa de capitalización (%) <input name="capRate" type="number" min="0" step="0.01" placeholder="Ejemplo: 8 para capturar 8%" /></label>
-                <label>Ingreso anual neto ($) <input name="annualIncome" type="number" min="0" step="0.01" placeholder="Capturar renta neta comprobable" /></label>
                 <label>Ajuste de mercado <input name="marketAdjustment" type="number" step="0.01" value="1" /></label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-physical" tabindex="-1">VIII.- ENFOQUE FÍSICO O DIRECTO</div>
+            <div class="section-title" id="capture-land-comparables">Comparables de terreno</div>
+            <div class="fieldset">
+              <p class="technical-note">Valor unitario homologado = (precio / superficie) × factores. Deje en 1 los factores que no apliquen.</p>
+              <div class="comparable-grid" data-market-comparables="land"></div>
+              <div class="market-comparable-result">
+                <p id="landComparablesResult" class="technical-note">Capture precio y superficie de al menos un comparable para obtener el valor unitario homologado.</p>
+                <button type="button" class="secondary-button" id="applyLandComparableValue" disabled>Usar como valor unitario de terreno</button>
+              </div>
+            </div>
+
+            <div class="section-title" id="capture-values">Valor unitario de terreno y fuentes</div>
+            <div class="fieldset">
+              <div class="row">
                 <label>Valor unitario de terreno ($/m²) <input name="valorUnitarioTerreno" type="number" min="0" step="0.01" placeholder="Capturar con fuente de mercado" /></label>
                 <label>Fuente / fecha de costos o valores unitarios <input name="fuenteValoresUnitarios" placeholder="Indique fuente, fecha y alcance" /></label>
                 <label>Valor catastral <input name="valorCatastral" type="number" min="0" step="0.01" /></label>
-                <label>Observaciones <input name="observaciones" /></label>
                 <label>Estado de conservación
                   <select name="estadoConservacionValores">
                     <option value="">Seleccione</option>
@@ -1832,58 +2548,124 @@
               </div>
             </div>
 
-            <div class="section-title capture-target" id="capture-comparables" tabindex="-1">IV. Comparables de construcción</div>
-            <div class="comparable-grid">
-              <div class="comparable-card">
-                <h3>Comparable 1</h3>
-                <label>Dirección y fuente <input data-comparable="0" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
-                <label>Precio venta ($) <input data-comparable="0" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="0" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="0" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="0" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="0" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="0" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
-                <label>Superficie construida (m²) <input data-comparable="0" data-field="surface" type="number" min="0" step="0.01" /></label>
-              </div>
+            <div class="section-title">Tabla de clasificación de construcción</div>
+            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Tipo</th><th>Calidad y clasificación</th><th>Superficie (m²)</th><th>Vida útil total (años)</th><th>V.R.N. ($/m²)</th><th>V.N.R. ($/m²)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>Estado de conservación</th><th></th></tr></thead><tbody id="buildingRows"></tbody></table></div>
+            <div class="button-row"><button type="button" class="secondary-button" id="addBuildingRow">Agregar tipo de construcción</button></div>
 
-              <div class="comparable-card">
-                <h3>Comparable 2</h3>
-                <label>Dirección y fuente <input data-comparable="1" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
-                <label>Precio venta ($) <input data-comparable="1" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="1" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="1" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="1" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="1" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="1" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
-                <label>Superficie construida (m²) <input data-comparable="1" data-field="surface" type="number" min="0" step="0.01" /></label>
-              </div>
+            <div class="section-title">Elementos accesorios, obra complementaria e instalaciones especiales</div>
+            <div class="table-scroll"><table class="capture-table"><thead><tr><th>Descripción</th><th>Cantidad</th><th>Unidad</th><th>Indiviso (%)</th><th>Vida útil total (años)</th><th>V.R.N. ($/unidad)</th><th>V.N.R. ($/unidad)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>F.R.H.</th><th>V.N.R. total ($)</th><th>Estado de conservación</th><th>Coef. R-H (%)</th><th></th></tr></thead><tbody id="accessoryRows"></tbody></table></div>
+            <div class="button-row"><button type="button" class="secondary-button" id="addAccessoryRow">Agregar accesorio/instalación</button></div>
 
-              <div class="comparable-card">
-                <h3>Comparable 3</h3>
-                <label>Dirección y fuente <input data-comparable="2" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
-                <label>Precio venta ($) <input data-comparable="2" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="2" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="2" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="2" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="2" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="2" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
-                <label>Superficie construida (m²) <input data-comparable="2" data-field="surface" type="number" min="0" step="0.01" /></label>
+            <div class="section-title capture-target" id="capture-income" tabindex="-1">IX.- ENFOQUE DE INGRESOS O CAPITALIZACIÓN DE RENTAS</div>
+            <div class="fieldset">
+              <h3>Comparables de renta</h3>
+              <p class="technical-note">Renta unitaria homologada = (renta mensual / superficie rentable) × factores. Deje en 1 los factores que no apliquen.</p>
+              <div class="comparable-grid" data-market-comparables="rent"></div>
+              <div class="market-comparable-result">
+                <p id="rentComparablesResult" class="technical-note">Capture renta y superficie de al menos un comparable para obtener la renta unitaria homologada.</p>
+                <button type="button" class="secondary-button" id="applyRentComparableValue" disabled>Usar como renta unitaria mensual</button>
               </div>
-
-              <div class="comparable-card">
-                <h3>Comparable 4</h3>
-                <label>Dirección y fuente <input data-comparable="3" data-field="address" placeholder="Comparable verificable en zona de mercado pertinente" /></label>
-                <label>Precio venta ($) <input data-comparable="3" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="3" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="3" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="3" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="3" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="3" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
-                <label>Superficie construida (m²) <input data-comparable="3" data-field="surface" type="number" min="0" step="0.01" /></label>
+              <h3>Renta del inmueble sujeto</h3>
+              <p class="technical-note">Capture la renta por m² rentable o, si no aplica, la renta bruta mensual total. Los porcentajes se aplican sobre la renta bruta anual; los importes son anuales. Deje en blanco los conceptos que no correspondan.</p>
+              <div class="row">
+                <label>Tipo de renta
+                  <select name="tipoRenta">
+                    <option value="">Seleccione</option>
+                    <option>Real (contrato de arrendamiento vigente)</option>
+                    <option>Estimada de mercado (comparables de renta)</option>
+                  </select>
+                </label>
+                <label>Fuente de la renta <input name="fuenteRenta" placeholder="Contrato, comparables de renta, fecha" /></label>
+                <label>Superficie rentable (m²) <input name="superficieRentable" type="number" min="0" step="0.01" /></label>
+                <label>Renta unitaria mensual ($/m²) <input name="rentaUnitariaMensual" type="number" min="0" step="0.01" /></label>
+                <label>Renta bruta mensual total ($) <input name="rentaBrutaMensual" type="number" min="0" step="0.01" placeholder="Solo si no se captura por m²" /></label>
+              </div>
+              <h3>Deducciones anuales</h3>
+              <div class="row">
+                <label>Vacíos (% de renta bruta) <input name="deduccionVacios" type="number" min="0" max="100" step="0.01" placeholder="Ejemplo: 8.33 = un mes al año" /></label>
+                <label>Conservación y mantenimiento (%) <input name="deduccionMantenimiento" type="number" min="0" max="100" step="0.01" /></label>
+                <label>Administración (%) <input name="deduccionAdministracion" type="number" min="0" max="100" step="0.01" /></label>
+                <label>Impuesto predial ($/año) <input name="deduccionPredial" type="number" min="0" step="0.01" /></label>
+                <label>Servicio de agua ($/año) <input name="deduccionAgua" type="number" min="0" step="0.01" /></label>
+                <label>Energía eléctrica áreas comunes ($/año) <input name="deduccionEnergia" type="number" min="0" step="0.01" /></label>
+                <label>Seguros ($/año) <input name="deduccionSeguros" type="number" min="0" step="0.01" /></label>
+                <label>Otros gastos de operación ($/año) <input name="deduccionOtros" type="number" min="0" step="0.01" /></label>
+                <label>I.S.R. ($/año) <input name="deduccionIsr" type="number" min="0" step="0.01" /></label>
+              </div>
+              <h3>Capitalización</h3>
+              <div class="row">
+                <label>Tasa de capitalización (%) <input name="capRate" type="number" min="0" step="0.01" placeholder="Ejemplo: 8 para capturar 8%" /></label>
+                <label>Justificación de la tasa <textarea name="justificacionTasa" placeholder="Método (mercado, sumatoria de riesgos, banda de inversión), fuentes y fecha"></textarea></label>
               </div>
             </div>
 
-            <div class="section-title capture-target" id="capture-annexes" tabindex="-1">V. Anexos: fotos, croquis y documentos</div>
+            <div class="section-title capture-target" id="capture-conclusion" tabindex="-1">X.- CONCLUSIÓN Y VALOR FINAL</div>
+            <div class="fieldset">
+              <div class="row">
+                <label>Enfoque para el valor concluido
+                  <select name="enfoqueValorFinal">
+                    <option value="market">Comparativo de mercado</option>
+                    <option value="physical">Físico o directo</option>
+                    <option value="income">Ingresos (capitalización de rentas)</option>
+                  </select>
+                </label>
+                <label>Justificación del enfoque seleccionado <textarea name="justificacionValorFinal" rows="4" placeholder="Explique por qué este enfoque refleja mejor el valor: tipo de inmueble, propósito del avalúo, calidad y cantidad de información de mercado, rentas o costos disponibles."></textarea></label>
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-observations" tabindex="-1">XI.- OBSERVACIONES</div>
+            <div class="fieldset">
+              <label>Observaciones del avalúo <textarea name="observaciones" rows="4" placeholder="Consideraciones, limitaciones, supuestos y definiciones aplicables al caso."></textarea></label>
+            </div>
+
+            <div class="section-title capture-target" id="capture-valuer" tabindex="-1">DATOS DEL VALUADOR Y FIRMA</div>
+            <div class="fieldset">
+              <p class="technical-note">Al guardar un avalúo, estos datos, el logotipo y la firma se guardan también como su perfil y se cargan automáticamente en cada avalúo nuevo. Los avalúos ya guardados conservan los datos con que se emitieron.</p>
+              <h3 class="capture-subtitle">Valuador profesional</h3>
+              <div class="row" data-valuer-fields>
+                <label>Nombre completo <input name="valuadorNombre" autocomplete="name" /></label>
+                <label>Profesión / título <input name="valuadorProfesion" placeholder="Ej.: Arquitecto, Ingeniero civil" /></label>
+                <label>Cédula profesional <input name="valuadorCedula" /></label>
+                <label>Especialidad o posgrado en valuación <input name="valuadorEspecialidad" placeholder="Ej.: Especialidad en Valuación Inmobiliaria" /></label>
+                <label>Cédula de especialidad / posgrado <input name="valuadorCedulaEspecialidad" /></label>
+                <label>Registro como perito valuador <input name="valuadorRegistro" placeholder="Número y entidad que lo otorga (SHF, INDAABIN, tribunal, colegio)" /></label>
+                <label>Teléfono <input name="valuadorTelefono" type="tel" autocomplete="tel" /></label>
+                <label>Correo electrónico <input name="valuadorCorreo" type="email" autocomplete="email" /></label>
+                <label>Domicilio profesional <input name="valuadorDomicilio" /></label>
+              </div>
+              <h3 class="capture-subtitle">Unidad de valuación y controlador</h3>
+              <div class="row" data-valuer-fields>
+                <label>Unidad de valuación / empresa <input name="unidadValuacion" /></label>
+                <label>Registro de la unidad de valuación <input name="unidadValuacionRegistro" /></label>
+                <label>Nombre del controlador <input name="controladorNombre" /></label>
+                <label>Cédula / registro del controlador <input name="controladorRegistro" /></label>
+              </div>
+              <h3 class="capture-subtitle">Emisión</h3>
+              <div class="row" data-valuer-fields>
+                <label>Lugar de emisión <input name="lugarEmision" placeholder="Ciudad y estado" /></label>
+                <label>Vigencia del avalúo <input name="vigenciaAvaluo" value="6 meses a partir de la fecha del avalúo" /></label>
+              </div>
+              <div class="signature-upload">
+                <span>Logotipo del valuador o de la unidad de valuación (opcional)</span>
+                <div class="signature-upload-actions">
+                  <button type="button" class="secondary-button" id="selectValuerLogo">Cargar logotipo</button>
+                  <button type="button" class="secondary-button" id="removeValuerLogo" hidden>Quitar logotipo</button>
+                  <input id="valuerLogoInput" class="hidden-file-input" type="file" accept="image/*" />
+                </div>
+                <img id="valuerLogoPreview" alt="Logotipo del valuador" hidden />
+              </div>
+              <div class="signature-upload">
+                <span>Firma digitalizada (opcional)</span>
+                <div class="signature-upload-actions">
+                  <button type="button" class="secondary-button" id="selectValuerSignature">Cargar imagen de firma</button>
+                  <button type="button" class="secondary-button" id="removeValuerSignature" hidden>Quitar firma</button>
+                  <input id="valuerSignatureInput" class="hidden-file-input" type="file" accept="image/*" />
+                </div>
+                <img id="valuerSignaturePreview" alt="Firma digitalizada del valuador" hidden />
+              </div>
+            </div>
+
+            <div class="section-title capture-target" id="capture-annexes" tabindex="-1">ANEXOS: FOTOS, CROQUIS Y DOCUMENTOS</div>
             <div class="attachment-grid">
               <div class="attachment-box">
                 <div class="attachment-header">
@@ -1911,6 +2693,25 @@
                 </div>
                 <div class="attachment-list" id="documentsList"></div>
               </div>
+            </div>
+            <p class="technical-note">En los PDF de croquis y documentos, "Extraer datos" lee el archivo con inteligencia artificial y propone valores para la captura (escrituras, prediales, certificados, constancias de uso de suelo, licencias).</p>
+
+            <div id="documentExtraction" class="document-extraction" hidden>
+              <h3 class="capture-subtitle">Extraer datos de: <span id="extractionFileName"></span></h3>
+              <p id="extractionInfo" class="technical-note"></p>
+              <label>Páginas a enviar <input id="extractionPages" placeholder="Todas; o por ejemplo: 2-4, 7" /></label>
+              <label class="consideration-item">
+                <input type="checkbox" id="extractionPrivacyCheck" />
+                <span>Revisé el documento: los datos personales que no deben compartirse están tapados de forma permanente (con la herramienta de redactar o en un escaneo), no solo cubiertos con un rectángulo encima del texto.</span>
+              </label>
+              <p class="technical-note">Las páginas seleccionadas se envían al servicio de IA de Anthropic para su lectura; el documento original permanece en este equipo. Revise cada dato propuesto antes de aplicarlo.</p>
+              <div class="record-actions">
+                <button type="button" id="runExtraction" disabled>Enviar y extraer datos</button>
+                <button type="button" class="secondary-button" id="closeExtraction">Cerrar</button>
+              </div>
+              <p id="extractionStatus" class="technical-note" role="status" aria-live="polite"></p>
+              <div id="extractionMatches" class="extraction-matches"></div>
+              <button type="button" class="secondary-button" id="applyExtractionMatches" hidden>Aplicar los datos marcados a campos vacíos</button>
             </div>
 
             <div class="button-row">
@@ -1979,7 +2780,12 @@
           </div>
 
           <div class="formal-section">
-            <h4>VI.- ENFOQUE COMPARATIVO DE MERCADO</h4>
+            <h4>VI.- CONSIDERACIONES PREVIAS AL AVALÚO</h4>
+            <ol id="reportConsiderations" class="report-considerations"></ol>
+          </div>
+
+          <div class="formal-section">
+            <h4>VII.- ENFOQUE COMPARATIVO DE MERCADO</h4>
             <p>La estimación se calculará con comparables de construcción verificables y pertinentes al mercado del inmueble sujeto. Capture precio, superficie construida, ubicación, fuente y factores de homologación; no se consideran referencias incompletas.</p>
             <p id="reportMarketStatus" class="technical-note">Pendiente: capturar y verificar comparables locales.</p>
             <div class="formula-box">
@@ -1998,28 +2804,40 @@
           </div>
 
           <div class="formal-section">
-            <h4>VII.- ENFOQUE FÍSICO O DIRECTO</h4>
+            <h4>VIII.- ENFOQUE FÍSICO O DIRECTO</h4>
             <p>El enfoque físico considera el costo de reposición o reproducción del inmueble, ajustado por depreciación funcional y física, así como por las condiciones de uso, antigüedad y nivel constructivo del bien.</p>
             <div class="formula-box">
               <strong>Condicionantes del enfoque físico</strong>
               <p>Valor estimado = costo nuevo − depreciación física − depreciación funcional</p>
               <p>Se consideran materiales, mano de obra, obra nueva equivalente, antigüedad y mantenimiento.</p>
             </div>
+            <div id="reportLandComparables"></div>
+            <div id="reportLandComparablePhotos"></div>
           </div>
 
           <div class="formal-section">
-            <h4>VIII.- ENFOQUE DE INGRESOS O CAPITALIZACIÓN DE RENTAS</h4>
+            <h4>IX.- ENFOQUE DE INGRESOS O CAPITALIZACIÓN DE RENTAS</h4>
             <p>El enfoque de ingresos considera el rendimiento esperado del inmueble, con base en la renta potencial anual y la tasa de capitalización aplicada, para reflejar la capacidad de generación de valor por concepto de uso o arrendamiento.</p>
             <div class="formula-box">
               <strong>Condicionantes del enfoque de ingresos</strong>
-              <p>Valor = Renta neta anual / Tasa de capitalización</p>
+              <p>Renta bruta anual = Renta bruta mensual × 12</p>
+              <p>Producto líquido anual = Renta bruta anual − Deducciones</p>
+              <p>Valor por capitalización = Producto líquido anual / Tasa de capitalización</p>
               <p>Se analiza ingreso anual, estabilidad de ocupación, riesgo de mercado y condiciones de arrendamiento.</p>
+            </div>
+            <div id="reportRentComparables"></div>
+            <div id="reportRentComparablePhotos"></div>
+            <div id="reportIncomeApproach">
+              <p>El desarrollo se integrará al procesar las rentas, deducciones y tasa capturadas.</p>
             </div>
           </div>
 
           <div class="formal-section">
-            <h4>IX.- CONCLUSIÓN Y VALOR FINAL</h4>
-            <p id="reportConclusion">La conclusión se generará al procesar los tres enfoques con la información capturada. Los resultados son preliminares y requieren revisión profesional y respaldo documental.</p>
+            <h4>X.- CONCLUSIÓN Y VALOR FINAL</h4>
+            <div id="reportConclusion">
+              <p>La conclusión se generará al procesar los tres enfoques con la información capturada. Los resultados son preliminares y requieren revisión profesional y respaldo documental.</p>
+            </div>
+            <div id="reportConclusionValuer" class="report-valuer"></div>
           </div>
 
           <div class="formula-box">
@@ -2032,14 +2850,16 @@
 
           <div class="section-title">Tabla de comparables</div>
           <div id="reportTable"></div>
+          <div id="reportConstructionComparablePhotos"></div>
           <div class="section-title">Cuadro de cálculo del inmueble sujeto</div>
           <div id="subjectCalculationTable" class="table-scroll">
             <p>Se integrará al procesar las superficies capturadas.</p>
           </div>
 
           <div class="formal-section">
-            <h4>X.- OBSERVACIONES Y DEFINICIONES EN EL AVALUO</h4>
+            <h4>XI.- OBSERVACIONES Y DEFINICIONES EN EL AVALUO</h4>
             <p>El valor estimado se fundamenta en los datos del mercado, la información proporcionada por el propietario, la georreferenciación y la documentación auxiliar. Las observaciones del caso deben interpretarse como condiciones de mercado aplicables al momento del avalúo.</p>
+            <p id="reportObservations" style="white-space: pre-line;"></p>
           </div>
 
           <div class="formal-section">
@@ -2062,14 +2882,23 @@
             <div id="documentsPreview"></div>
           </div>
 
-          <div class="section-title">Resultado del cálculo</div>
+          <div class="section-title" id="resultTitle">Resultado del cálculo</div>
           <pre id="result">Esperando generación del dictamen...</pre>
 
+          <div class="section-title">Firma del avalúo</div>
+          <p id="reportSignaturePlace" class="signature-place"></p>
           <div class="signature-row">
             <div class="signature-box">
-              <strong>Valuador responsable</strong><br />
-              _______________________________<br />
-              Nombre y firma
+              <strong>Valuador responsable</strong>
+              <div class="signature-image-slot"><img id="reportValuerSignature" alt="Firma del valuador" hidden /></div>
+              <div class="signature-line"></div>
+              <div id="reportValuerSignatureData"></div>
+            </div>
+            <div class="signature-box" id="reportControllerBox" hidden>
+              <strong>Controlador</strong>
+              <div class="signature-image-slot"></div>
+              <div class="signature-line"></div>
+              <div id="reportControllerSignatureData"></div>
             </div>
             <div class="official-stamp">
               Sello / autorización
@@ -2077,9 +2906,12 @@
           </div>
         </div>
       </div>
+      <div id="reportFooter" class="report-footer" hidden></div>
     </div>
+    <style id="printFooterStyle"></style>
 
     <script src="/frontend/technical-descriptions.js"></script>
+    <script src="/frontend/finishes-catalog.js"></script>
     <script>
       const form = document.getElementById('valuationForm');
       const technicalDescriptions = window.TechnicalDescriptions;
@@ -2291,7 +3123,102 @@
       form.addEventListener('input', event => {
         if (!event.target.matches('[data-description-for]')) updateGeneratedDescriptions();
       });
+      function initializeMultiSelects() {
+        form.querySelectorAll('select[data-multi-select]').forEach(select => {
+          const dropdown = document.createElement('details');
+          dropdown.className = 'multi-select';
+          const summary = document.createElement('summary');
+          summary.setAttribute('aria-labelledby', select.getAttribute('aria-labelledby') || '');
+          const panel = document.createElement('div');
+          panel.className = 'multi-select-options';
+          const checkboxes = Array.from(select.options, option => {
+            const item = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.addEventListener('change', () => {
+              option.selected = checkbox.checked;
+              select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            item.append(checkbox, option.textContent);
+            panel.appendChild(item);
+            return checkbox;
+          });
+          const sync = () => {
+            checkboxes.forEach((checkbox, index) => { checkbox.checked = select.options[index].selected; });
+            const selected = Array.from(select.selectedOptions, option => option.textContent);
+            summary.textContent = selected.length ? selected.join(', ') : 'Seleccione';
+          };
+          select.addEventListener('change', sync);
+          dropdown.append(summary, panel);
+          select.after(dropdown);
+          sync();
+        });
+        document.addEventListener('click', event => {
+          form.querySelectorAll('details.multi-select[open]').forEach(dropdown => {
+            if (!dropdown.contains(event.target)) dropdown.open = false;
+          });
+        });
+      }
+
+      const { FINISH_GROUPS } = window.FinishesCatalog;
+
+      function finishDescription(select) {
+        const selected = Array.from(select.selectedOptions, option => option.value);
+        if (!selected.length) return '';
+        // Solo la primera letra de cada opción pasa a minúscula, para conservar siglas como MDF o PVC.
+        return `${selected.map((text, index) => index === 0 || /^[A-ZÁÉÍÓÚÑ]{2}/.test(text) ? text : text.charAt(0).toLocaleLowerCase('es-MX') + text.slice(1)).join(', ')}.`;
+      }
+
+      function buildFinishesCatalog() {
+        const catalog = document.getElementById('finishesCatalog');
+        FINISH_GROUPS.forEach(group => {
+          const title = document.createElement('h4');
+          title.className = 'finish-group-title';
+          title.textContent = group.title;
+          const row = document.createElement('div');
+          row.className = 'row';
+          group.fields.forEach(([name, label, options]) => {
+            const field = document.createElement('div');
+            field.className = 'finish-field multi-select-field';
+            const labelText = document.createElement('span');
+            labelText.id = `${name}Label`;
+            labelText.textContent = label;
+            const select = document.createElement('select');
+            select.name = name;
+            select.multiple = true;
+            select.hidden = true;
+            select.dataset.multiSelect = '';
+            select.setAttribute('aria-labelledby', labelText.id);
+            options.forEach(value => select.appendChild(new Option(value, value)));
+            const description = document.createElement('textarea');
+            description.name = `${name}Descripcion`;
+            description.rows = 2;
+            description.setAttribute('aria-label', `Descripción de ${label.toLocaleLowerCase('es-MX')}`);
+            description.placeholder = 'Descripción generada; puede editarla';
+            const reset = document.createElement('button');
+            reset.type = 'button';
+            reset.className = 'secondary-button';
+            reset.textContent = 'Restablecer descripción automática';
+
+            const regenerate = () => {
+              if (description.dataset.manuallyEdited !== 'true') description.value = finishDescription(select);
+            };
+            select.addEventListener('change', regenerate);
+            description.addEventListener('input', () => { description.dataset.manuallyEdited = 'true'; });
+            reset.addEventListener('click', () => {
+              description.dataset.manuallyEdited = 'false';
+              regenerate();
+            });
+            field.append(labelText, select, description, reset);
+            row.appendChild(field);
+          });
+          catalog.append(title, row);
+        });
+      }
+
+      buildFinishesCatalog();
       clearTechnicalDefaults();
+      initializeMultiSelects();
       initializeConservationCatalog();
       form.querySelectorAll('.legacy-special-fields select').forEach(select => { select.disabled = true; });
       form.querySelectorAll('.legacy-system-alias select').forEach(select => { select.disabled = true; });
@@ -2369,8 +3296,14 @@
         'calle', 'colonia', 'municipio', 'estado', 'poblacion', 'vialidades', 'viasAcceso',
         'urbGeorreferenciacion', 'urbContexto', 'urbEntorno'
       ];
+      const urbanEquipmentFieldNames = [
+        'equipamientoUrbano', 'urbEducacion', 'urbCultura', 'urbSalud', 'urbComercio',
+        'urbTransporte', 'urbRecreacion', 'urbSeguridad', 'urbServicios'
+      ];
+      const urbanEquipmentStatus = document.getElementById('urbanEquipmentStatus');
       let urbanLookupTimer;
       let lastUrbanLookupKey = '';
+      let lastEquipmentLookupKey = '';
 
       function updateUrbanMaps(coordinates) {
         if (!coordinates || coordinates.invalid) {
@@ -2508,10 +3441,61 @@
             setUrbanLookupField(name, context.fields[name]);
           });
           urbanLookupStatus.textContent = `Ubicación completada con ${context.source}. Confirma la referencia predial; las características sin fuente permanecen para captura manual.`;
+          markChanged();
         } catch (error) {
           if (lastUrbanLookupKey === key) urbanLookupStatus.textContent = `No se pudo completar la ubicación: ${error.message}`;
         }
       }
+
+      // Equipamiento urbano (OpenStreetMap): llena las casillas vacías o las que llenó una búsqueda anterior; respeta lo escrito a mano.
+      async function lookupUrbanEquipmentFor(coordinates, { force = false } = {}) {
+        const key = `${coordinates.latitude.toFixed(5)},${coordinates.longitude.toFixed(5)}`;
+        if (key === lastEquipmentLookupKey && !force) return;
+        lastEquipmentLookupKey = key;
+        urbanEquipmentStatus.textContent = 'Buscando equipamiento urbano en un radio de 2 km… puede tardar hasta un minuto.';
+        try {
+          const params = new URLSearchParams({ lat: String(coordinates.latitude), lon: String(coordinates.longitude) });
+          const response = await fetch(`/api/urban-equipment?${params}`);
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'No fue posible consultar el equipamiento urbano.');
+          const latestCoordinates = currentCoordinates();
+          if (!latestCoordinates || latestCoordinates.invalid ||
+              `${latestCoordinates.latitude.toFixed(5)},${latestCoordinates.longitude.toFixed(5)}` !== key) return;
+
+          let filled = 0;
+          const preserved = [];
+          urbanEquipmentFieldNames.forEach(name => {
+            const field = form.elements.namedItem(name);
+            if (!field || !result.fields[name]) return;
+            if (field.dataset.locationManuallyEdited === 'true' || (field.value.trim() && field.dataset.geocoded !== 'true')) {
+              preserved.push(field.closest('label')?.firstChild?.textContent.trim() || name);
+              return;
+            }
+            setUrbanLookupField(name, result.fields[name]);
+            filled += 1;
+          });
+          urbanEquipmentStatus.textContent = [
+            `Equipamiento urbano: se completaron ${filled} casilla(s) con ${result.elementCount} lugar(es) registrados en OpenStreetMap a menos de 2 km.`,
+            preserved.length ? `No se modificaron porque ya tenían texto capturado: ${preserved.join(', ')}.` : '',
+            'Las distancias son en línea recta; verifique en campo.'
+          ].filter(Boolean).join(' ');
+          if (filled) markChanged();
+        } catch (error) {
+          if (lastEquipmentLookupKey === key) {
+            lastEquipmentLookupKey = '';
+            urbanEquipmentStatus.textContent = `No se pudo completar el equipamiento urbano: ${error.message} Use "Buscar equipamiento urbano" para reintentar.`;
+          }
+        }
+      }
+
+      document.getElementById('refreshUrbanEquipment').addEventListener('click', () => {
+        const coordinates = currentCoordinates();
+        if (!coordinates || coordinates.invalid) {
+          urbanEquipmentStatus.textContent = 'Capture latitud y longitud válidas para buscar el equipamiento urbano.';
+          return;
+        }
+        lookupUrbanEquipmentFor(coordinates, { force: true });
+      });
 
       function scheduleUrbanLookup() {
         clearTimeout(urbanLookupTimer);
@@ -2530,10 +3514,13 @@
           return;
         }
         updateUrbanMaps(coordinates);
-        urbanLookupTimer = setTimeout(() => lookupUrbanCoordinates(coordinates), 800);
+        urbanLookupTimer = setTimeout(() => {
+          lookupUrbanCoordinates(coordinates);
+          lookupUrbanEquipmentFor(coordinates);
+        }, 800);
       }
 
-      urbanAutoFieldNames.forEach(name => {
+      [...urbanAutoFieldNames, ...urbanEquipmentFieldNames].forEach(name => {
         const field = form.elements.namedItem(name);
         field?.addEventListener('input', () => { field.dataset.locationManuallyEdited = 'true'; });
         field?.addEventListener('change', () => { field.dataset.locationManuallyEdited = 'true'; });
@@ -2658,21 +3645,80 @@
         });
       }
 
-      function renderAttachmentList(collectionName) {
-        const listId = `${collectionName}List`;
-        const list = document.getElementById(listId);
-        const items = attachmentState[collectionName] || [];
+      // Solo los metadatos: el cálculo no usa el contenido de los anexos.
+      const attachmentSummary = items => items.map(({ name, type, size }) => ({ name, type, size }));
 
+      const isPdfAttachment = item => item.type === 'application/pdf' || /\.pdf$/i.test(item.name || '');
+
+      function renderAttachmentList(collectionName) {
+        const list = document.getElementById(`${collectionName}List`);
+        const items = attachmentState[collectionName] || [];
         if (!list) return;
 
-        list.innerHTML = items.length
-          ? items.map(item => `
-              <div class="attachment-item">
-                ${item.preview ? `<img class="attachment-preview" src="${item.preview}" alt="${item.name}" />` : `<div class="attachment-preview" style="display:flex;align-items:center;justify-content:center;font-size:18px;">📎</div>`}
-                <div class="attachment-name">${item.name}</div>
-              </div>
-            `).join('')
-          : '<div class="attachment-item"><div class="attachment-name">Sin archivos cargados</div></div>';
+        if (!items.length) {
+          list.innerHTML = '<div class="attachment-item"><div class="attachment-name">Sin archivos cargados</div></div>';
+          return;
+        }
+        list.replaceChildren(...items.map((item, index) => {
+          const row = document.createElement('div');
+          row.className = 'attachment-item';
+          if (item.preview) {
+            const image = document.createElement('img');
+            image.className = 'attachment-preview';
+            image.src = item.preview;
+            image.alt = item.name;
+            row.appendChild(image);
+          } else {
+            const icon = document.createElement('div');
+            icon.className = 'attachment-preview attachment-icon';
+            icon.textContent = isPdfAttachment(item) ? 'PDF' : '📎';
+            row.appendChild(icon);
+          }
+          const details = document.createElement('div');
+          details.className = 'attachment-details';
+          const name = document.createElement('div');
+          name.className = 'attachment-name';
+          name.textContent = item.name;
+          details.appendChild(name);
+          if (item.notStored) {
+            const note = document.createElement('small');
+            note.textContent = item.notStored;
+            details.appendChild(note);
+          }
+          const actions = document.createElement('div');
+          actions.className = 'attachment-actions';
+          const source = item.file || item.preview;
+          if (source) {
+            const open = document.createElement('a');
+            open.href = source;
+            open.target = '_blank';
+            open.rel = 'noopener';
+            open.textContent = 'Abrir';
+            if (source.startsWith('data:')) open.download = item.name;
+            actions.appendChild(open);
+          }
+          if (item.file && isPdfAttachment(item)) {
+            const extract = document.createElement('button');
+            extract.type = 'button';
+            extract.className = 'secondary-button';
+            extract.textContent = 'Extraer datos';
+            extract.addEventListener('click', () => openDocumentExtraction(item));
+            actions.appendChild(extract);
+          }
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'secondary-button';
+          remove.textContent = 'Quitar';
+          remove.addEventListener('click', () => {
+            items.splice(index, 1);
+            renderAttachmentList(collectionName);
+            renderAttachmentPreview();
+          });
+          actions.appendChild(remove);
+          details.appendChild(actions);
+          row.appendChild(details);
+          return row;
+        }));
       }
 
       function renderAttachmentPreview() {
@@ -2722,15 +3768,42 @@
         `).join('');
       }
 
+      const STORABLE_DOCUMENT_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      let pendingUploads = 0;
+
+      // Cada anexo se sube al servidor al agregarlo; al guardar el avalúo queda ligado a él.
+      async function uploadAttachment(file) {
+        const body = new FormData();
+        body.append('archivo', file, file.name);
+        const response = await fetch('/api/cargas', { method: 'POST', body });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'No se pudo subir el archivo.');
+        return result.url;
+      }
+
       function attachFiles(collectionName, files) {
         files.forEach(async (file) => {
-          const entry = {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            preview: file.type.startsWith('image/') ? await toDataUrl(file) : ''
-          };
+          const isImage = file.type.startsWith('image/');
+          const entry = { name: file.name, type: file.type, size: file.size, preview: '', file: '' };
           attachmentState[collectionName].push(entry);
+          if (!isImage && !STORABLE_DOCUMENT_TYPES.includes(file.type)) {
+            entry.notStored = 'Solo se guarda el nombre: tipo de archivo no admitido (use imágenes, PDF o Word).';
+            renderAttachmentList(collectionName);
+            return;
+          }
+          entry.notStored = `Subiendo (${(file.size / 1024 / 1024).toFixed(1)} MB)…`;
+          pendingUploads += 1;
+          renderAttachmentList(collectionName);
+          try {
+            const url = await uploadAttachment(file);
+            if (isImage) entry.preview = url;
+            else entry.file = url;
+            delete entry.notStored;
+          } catch (error) {
+            entry.notStored = `No se pudo subir: ${error.message} Solo se guarda el nombre.`;
+          } finally {
+            pendingUploads -= 1;
+          }
           renderAttachmentList(collectionName);
           renderAttachmentPreview();
         });
@@ -3001,6 +4074,264 @@
         return rows;
       }
 
+      const MARKET_COMPARABLE_CONFIG = {
+        land: {
+          count: 4,
+          title: 'Homologación de comparables de terreno',
+          photosTitle: 'Fotografías de comparables de terreno',
+          priceLabel: 'Precio de venta u oferta ($)',
+          surfaceLabel: 'Superficie de terreno (m²)',
+          unitLabel: 'Valor unitario ($/m²)',
+          factors: [['negotiation', 'Negociación', 'Fne'], ['zone', 'Zona', 'Fzo'], ['location', 'Ubicación', 'Fub'], ['surface', 'Superficie', 'Fsu'], ['shape', 'Forma', 'Ffo'], ['topography', 'Topografía', 'Fto']]
+        },
+        rent: {
+          count: 4,
+          title: 'Homologación de comparables de renta',
+          photosTitle: 'Fotografías de comparables de renta',
+          priceLabel: 'Renta mensual ($)',
+          surfaceLabel: 'Superficie rentable (m²)',
+          unitLabel: 'Renta unitaria ($/m² mensual)',
+          factors: [['negotiation', 'Negociación', 'Fne'], ['zone', 'Zona', 'Fzo'], ['location', 'Ubicación', 'Fub'], ['surface', 'Superficie', 'Fsu'], ['age', 'Edad y conservación', 'Fed']]
+        }
+      };
+      const comparablePhotos = { construction: [], land: [], rent: [] };
+      const comparablePhotoRenderers = { construction: [], land: [], rent: [] };
+
+      function marketComparableField(group, index, field) {
+        return form.querySelector(`[data-market-group="${group}"][data-index="${index}"][data-field="${field}"]`);
+      }
+
+      function comparableAddress(group, index) {
+        const field = group === 'construction'
+          ? form.querySelector(`[data-comparable="${index}"][data-field="address"]`)
+          : marketComparableField(group, index, 'address');
+        return field?.value.trim() || '';
+      }
+
+      function createComparablePhotoField(group, index) {
+        comparablePhotos[group][index] = [];
+        const wrapper = document.createElement('div');
+        wrapper.className = 'comparable-photos';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'secondary-button';
+        button.textContent = 'Agregar fotografía';
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.multiple = true;
+        input.className = 'hidden-file-input';
+        const list = document.createElement('div');
+        list.className = 'comparable-photo-list';
+
+        const render = () => {
+          list.replaceChildren(...comparablePhotos[group][index].map((photo, photoIndex) => {
+            const item = document.createElement('div');
+            item.className = 'comparable-photo';
+            const image = document.createElement('img');
+            image.src = photo.preview;
+            image.alt = photo.name;
+            image.title = photo.name;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.textContent = '×';
+            remove.setAttribute('aria-label', `Quitar ${photo.name}`);
+            remove.addEventListener('click', () => {
+              comparablePhotos[group][index].splice(photoIndex, 1);
+              render();
+              renderComparablePhotoGalleries();
+            });
+            item.append(image, remove);
+            return item;
+          }));
+        };
+
+        comparablePhotoRenderers[group][index] = render;
+        button.addEventListener('click', () => input.click());
+        input.addEventListener('change', async () => {
+          const files = Array.from(input.files || []).filter(file => file.type.startsWith('image/'));
+          input.value = '';
+          const photos = await Promise.all(files.map(async file => ({ name: file.name, preview: await toDataUrl(file) })));
+          comparablePhotos[group][index].push(...photos);
+          render();
+          renderComparablePhotoGalleries();
+        });
+        wrapper.append(button, input, list);
+        return wrapper;
+      }
+
+      function buildMarketComparableCards() {
+        form.querySelectorAll('[data-market-comparables]').forEach(grid => {
+          const group = grid.dataset.marketComparables;
+          const config = MARKET_COMPARABLE_CONFIG[group];
+          for (let index = 0; index < config.count; index += 1) {
+            const card = document.createElement('div');
+            card.className = 'comparable-card';
+            const title = document.createElement('h3');
+            title.textContent = `Comparable ${index + 1}`;
+            const createField = (labelText, field, attributes) => {
+              const label = document.createElement('label');
+              const input = document.createElement('input');
+              input.dataset.marketGroup = group;
+              input.dataset.index = String(index);
+              input.dataset.field = field;
+              Object.entries(attributes).forEach(([name, value]) => input.setAttribute(name, value));
+              label.append(`${labelText} `, input);
+              return label;
+            };
+            const factors = document.createElement('div');
+            factors.className = 'comparable-factors';
+            config.factors.forEach(([key, label, abbreviation]) => {
+              factors.appendChild(createField(`${label} (${abbreviation})`, `factor:${key}`, { type: 'number', min: '0', step: '0.01', value: '1' }));
+            });
+            card.append(
+              title,
+              createField('Dirección', 'address', { placeholder: 'Calle, número y colonia' }),
+              createField(config.priceLabel, 'price', { type: 'number', min: '0', step: '0.01' }),
+              createField(config.surfaceLabel, 'surface', { type: 'number', min: '0', step: '0.01' }),
+              factors,
+              createBankDetails(group, index),
+              createComparablePhotoField(group, index)
+            );
+            grid.appendChild(card);
+          }
+        });
+        document.querySelectorAll('#constructionComparables .comparable-card').forEach((card, index) => {
+          card.append(createBankDetails('construction', index), createComparablePhotoField('construction', index));
+        });
+      }
+
+      // Datos que el banco de comparables necesita para buscar y depurar comparables en avalúos futuros.
+      const BANK_FIELDS = {
+        construction: [
+          ['tipoDato', 'Tipo de dato', ['Oferta', 'Venta']], ['fechaDato', 'Fecha del dato', 'date'], ['fuente', 'Fuente o enlace', 'text'],
+          ['edad', 'Edad (años)', 'number'], ['superficieTerreno', 'Superficie de terreno (m²)', 'number'],
+          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
+        ],
+        land: [
+          ['tipoDato', 'Tipo de dato', ['Oferta', 'Venta']], ['fechaDato', 'Fecha del dato', 'date'], ['fuente', 'Fuente o enlace', 'text'],
+          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
+        ],
+        rent: [
+          ['tipoDato', 'Tipo de dato', ['Oferta de renta', 'Renta contratada']], ['fechaDato', 'Fecha del dato', 'date'], ['fuente', 'Fuente o enlace', 'text'],
+          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
+        ]
+      };
+
+      function createBankDetails(group, index) {
+        const details = document.createElement('details');
+        details.className = 'comparable-extra';
+        const summary = document.createElement('summary');
+        summary.textContent = 'Datos para el banco de comparables';
+        const grid = document.createElement('div');
+        grid.className = 'comparable-factors';
+        BANK_FIELDS[group].forEach(([field, labelText, kind]) => {
+          const label = document.createElement('label');
+          const control = Array.isArray(kind) ? document.createElement('select') : document.createElement('input');
+          if (Array.isArray(kind)) {
+            control.append(new Option('Seleccione', ''), ...kind.map(option => new Option(option, option)));
+          } else {
+            control.type = kind;
+            if (kind === 'number') control.step = 'any';
+            if (field === 'fuente') control.placeholder = 'Portal, enlace, inmobiliaria o contacto';
+          }
+          if (group === 'construction') control.dataset.comparable = String(index);
+          else {
+            control.dataset.marketGroup = group;
+            control.dataset.index = String(index);
+          }
+          control.dataset.field = field;
+          label.append(`${labelText} `, control);
+          grid.appendChild(label);
+        });
+        const note = document.createElement('p');
+        note.className = 'technical-note';
+        note.textContent = 'Sin coordenadas propias, el banco ubica el comparable en la zona del inmueble sujeto (ubicación aproximada).';
+        details.append(summary, grid, note);
+        return details;
+      }
+
+      function getMarketComparableRows(group) {
+        const config = MARKET_COMPARABLE_CONFIG[group];
+        return Array.from({ length: config.count }, (_, index) => {
+          const value = field => marketComparableField(group, index, field)?.value || '';
+          return {
+            id: index + 1,
+            address: value('address').trim() || `Comparable ${index + 1}`,
+            price: Number(value('price')) || 0,
+            surface: Number(value('surface')) || 0,
+            factors: Object.fromEntries(config.factors.map(([key]) => [key, Number(value(`factor:${key}`)) || 1]))
+          };
+        });
+      }
+
+      function renderComparablePhotoGalleries() {
+        [
+          ['construction', 'reportConstructionComparablePhotos', 'Fotografías de comparables de construcción'],
+          ['land', 'reportLandComparablePhotos', MARKET_COMPARABLE_CONFIG.land.photosTitle],
+          ['rent', 'reportRentComparablePhotos', MARKET_COMPARABLE_CONFIG.rent.photosTitle]
+        ].forEach(([group, containerId, titleText]) => {
+          const container = document.getElementById(containerId);
+          const figures = comparablePhotos[group].flatMap((photos, index) => (photos || []).map(photo => {
+            const figure = document.createElement('figure');
+            const image = document.createElement('img');
+            image.src = photo.preview;
+            image.alt = photo.name;
+            const caption = document.createElement('figcaption');
+            const address = comparableAddress(group, index);
+            caption.textContent = `Comparable ${index + 1}${address ? `: ${address}` : ''}`;
+            figure.append(image, caption);
+            return figure;
+          }));
+          if (!figures.length) {
+            container.replaceChildren();
+            return;
+          }
+          const title = document.createElement('h5');
+          title.textContent = titleText;
+          const gallery = document.createElement('div');
+          gallery.className = 'comparable-gallery';
+          gallery.append(...figures);
+          container.replaceChildren(title, gallery);
+        });
+      }
+
+      function renderMarketComparablesReport(group, result) {
+        const container = document.getElementById(group === 'land' ? 'reportLandComparables' : 'reportRentComparables');
+        const config = MARKET_COMPARABLE_CONFIG[group];
+        if (!result || !result.rows.length) {
+          container.replaceChildren();
+          return;
+        }
+        const headers = ['Comparable', config.priceLabel, config.surfaceLabel, config.unitLabel, ...config.factors.map(([, , abbreviation]) => abbreviation), 'F. resultante', 'Valor homologado'];
+        const rows = result.rows.map(row => `<tr><td>${escapeHtml(row.address)}</td><td>${row.price > 0 ? money(row.price) : '—'}</td><td>${row.surface > 0 ? row.surface.toFixed(2) : '—'}</td><td>${row.valid ? money(row.unitValue) : 'Incompleto'}</td>${config.factors.map(([key]) => `<td>${Number(row.factors[key]).toFixed(2)}</td>`).join('')}<td>${row.factorProduct.toFixed(4)}</td><td>${row.valid ? money(row.homologatedUnitValue) : '—'}</td></tr>`).join('');
+        const averageRow = `<tr><td colspan="${headers.length - 1}"><strong>Promedio homologado (${result.validCount} comparable(s) válido(s))</strong></td><td><strong>${result.averageUnitValue > 0 ? money(result.averageUnitValue) : 'Pendiente'}</strong></td></tr>`;
+        container.innerHTML = `<h5>${config.title}</h5><div class="table-scroll"><table class="capture-table"><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}${averageRow}</tbody></table></div><p class="technical-note">${config.factors.map(([, label, abbreviation]) => `${abbreviation} = ${label}`).join(', ')}. Valor homologado = valor unitario × F. resultante.</p>`;
+      }
+
+      function updateMarketComparableResult(group, result) {
+        const isLand = group === 'land';
+        const message = document.getElementById(isLand ? 'landComparablesResult' : 'rentComparablesResult');
+        const button = document.getElementById(isLand ? 'applyLandComparableValue' : 'applyRentComparableValue');
+        const average = Number(result?.averageUnitValue) || 0;
+        button.disabled = average <= 0;
+        button.dataset.value = average > 0 ? String(average) : '';
+        message.textContent = average > 0
+          ? `${isLand ? 'Valor unitario homologado de terreno' : 'Renta unitaria mensual homologada'}: ${money(average)}/m² (${result.validCount} comparable(s) válido(s)).`
+          : `Capture ${isLand ? 'precio' : 'renta'} y superficie de al menos un comparable para obtener el valor homologado.`;
+      }
+
+      [['applyLandComparableValue', 'valorUnitarioTerreno'], ['applyRentComparableValue', 'rentaUnitariaMensual']].forEach(([buttonId, fieldName]) => {
+        document.getElementById(buttonId).addEventListener('click', event => {
+          const field = form.elements.namedItem(fieldName);
+          if (!field || !event.currentTarget.dataset.value) return;
+          field.value = event.currentTarget.dataset.value;
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      });
+
+      buildMarketComparableCards();
+
       function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
       }
@@ -3041,7 +4372,7 @@
           ['Construcción para enfoque físico', area(surfaces.constructionBreakdownSurface), surfaces.replacementUnitValueApplied ? unitValue(surfaces.replacementUnitValue) : 'V.U. por partida', amount(data.summary.valorConstruccion), 'Suma de partidas con costo unitario y factor de depreciación capturados'],
           ['Accesorios y elementos', '—', '—', amount(data.summary.valorAccesorios), 'Solo elementos con cantidad, valor unitario y depreciación capturados'],
           ['Valor físico', '—', '—', amount(data.summary.valorFisico), 'Suma de componentes físicos calculados'],
-          ['Valor por capitalización', '—', '—', amount(data.summary.valorCapitalizacion), 'Requiere ingreso anual neto y tasa capturados']
+          ['Valor por capitalización', '—', '—', amount(data.summary.valorCapitalizacion), 'Producto líquido anual / tasa de capitalización (desarrollo en sección IX)']
         ];
 
         const table = document.createElement('table');
@@ -3068,15 +4399,167 @@
         container.replaceChildren(table);
       }
 
+      function renderIncomeApproach(income, captured) {
+        const container = document.getElementById('reportIncomeApproach');
+        const amount = value => Number(value) > 0 ? money(value) : '—';
+        const percent = value => Number(value) > 0 ? `${Number(value).toFixed(2)}%` : '—';
+        const fragment = document.createDocumentFragment();
+
+        const appendTable = (title, headers, rows) => {
+          const heading = document.createElement('h5');
+          heading.textContent = title;
+          const table = document.createElement('table');
+          table.className = 'capture-table';
+          const head = document.createElement('thead');
+          const headerRow = document.createElement('tr');
+          headers.forEach(label => {
+            const cell = document.createElement('th');
+            cell.textContent = label;
+            headerRow.appendChild(cell);
+          });
+          head.appendChild(headerRow);
+          const body = document.createElement('tbody');
+          rows.forEach(({ values, strong }) => {
+            const row = document.createElement('tr');
+            values.forEach(value => {
+              const cell = document.createElement('td');
+              if (strong) {
+                const text = document.createElement('strong');
+                text.textContent = String(value);
+                cell.appendChild(text);
+              } else {
+                cell.textContent = String(value);
+              }
+              row.appendChild(cell);
+            });
+            body.appendChild(row);
+          });
+          table.append(head, body);
+          const wrapper = document.createElement('div');
+          wrapper.className = 'table-scroll';
+          wrapper.appendChild(table);
+          fragment.append(heading, wrapper);
+        };
+
+        if (!income) {
+          container.replaceChildren();
+          return;
+        }
+
+        if (income.grossAnnualRent > 0) {
+          appendTable('1. Renta bruta', ['Concepto', 'Base', 'Importe'], [
+            { values: ['Tipo de renta', captured.tipoRenta || 'Sin especificar', '—'] },
+            { values: ['Fuente de la renta', captured.fuenteRenta || 'Sin especificar', '—'] },
+            ...(income.rentableArea > 0 && income.unitMonthlyRent > 0
+              ? [{ values: ['Superficie rentable × renta unitaria mensual', `${income.rentableArea.toFixed(2)} m² × ${money(income.unitMonthlyRent)}/m²`, money(income.grossMonthlyRent)] }]
+              : [{ values: ['Renta bruta mensual total capturada', '—', money(income.grossMonthlyRent)] }]),
+            { values: ['Renta bruta anual', `${money(income.grossMonthlyRent)} × 12 meses`, money(income.grossAnnualRent)], strong: true }
+          ]);
+
+          appendTable('2. Deducciones anuales', ['Concepto', '% de renta bruta anual', 'Importe anual'], [
+            ...income.deductions.map(item => ({ values: [item.label, percent(item.percent), amount(item.amount)] })),
+            { values: ['Total de deducciones', percent(income.deductionsPercent), money(income.totalDeductions)], strong: true }
+          ]);
+        }
+
+        if (income.netAnnualIncome !== 0 || income.grossAnnualRent > 0) {
+          const steps = [];
+          if (income.grossAnnualRent > 0) {
+            steps.push({ values: ['Producto líquido anual', `${money(income.grossAnnualRent)} − ${money(income.totalDeductions)}`, money(income.netAnnualIncome)], strong: true });
+          } else {
+            steps.push({ values: ['Producto líquido anual', income.rentSource, money(income.netAnnualIncome)], strong: true });
+          }
+          steps.push({ values: ['Tasa de capitalización', captured.justificacionTasa || 'Sin justificación capturada', percent(income.capRate * 100)] });
+          steps.push({ values: ['Valor por capitalización de rentas', income.value > 0 ? `${money(income.netAnnualIncome)} / ${(income.capRate * 100).toFixed(2)}%` : '—', income.value > 0 ? money(income.value) : 'Pendiente'], strong: true });
+          if (income.valuePerRentableM2 > 0) {
+            steps.push({ values: ['Valor unitario resultante', `${money(income.value)} / ${income.rentableArea.toFixed(2)} m² rentables`, `${money(income.valuePerRentableM2)}/m²`] });
+          }
+          appendTable(income.grossAnnualRent > 0 ? '3. Producto líquido y capitalización' : 'Producto líquido y capitalización', ['Concepto', 'Cálculo', 'Resultado'], steps);
+        }
+
+        const status = document.createElement('p');
+        status.className = 'technical-note';
+        status.textContent = income.status;
+        fragment.appendChild(status);
+        container.replaceChildren(fragment);
+      }
+
+      function renderConclusion(summary, captured) {
+        const container = document.getElementById('reportConclusion');
+        const showAmount = value => Number(value) > 0 ? money(value) : 'Pendiente';
+        const approaches = [
+          ['market', 'Comparativo de mercado', summary.valorMercado, summary.marketValuationStatus],
+          ['physical', 'Físico o directo', summary.valorFisico, summary.physicalValuationStatus],
+          ['income', 'Ingresos (capitalización de rentas)', summary.valorCapitalizacion, summary.incomeValuationStatus]
+        ];
+
+        const table = document.createElement('table');
+        table.className = 'capture-table';
+        const head = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Enfoque', 'Valor resultante', 'Selección'].forEach(label => {
+          const cell = document.createElement('th');
+          cell.textContent = label;
+          headerRow.appendChild(cell);
+        });
+        head.appendChild(headerRow);
+        const body = document.createElement('tbody');
+        approaches.forEach(([key, label, value]) => {
+          const row = document.createElement('tr');
+          const isSelected = key === summary.finalApproach;
+          [label, showAmount(value), isSelected ? 'Enfoque concluido' : '—'].forEach(text => {
+            const cell = document.createElement('td');
+            if (isSelected) {
+              const strong = document.createElement('strong');
+              strong.textContent = text;
+              cell.appendChild(strong);
+            } else {
+              cell.textContent = text;
+            }
+            row.appendChild(cell);
+          });
+          body.appendChild(row);
+        });
+        table.append(head, body);
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'table-scroll';
+        tableWrapper.appendChild(table);
+
+        const finalStatement = document.createElement('p');
+        const finalLabel = document.createElement('strong');
+        finalLabel.textContent = 'Valor concluido: ';
+        finalStatement.appendChild(finalLabel);
+        finalStatement.append(Number(summary.finalValue) > 0
+          ? `${money(summary.finalValue)}, determinado por el enfoque ${summary.finalApproachLabel.toLowerCase()}.`
+          : `Pendiente. El enfoque seleccionado (${summary.finalApproachLabel.toLowerCase()}) no tiene un valor calculado con la información capturada.`);
+
+        const justificationTitle = document.createElement('h5');
+        justificationTitle.textContent = 'Justificación del enfoque seleccionado';
+        const justification = document.createElement('p');
+        justification.style.whiteSpace = 'pre-line';
+        justification.textContent = captured.justificacionValorFinal || 'Sin justificación capturada; documente por qué el enfoque seleccionado refleja mejor el valor del inmueble.';
+
+        const selectedStatus = approaches.find(([key]) => key === summary.finalApproach)?.[3] || '';
+        const note = document.createElement('p');
+        note.className = 'technical-note';
+        note.textContent = `${selectedStatus} Corroborar comparables, fechas, fuentes, alcances y superficies; conclusión preliminar sujeta a revisión profesional.`.trim();
+
+        container.replaceChildren(tableWrapper, finalStatement, justificationTitle, justification, note);
+      }
+
+      let lastValuationSummary = null;
+
       function renderReportFromData(data, payload) {
         const captured = payload.capture;
+        lastValuationSummary = { valorConcluido: data.summary?.finalValue || 0, enfoque: data.summary?.finalApproachLabel || '' };
         const antecedentes = [
-          ['Tipo de inmueble', captured.tipoInmueble], ['Solicitante', captured.solicitante], ['Propietario', captured.propietario],
+          ['Fecha del avalúo', formatValuationDate(captured.fechaAvaluo)], ['Tipo de inmueble', captured.tipoInmueble], ['Solicitante', captured.solicitante], ['Propietario', captured.propietario],
           ['Cuenta predial', captured.cuentaPredial], ['Calle y número', captured.calle], ['Colonia', captured.colonia],
           ['Municipio', captured.municipio], ['Estado', captured.estado], ['Objeto del avalúo', captured.objetoAvaluo],
           ['Uso del avalúo', captured.usoAvaluo], ['Escritura pública', captured.numeroEscritura], ['Notario', captured.numeroNotario],
           ['Foja registral', captured.fojaRegistral], ['Registro Público / libertad de gravamen', captured.registroPublico],
-          ['Medidas y colindancias según', captured.medidasSegun]
+          ['Medidas y colindancias según', captured.medidasSegun],
+          ['Datos tomados de documentos', captured.fuentesDocumentales]
         ];
         renderReportData('reportAntecedentes', antecedentes);
 
@@ -3087,8 +4570,8 @@
           ['Ancho de calle (m)', 'anchoCalle'], ['Banquetas y guarniciones', 'banquetas'], ['Equipamiento urbano y distancias', 'equipamientoUrbano'],
           ['Educación', 'urbEducacion'], ['Cultura', 'urbCultura'], ['Salud', 'urbSalud'], ['Comercio y abasto', 'urbComercio'],
           ['Transporte', 'urbTransporte'], ['Recreación y deporte', 'urbRecreacion'], ['Seguridad pública', 'urbSeguridad'],
-          ['Infraestructura y servicios', 'urbServicios'], ['Georreferenciación', 'urbGeorreferenciacion'], ['Divisibilidad', 'urbDivisibilidad'],
-          ['Restricciones del plan territorial', 'urbRestricciones'], ['Contexto territorial y demográfico', 'urbContexto'], ['Entorno urbano y vialidad', 'urbEntorno']
+          ['Infraestructura y servicios', 'urbServicios'], ['Georreferenciación', 'urbGeorreferenciacion'],
+          ['Contexto territorial y demográfico', 'urbContexto'], ['Entorno urbano y vialidad', 'urbEntorno']
         ].map(([label, key]) => [label, captured[key]]);
         urbanFields.push(['Proceso investigatorio', payload.urbanInvestigation]);
         urbanFields.push(['Fuentes documentales urbanas', captured.fuentesUrbanas]);
@@ -3128,7 +4611,12 @@
           ['Estructura vertical', captured.descripcionEstructuraVertical || captured.estructuraVertical],
           ['Entrepiso', captured.descripcionEntrepisos || captured.entrepisos], ['Techumbre', captured.descripcionTechumbres || captured.techumbres],
           ['Muros, entrepisos y escaleras', captured.murosEntrepisos], ['Cubierta y techumbre', captured.cubierta],
-          ['Acabados por áreas', captured.acabadosAreas], ['Instalaciones hidrosanitarias', captured.instalacionesHidrosanitarias],
+          ['Acabados por áreas', captured.acabadosAreas],
+          ...FINISH_GROUPS.flatMap(group => {
+            const groupName = group.title.replace(/^[A-Z]\.- \) /, '');
+            return group.fields.map(([name, label]) => [label === groupName ? label : `${groupName}: ${label}`, captured[`${name}Descripcion`]]);
+          }),
+          ['Instalaciones hidrosanitarias', captured.instalacionesHidrosanitarias],
           ['Instalación eléctrica', captured.descripcionElectrica || captured.instalacionElectrica], ['Instalación de gas', captured.descripcionGas || captured.instalacionGas],
           ['Instalaciones especiales', captured.instalacionesEspecialesGeneradas || captured.instalacionesEspeciales], ['Obra complementaria', captured.obraComplementaria],
           ['Instalación hidráulica', captured.descripcionHidraulica || captured.instalacionHidraulicaGeneral], ['Estado conservación hidráulica', captured.estadoConservacionHidraulica],
@@ -3212,11 +4700,16 @@
           </table>
         `;
         renderSubjectCalculationTable(data, payload);
+        renderIncomeApproach(data.incomeApproach, captured);
+        renderMarketComparablesReport('land', data.landComparables);
+        renderMarketComparablesReport('rent', data.rentComparables);
+        updateMarketComparableResult('land', data.landComparables);
+        updateMarketComparableResult('rent', data.rentComparables);
+        renderComparablePhotoGalleries();
 
-        const marketConclusion = data.summary.valorMercado > 0
-          ? `Valor concluido por referencia principal al mercado: ${money(data.summary.finalValue)}.`
-          : 'No se emitió conclusión cuantitativa de mercado por falta de comparables válidos o de superficie de construcción del sujeto.';
-        document.getElementById('reportConclusion').textContent = `Enfoque de mercado: ${showCalculatedAmount(data.summary.valorMercado)} (valor unitario promedio ${showCalculatedAmount(data.summary.averageUnitValuePerM2)}/m², superficie de construcción del sujeto ${Number(captured.superficieConstruccion || 0).toFixed(2)} m²). Enfoque físico/directo: ${showCalculatedAmount(data.summary.valorFisico)}. Enfoque de ingresos: ${showCalculatedAmount(data.summary.valorCapitalizacion)}. ${marketConclusion} ${data.summary.marketValuationStatus || ''} ${data.summary.physicalValuationStatus || ''} ${data.summary.incomeValuationStatus || ''} Corroborar comparables, fechas, fuentes, alcances y superficies; conclusión preliminar sujeta a revisión profesional.`;
+        renderConclusion(data.summary, captured);
+        document.getElementById('reportProcedure').textContent = data.summary.finalApproachLabel;
+        document.getElementById('reportObservations').textContent = captured.observaciones || '';
         document.getElementById('reportMarketStatus').textContent = data.summary.marketValuationStatus;
 
         result.textContent = JSON.stringify({
@@ -3228,9 +4721,9 @@
           investigacionUrbana: payload.urbanInvestigation,
           elementosConstruccion: payload.constructionElements,
           anexos: {
-            fotos: attachmentState.photos,
-            croquis: attachmentState.croquis,
-            documentos: attachmentState.documents
+            fotos: attachmentSummary(attachmentState.photos),
+            croquis: attachmentSummary(attachmentState.croquis),
+            documentos: attachmentSummary(attachmentState.documents)
           }
         }, null, 2);
       }
@@ -3256,6 +4749,10 @@
         capture.instalacionElectricaGeneral = capture.alimentacionElectrica || '';
         capture.fuentesUrbanas = urbanPlanAppliedSources
           .map(source => `${source.field}: ${source.fileName}. Evidencia: ${source.evidence}`)
+          .join('\n');
+        capture.consideracionesPrevias = previousConsiderations.filter(item => item.selected).map(item => item.text);
+        capture.fuentesDocumentales = documentExtractionSources
+          .map(source => `${source.field}: ${source.fileName}${source.page ? `, página ${source.page}` : ''}. Cita: “${source.quote}”`)
           .join('\n');
         capture.instalacionesEspecialesDetalle = specialInstallationItems.map(item => ({ ...item }));
         capture.instalacionesEspecialesGeneradas = specialInstallationItems
@@ -3289,6 +4786,7 @@
           urbanInvestigation: readPanelText('urbanInvestigationText'),
           constructionElements: readPanelText('constructionElementsText'),
           antecedentes: {
+            fechaAvaluo: formData.get('fechaAvaluo') || '',
             tipoInmueble: formData.get('tipoInmueble') || '',
             solicitante: formData.get('solicitante') || '',
             propietario: formData.get('propietario') || '',
@@ -3322,8 +4820,22 @@
             constructionSurface: declaredConstructionSurface,
             latitude: Number(formData.get('latitud')) || undefined,
             longitude: Number(formData.get('longitud')) || undefined,
-            annualIncome: Number(formData.get('annualIncome')) || 0,
             capRate: (Number(formData.get('capRate')) || 0) / 100,
+            finalApproach: formData.get('enfoqueValorFinal') || 'market',
+            income: {
+              rentableArea: Number(formData.get('superficieRentable')) || 0,
+              unitMonthlyRent: Number(formData.get('rentaUnitariaMensual')) || 0,
+              monthlyRent: Number(formData.get('rentaBrutaMensual')) || 0,
+              vacancyPercent: Number(formData.get('deduccionVacios')) || 0,
+              maintenancePercent: Number(formData.get('deduccionMantenimiento')) || 0,
+              administrationPercent: Number(formData.get('deduccionAdministracion')) || 0,
+              propertyTax: Number(formData.get('deduccionPredial')) || 0,
+              waterService: Number(formData.get('deduccionAgua')) || 0,
+              electricity: Number(formData.get('deduccionEnergia')) || 0,
+              insurance: Number(formData.get('deduccionSeguros')) || 0,
+              otherExpenses: Number(formData.get('deduccionOtros')) || 0,
+              incomeTax: Number(formData.get('deduccionIsr')) || 0
+            },
             marketAdjustment: Number(formData.get('marketAdjustment')) || 1,
             unitLandValue: Number(formData.get('valorUnitarioTerreno')) || 0,
             physicalConstructionValue,
@@ -3336,10 +4848,12 @@
             }
           },
           comparableSales: getComparableRows(),
+          landComparables: getMarketComparableRows('land'),
+          rentComparables: getMarketComparableRows('rent'),
           anexos: {
-            fotos: attachmentState.photos,
-            croquis: attachmentState.croquis,
-            documentos: attachmentState.documents
+            fotos: attachmentSummary(attachmentState.photos),
+            croquis: attachmentSummary(attachmentState.croquis),
+            documentos: attachmentSummary(attachmentState.documents)
           }
         };
       }
@@ -3387,8 +4901,34 @@
         });
       });
 
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
+      const captureIndex = document.getElementById('capture-index');
+      function scrollToCaptureIndex() {
+        captureIndex.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        captureIndex.focus({ preventScroll: true });
+      }
+      form.querySelectorAll('.capture-target').forEach(title => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'back-to-index';
+        button.textContent = '↑ Índice';
+        button.setAttribute('aria-label', 'Volver al índice del formato');
+        button.addEventListener('click', scrollToCaptureIndex);
+        title.appendChild(button);
+      });
+      const floatingIndexButton = document.createElement('button');
+      floatingIndexButton.type = 'button';
+      floatingIndexButton.className = 'floating-index-button';
+      floatingIndexButton.textContent = '↑ Índice del formato';
+      floatingIndexButton.hidden = true;
+      floatingIndexButton.addEventListener('click', scrollToCaptureIndex);
+      document.body.appendChild(floatingIndexButton);
+      new IntersectionObserver(([entry]) => {
+        floatingIndexButton.hidden = entry.isIntersecting || entry.boundingClientRect.top > 0;
+      }).observe(document.querySelector('.formal-tabs'));
+
+      let valuationRequestId = 0;
+      async function generateReport() {
+        const requestId = ++valuationRequestId;
         const payload = buildPayload();
 
         try {
@@ -3399,16 +4939,818 @@
           });
 
           const data = await response.json();
+          if (requestId !== valuationRequestId) return;
           renderReportFromData(data, payload);
         } catch (error) {
+          if (requestId !== valuationRequestId) return;
           result.textContent = 'Error: ' + error.message;
         }
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        generateReport();
       });
+
+      const liveRecalculationFields = [
+        'areaPrivativa', 'areaComun1', 'areaComun2', 'indiviso', 'superficieTerreno', 'superficieAplicable', 'topografia', 'panoramicas', 'datosEscritura', 'medidasColindancias', 'valorUnitarioTerreno',
+        'tipoRenta', 'fuenteRenta', 'superficieRentable', 'rentaUnitariaMensual', 'rentaBrutaMensual', 'deduccionVacios', 'deduccionMantenimiento', 'deduccionAdministracion',
+        'deduccionPredial', 'deduccionAgua', 'deduccionEnergia', 'deduccionSeguros', 'deduccionOtros', 'deduccionIsr', 'capRate', 'justificacionTasa',
+        'enfoqueValorFinal', 'justificacionValorFinal'
+      ];
+      let liveRecalculationTimer;
+      const scheduleLiveRecalculation = () => {
+        clearTimeout(liveRecalculationTimer);
+        liveRecalculationTimer = setTimeout(generateReport, 400);
+      };
+      form.addEventListener('input', event => {
+        if (event.target.matches('[data-market-group], [data-comparable]')) scheduleLiveRecalculation();
+      });
+      liveRecalculationFields.forEach(name => {
+        const field = form.elements.namedItem(name);
+        field?.addEventListener('input', scheduleLiveRecalculation);
+        if (field instanceof HTMLSelectElement) field.addEventListener('change', scheduleLiveRecalculation);
+      });
+
+      const valuationDateField = form.elements.namedItem('fechaAvaluo');
+      function formatValuationDate(value) {
+        const [year, month, day] = String(value || '').split('-');
+        return year && month && day ? `${day}/${month}/${year}` : '';
+      }
+      function updateValuationDateDisplay() {
+        const formatted = formatValuationDate(valuationDateField.value) || 'Pendiente';
+        document.getElementById('reportHeaderDate').textContent = formatted;
+        document.getElementById('reportDate').textContent = formatted;
+      }
+      if (!valuationDateField.value) {
+        const today = new Date();
+        valuationDateField.value = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+      }
+      valuationDateField.addEventListener('input', updateValuationDateDisplay);
+      valuationDateField.addEventListener('change', updateValuationDateDisplay);
+      updateValuationDateDisplay();
+
+      const previousConsiderations = [
+        'El avalúo se elaboró con base en la documentación e información proporcionadas por el solicitante, las cuales se consideran fidedignas; no se realizó investigación jurídica de la titularidad del inmueble.',
+        'Se considera que el inmueble está libre de gravámenes, limitaciones de dominio, adeudos fiscales y litigios, salvo lo indicado en este dictamen.',
+        'Las superficies se tomaron de la documentación proporcionada y se cotejaron de forma aproximada durante la inspección; este avalúo no constituye un levantamiento topográfico.',
+        'La descripción de la construcción y su estado de conservación se basan en una inspección ocular; no se realizaron estudios estructurales, de mecánica de suelos ni pruebas a las instalaciones.',
+        'Se considera que el inmueble cumple con la normatividad de uso de suelo y construcción vigente; no se verificaron licencias, permisos ni autorizaciones.',
+        'No se detectaron a simple vista riesgos ambientales, contaminación ni afectaciones; no se realizaron estudios especializados al respecto.',
+        'El valor no incluye bienes muebles, mobiliario, maquinaria ni equipo, salvo las instalaciones especiales y elementos accesorios descritos.',
+        'El valor no considera impuestos, derechos, gastos notariales ni costos de transacción.',
+        'La información de mercado proviene de fuentes consideradas confiables; su verificación se limitó a lo razonablemente posible a la fecha del avalúo.',
+        'El valor concluido corresponde a la fecha del avalúo y a las condiciones de mercado vigentes en ese momento, dentro del periodo de vigencia indicado.',
+        'El valuador declara no tener interés presente ni futuro en el inmueble valuado ni relación con las partes que pudiera afectar su imparcialidad.'
+      ].map(text => ({ text, selected: true, custom: false }));
+      const considerationsList = document.getElementById('previousConsiderationsList');
+
+      function renderReportConsiderations() {
+        const items = previousConsiderations.filter(item => item.selected).map(item => {
+          const listItem = document.createElement('li');
+          listItem.textContent = item.text;
+          return listItem;
+        });
+        if (!items.length) {
+          const empty = document.createElement('li');
+          empty.textContent = 'Sin consideraciones seleccionadas.';
+          items.push(empty);
+        }
+        document.getElementById('reportConsiderations').replaceChildren(...items);
+      }
+
+      function renderConsiderationsList() {
+        considerationsList.replaceChildren(...previousConsiderations.map((item, index) => {
+          const label = document.createElement('label');
+          label.className = 'consideration-item';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = item.selected;
+          checkbox.addEventListener('change', () => {
+            item.selected = checkbox.checked;
+            renderReportConsiderations();
+          });
+          const text = document.createElement('span');
+          text.textContent = item.text;
+          label.append(checkbox, text);
+          if (item.custom) {
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.textContent = 'Quitar';
+            remove.addEventListener('click', event => {
+              event.preventDefault();
+              previousConsiderations.splice(index, 1);
+              renderConsiderationsList();
+            });
+            label.appendChild(remove);
+          }
+          return label;
+        }));
+        renderReportConsiderations();
+      }
+
+      const newConsiderationText = document.getElementById('newConsiderationText');
+      document.getElementById('addConsideration').addEventListener('click', () => {
+        const text = newConsiderationText.value.trim();
+        if (!text) {
+          newConsiderationText.focus();
+          return;
+        }
+        previousConsiderations.push({ text, selected: true, custom: true });
+        newConsiderationText.value = '';
+        renderConsiderationsList();
+      });
+      renderConsiderationsList();
+
+      let valuerSignature = '';
+      let valuerLogo = '';
+
+      function valuerValue(name) {
+        return String(form.elements.namedItem(name)?.value || '').trim();
+      }
+
+      function appendDataLines(container, lines) {
+        container.replaceChildren(...lines.filter(([, value]) => value).map(([label, value]) => {
+          const line = document.createElement('p');
+          if (label) {
+            const strong = document.createElement('strong');
+            strong.textContent = `${label}: `;
+            line.appendChild(strong);
+          }
+          line.append(value);
+          return line;
+        }));
+      }
+
+      function renderValuerData() {
+        const name = valuerValue('valuadorNombre');
+        const profession = valuerValue('valuadorProfesion');
+        const date = formatValuationDate(valuationDateField.value);
+        const place = valuerValue('lugarEmision');
+        const placeAndDate = [place, date].filter(Boolean).join(', ');
+        const credentials = [
+          ['Cédula profesional', valuerValue('valuadorCedula')],
+          ['Especialidad', [valuerValue('valuadorEspecialidad'), valuerValue('valuadorCedulaEspecialidad') && `cédula ${valuerValue('valuadorCedulaEspecialidad')}`].filter(Boolean).join(', ')],
+          ['Registro de perito valuador', valuerValue('valuadorRegistro')],
+          ['Unidad de valuación', [valuerValue('unidadValuacion'), valuerValue('unidadValuacionRegistro') && `registro ${valuerValue('unidadValuacionRegistro')}`].filter(Boolean).join(', ')]
+        ];
+
+        appendDataLines(document.getElementById('reportConclusionValuer'), name || placeAndDate ? [
+          ['Lugar y fecha de emisión', placeAndDate],
+          ['Vigencia', valuerValue('vigenciaAvaluo')],
+          ['Valuador responsable', [profession, name].filter(Boolean).join(' ')],
+          ...credentials,
+          ['Controlador', valuerValue('controladorNombre')]
+        ] : []);
+
+        appendDataLines(document.getElementById('reportValuerSignatureData'), [
+          ['', [profession, name].filter(Boolean).join(' ') || 'Nombre y firma'],
+          ...credentials,
+          ['Domicilio', valuerValue('valuadorDomicilio')],
+          ['Contacto', [valuerValue('valuadorTelefono'), valuerValue('valuadorCorreo')].filter(Boolean).join(' · ')]
+        ]);
+
+        const controllerName = valuerValue('controladorNombre');
+        document.getElementById('reportControllerBox').hidden = !controllerName;
+        appendDataLines(document.getElementById('reportControllerSignatureData'), [
+          ['', controllerName],
+          ['Cédula / registro', valuerValue('controladorRegistro')]
+        ]);
+
+        document.getElementById('reportSignaturePlace').textContent = placeAndDate ? `${placeAndDate}.` : '';
+        showImage(document.getElementById('reportValuerSignature'), valuerSignature);
+        showImage(document.getElementById('reportValuerLogo'), valuerLogo);
+        document.getElementById('reportBrandName').textContent = valuerValue('unidadValuacion') || 'Avalúo de Inmuebles';
+        renderValuerFooter(name, profession);
+      }
+
+      function showImage(image, source) {
+        image.hidden = !source;
+        if (source) image.src = source;
+        else image.removeAttribute('src');
+      }
+
+      function cssString(text) {
+        return `"${text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\A ')}"`;
+      }
+
+      // El pie se repite en cada hoja impresa mediante los márgenes de página (@page); en pantalla se muestra al final del dictamen.
+      function renderValuerFooter(name, profession) {
+        const identity = [
+          [profession, name].filter(Boolean).join(' '),
+          valuerValue('valuadorCedula') && `Cédula profesional ${valuerValue('valuadorCedula')}`,
+          valuerValue('valuadorRegistro') && `Registro de perito valuador ${valuerValue('valuadorRegistro')}`
+        ].filter(Boolean).join(' · ');
+        const contact = [
+          valuerValue('unidadValuacion'),
+          valuerValue('valuadorTelefono') && `Tel. ${valuerValue('valuadorTelefono')}`,
+          valuerValue('valuadorCorreo'),
+          valuerValue('valuadorDomicilio')
+        ].filter(Boolean).join(' · ');
+        const footerText = [identity, contact].filter(Boolean).join('\n');
+
+        const footer = document.getElementById('reportFooter');
+        footer.textContent = footerText;
+        footer.hidden = !footerText;
+        document.getElementById('printFooterStyle').textContent = `@page {
+          margin: 14mm 12mm 20mm;
+          @bottom-left { content: ${cssString(footerText)}; white-space: pre-wrap; font-size: 7.5pt; color: #49627a; vertical-align: top; padding-top: 3mm; }
+          @bottom-right { content: "Página " counter(page) " de " counter(pages); font-size: 7.5pt; color: #49627a; vertical-align: top; padding-top: 3mm; }
+        }`;
+      }
+
+      function setupImageUpload({ selectId, removeId, inputId, previewId, onChange }) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        const removeButton = document.getElementById(removeId);
+        const update = source => {
+          showImage(preview, source);
+          removeButton.hidden = !source;
+          onChange(source);
+          renderValuerData();
+        };
+        document.getElementById(selectId).addEventListener('click', () => input.click());
+        input.addEventListener('change', async () => {
+          const file = input.files?.[0];
+          input.value = '';
+          if (file && file.type.startsWith('image/')) update(await toDataUrl(file));
+        });
+        removeButton.addEventListener('click', () => update(''));
+        return update;
+      }
+
+      const setValuerSignature = setupImageUpload({ selectId: 'selectValuerSignature', removeId: 'removeValuerSignature', inputId: 'valuerSignatureInput', previewId: 'valuerSignaturePreview', onChange: source => { valuerSignature = source; } });
+      const setValuerLogo = setupImageUpload({ selectId: 'selectValuerLogo', removeId: 'removeValuerLogo', inputId: 'valuerLogoInput', previewId: 'valuerLogoPreview', onChange: source => { valuerLogo = source; } });
+      form.querySelectorAll('[data-valuer-fields] [name]').forEach(field => field.addEventListener('input', renderValuerData));
+      valuationDateField.addEventListener('input', renderValuerData);
+      valuationDateField.addEventListener('change', renderValuerData);
+      renderValuerData();
 
       renderAttachmentList('photos');
       renderAttachmentList('croquis');
       renderAttachmentList('documents');
       renderAttachmentPreview();
+
+      // --- Extracción de datos de documentos PDF con IA ---
+      const documentExtractionSources = [];
+      const extractionPanel = document.getElementById('documentExtraction');
+      const extractionStatus = document.getElementById('extractionStatus');
+      const extractionMatchesContainer = document.getElementById('extractionMatches');
+      const extractionPages = document.getElementById('extractionPages');
+      const extractionPrivacyCheck = document.getElementById('extractionPrivacyCheck');
+      const runExtractionButton = document.getElementById('runExtraction');
+      const applyExtractionButton = document.getElementById('applyExtractionMatches');
+      const VERIFICATION_LABELS = {
+        verificada: ['is-ok', 'Cita encontrada en la página indicada'],
+        verificada_otra_pagina: ['is-ok', 'Cita encontrada en el documento (otra página)'],
+        no_encontrada: ['is-warning', 'La cita no aparece en el texto del PDF: revise contra el documento'],
+        sin_texto: ['is-warning', 'Documento escaneado: compare el dato con la imagen del documento']
+      };
+      let extractionItem = null;
+      let extractionResult = null;
+
+      // El PDF ya está en el servidor; solo se envía su referencia.
+      async function postDocument(url, item, extraFields = {}) {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: item.file, fileName: item.name, ...extraFields })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'No se pudo procesar el documento.');
+        return result;
+      }
+
+      function updateRunExtractionButton() {
+        runExtractionButton.disabled = !extractionItem || !extractionPrivacyCheck.checked;
+      }
+
+      async function openDocumentExtraction(item) {
+        extractionItem = item;
+        extractionResult = null;
+        document.getElementById('extractionFileName').textContent = item.name;
+        extractionPages.value = '';
+        extractionPrivacyCheck.checked = false;
+        extractionMatchesContainer.replaceChildren();
+        applyExtractionButton.hidden = true;
+        extractionStatus.textContent = '';
+        const info = document.getElementById('extractionInfo');
+        info.textContent = 'Leyendo el documento…';
+        extractionPanel.hidden = false;
+        updateRunExtractionButton();
+        extractionPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        try {
+          const details = await postDocument('/api/document-info', item);
+          if (extractionItem !== item) return;
+          info.textContent = `${details.pageCount} página(s), ${details.sizeMb} MB. ${details.hasTextLayer
+            ? 'Tiene texto seleccionable: las citas se podrán comprobar automáticamente.'
+            : 'Parece escaneado (sin texto seleccionable): la IA leerá las imágenes y deberá comparar cada dato con el documento.'} Envíe solo las páginas que describen el inmueble para reducir costo y datos compartidos.`;
+        } catch (error) {
+          if (extractionItem === item) info.textContent = `No se pudo leer el PDF: ${error.message}`;
+        }
+      }
+
+      function renderExtractionResult(result) {
+        const fieldLabels = new Map(result.matches.map(match => [match.field, match.label]));
+        extractionMatchesContainer.replaceChildren(...result.matches.map((match, index) => {
+          const card = document.createElement('div');
+          card.className = 'extraction-match';
+          const label = document.createElement('label');
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.dataset.extractionIndex = String(index);
+          checkbox.checked = match.verification === 'verificada' || match.verification === 'verificada_otra_pagina';
+          const text = document.createElement('span');
+          text.textContent = `${match.label}: ${match.value}`;
+          label.append(checkbox, text);
+          const quote = document.createElement('small');
+          quote.textContent = `${match.page ? `Página ${match.page}` : 'Página no indicada'}: “${match.quote}”`;
+          const [badgeClass, badgeText] = VERIFICATION_LABELS[match.verification] || VERIFICATION_LABELS.no_encontrada;
+          const badge = document.createElement('span');
+          badge.className = `verification-badge ${badgeClass}`;
+          badge.textContent = badgeText;
+          card.append(label, quote, badge);
+          const field = form.elements.namedItem(match.field);
+          if (field?.value.trim()) {
+            const note = document.createElement('small');
+            note.textContent = `El campo ya tiene "${field.value.trim()}"; no se sobrescribirá.`;
+            card.appendChild(note);
+          }
+          return card;
+        }));
+        applyExtractionButton.hidden = result.matches.length === 0;
+        const repeated = [...fieldLabels.keys()].filter(field => result.matches.filter(match => match.field === field).length > 1);
+        extractionStatus.textContent = [
+          result.documentType && `Documento identificado: ${result.documentType}.`,
+          result.matches.length ? `${result.matches.length} dato(s) propuesto(s) de las páginas ${result.pagesSent.join(', ')}.` : 'No se encontraron datos para la captura en las páginas enviadas.',
+          repeated.length ? `Hay más de una propuesta para: ${repeated.map(field => fieldLabels.get(field)).join(', ')}; marque solo una.` : '',
+          result.observations && `Observaciones: ${result.observations}`
+        ].filter(Boolean).join(' ');
+      }
+
+      runExtractionButton.addEventListener('click', async () => {
+        const item = extractionItem;
+        if (!item) return;
+        runExtractionButton.disabled = true;
+        extractionMatchesContainer.replaceChildren();
+        applyExtractionButton.hidden = true;
+        extractionStatus.textContent = 'Enviando el documento y extrayendo datos… puede tardar hasta un par de minutos.';
+        try {
+          const result = await postDocument('/api/document-extraction', item, { pages: extractionPages.value.trim() });
+          if (extractionItem !== item) return;
+          extractionResult = result;
+          renderExtractionResult(result);
+        } catch (error) {
+          if (extractionItem === item) extractionStatus.textContent = `No se pudo extraer: ${error.message}`;
+        } finally {
+          updateRunExtractionButton();
+        }
+      });
+
+      applyExtractionButton.addEventListener('click', () => {
+        if (!extractionResult) return;
+        const selected = Array.from(extractionMatchesContainer.querySelectorAll('[data-extraction-index]:checked'), checkbox => extractionResult.matches[Number(checkbox.dataset.extractionIndex)]);
+        const appliedFields = new Set();
+        let applied = 0;
+        let preserved = 0;
+        selected.forEach(match => {
+          const field = form.elements.namedItem(match.field);
+          if (!field) return;
+          if (field.value.trim() || appliedFields.has(match.field)) {
+            preserved += 1;
+            return;
+          }
+          field.value = match.value;
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+          field.dispatchEvent(new Event('change', { bubbles: true }));
+          appliedFields.add(match.field);
+          documentExtractionSources.push({ field: match.label, fileName: extractionResult.fileName, page: match.page, quote: match.quote });
+          applied += 1;
+        });
+        renderExtractionResult(extractionResult);
+        extractionStatus.textContent = `Se aplicaron ${applied} dato(s).${preserved ? ` ${preserved} no se aplicaron porque el campo ya tenía información o se marcó más de una propuesta para el mismo campo.` : ''} Los datos aplicados y sus citas quedan registrados en el dictamen (Antecedentes).`;
+      });
+
+      extractionPrivacyCheck.addEventListener('change', updateRunExtractionButton);
+      document.getElementById('closeExtraction').addEventListener('click', () => {
+        extractionItem = null;
+        extractionResult = null;
+        extractionPanel.hidden = true;
+      });
+
+      // --- Guardado y apertura de avalúos (base de datos SQLite del servidor) ---
+      const DATASET_FLAGS = ['manuallyEdited', 'geocoded', 'locationManuallyEdited'];
+      const ATTACHMENT_COLLECTIONS = ['photos', 'croquis', 'documents'];
+      const recordTitle = document.getElementById('recordTitle');
+      const recordStatus = document.getElementById('recordStatus');
+      const saveValuationButton = document.getElementById('saveValuation');
+      let currentValuationId = null;
+      let currentValuationRevision = null;
+      let changeCounter = 0;
+      let savedChangeCounter = 0;
+      let restoringValuation = false;
+      let leavingPage = false;
+
+      const hasUnsavedChanges = () => changeCounter !== savedChangeCounter;
+
+      function setRecordStatus(message, state = '') {
+        recordStatus.textContent = message;
+        recordStatus.className = state ? `is-${state}` : '';
+      }
+
+      function updateRecordTitle(record) {
+        if (!currentValuationId) {
+          recordTitle.textContent = 'Avalúo nuevo';
+          return;
+        }
+        const folio = form.elements.namedItem('folioExpediente').value.trim();
+        recordTitle.textContent = `Avalúo #${currentValuationId}${folio ? ` · ${folio}` : ''}`;
+        if (record?.actualizado_en) setRecordStatus(`Guardado el ${formatStoredDate(record.actualizado_en)}`);
+      }
+
+      function formatStoredDate(value) {
+        const date = new Date(`${String(value).replace(' ', 'T')}Z`);
+        return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+      }
+
+      function markChanged() {
+        if (restoringValuation) return;
+        changeCounter += 1;
+        setRecordStatus('Cambios sin guardar', 'dirty');
+      }
+
+      form.addEventListener('input', markChanged);
+      form.addEventListener('change', markChanged);
+      form.addEventListener('click', event => {
+        const button = event.target.closest('button');
+        if (button && !button.matches('.formal-tab, .back-to-index, [type="submit"]')) markChanged();
+      });
+      window.addEventListener('beforeunload', event => {
+        if (leavingPage || !hasUnsavedChanges()) return;
+        event.preventDefault();
+        event.returnValue = '';
+      });
+
+      function serializeValuation() {
+        const fields = {};
+        const flags = {};
+        form.querySelectorAll('[name]').forEach(field => {
+          if (field.type === 'file' || (field.type === 'radio' && !field.checked)) return;
+          if (field instanceof HTMLSelectElement && field.multiple) fields[field.name] = Array.from(field.selectedOptions, option => option.value);
+          else if (field.type === 'checkbox') fields[field.name] = field.checked;
+          else fields[field.name] = field.value;
+          const fieldFlags = Object.fromEntries(DATASET_FLAGS.filter(key => field.dataset[key] !== undefined).map(key => [key, field.dataset[key]]));
+          if (Object.keys(fieldFlags).length) flags[field.name] = fieldFlags;
+        });
+        const editableRows = tbody => Array.from(tbody.rows, row => Object.fromEntries(
+          Array.from(row.querySelectorAll('input[data-column], select[data-column]'), element => [element.dataset.column, {
+            value: element.value,
+            manualOverride: element.dataset.manualOverride,
+            source: element.dataset.source
+          }])
+        ));
+        return {
+          version: 1,
+          fields,
+          flags,
+          buildingRows: editableRows(buildingRows),
+          accessoryRows: editableRows(accessoryRows),
+          constructionSurfaceSource,
+          constructionComparables: Array.from(form.querySelectorAll('[data-comparable][data-field]'), element => ({ index: element.dataset.comparable, field: element.dataset.field, value: element.value })),
+          marketComparables: Array.from(form.querySelectorAll('[data-market-group][data-field]'), element => ({ group: element.dataset.marketGroup, index: element.dataset.index, field: element.dataset.field, value: element.value })),
+          specialInstallations: specialInstallationItems.map(item => ({ ...item })),
+          considerations: previousConsiderations.map(item => ({ ...item })),
+          urbanPlanSources: urbanPlanAppliedSources.map(source => ({ ...source })),
+          documentSources: documentExtractionSources.map(source => ({ ...source })),
+          attachments: Object.fromEntries(ATTACHMENT_COLLECTIONS.map(name => [name, attachmentState[name].map(item => ({ ...item }))])),
+          comparablePhotos: Object.fromEntries(Object.entries(comparablePhotos).map(([group, cards]) => [group, cards.map(photos => (photos || []).map(photo => ({ ...photo })))])),
+          valuerSignature,
+          valuerLogo,
+          panels: { urbanInvestigation: urbanInvestigationText.value, constructionElements: constructionElementsText.value }
+        };
+      }
+
+      function setNamedField(field, value) {
+        if (field instanceof RadioNodeList) {
+          field.value = value ?? '';
+        } else if (field instanceof HTMLSelectElement && field.multiple) {
+          const selected = Array.isArray(value) ? value : [];
+          Array.from(field.options).forEach(option => { option.selected = selected.includes(option.value); });
+        } else if (field.type === 'checkbox') {
+          field.checked = Boolean(value);
+        } else if (field instanceof HTMLSelectElement) {
+          if (value && !Array.from(field.options).some(option => option.value === value)) field.appendChild(new Option(value, value));
+          field.value = value ?? '';
+        } else {
+          field.value = value ?? '';
+        }
+      }
+
+      function restoreEditableRows(tbody, rows, addRow, updateRow) {
+        // Un avalúo creado desde la app móvil aún no tiene filas: se conservan las predeterminadas.
+        if (!Array.isArray(rows)) return;
+        tbody.replaceChildren();
+        (rows || []).forEach(columns => {
+          addRow();
+          const row = tbody.lastElementChild;
+          Object.entries(columns).forEach(([column, state]) => {
+            const element = row.querySelector(`[data-column="${column}"]`);
+            if (!element) return;
+            element.value = state.value ?? '';
+            if (state.manualOverride) element.dataset.manualOverride = state.manualOverride;
+            if (state.source) element.dataset.source = state.source;
+          });
+          updateRow(row);
+        });
+      }
+
+      function restoreValuation(datos) {
+        restoringValuation = true;
+        try {
+          const fields = datos.fields || {};
+          setNamedField(form.elements.namedItem('estado'), fields.estado);
+          updateMunicipios();
+          Object.entries(fields).forEach(([name, value]) => {
+            const field = form.elements.namedItem(name);
+            if (field && name !== 'estado') setNamedField(field, value);
+          });
+          Object.entries(datos.flags || {}).forEach(([name, fieldFlags]) => {
+            const field = form.elements.namedItem(name);
+            if (field?.dataset) Object.assign(field.dataset, fieldFlags);
+          });
+          vidaUtilTotalCustom.style.display = vidaUtilTotalSelect.value === 'custom' ? 'block' : 'none';
+
+          restoreEditableRows(buildingRows, datos.buildingRows, addBuildingRow, updateBuildingRow);
+          restoreEditableRows(accessoryRows, datos.accessoryRows, addAccessoryRow, updateAccessoryRow);
+          constructionSurfaceSource = datos.constructionSurfaceSource || 'captura manual';
+
+          (datos.constructionComparables || []).forEach(({ index, field, value }) => {
+            const element = form.querySelector(`[data-comparable="${index}"][data-field="${field}"]`);
+            if (element) element.value = value;
+          });
+          (datos.marketComparables || []).forEach(({ group, index, field, value }) => {
+            const element = marketComparableField(group, index, field);
+            if (element) element.value = value;
+          });
+
+          specialInstallationItems.splice(0, specialInstallationItems.length, ...(datos.specialInstallations || []));
+          renderSpecialInstallationItems();
+          if (Array.isArray(datos.considerations)) {
+            previousConsiderations.splice(0, previousConsiderations.length, ...datos.considerations);
+            renderConsiderationsList();
+          }
+          urbanPlanAppliedSources.splice(0, urbanPlanAppliedSources.length, ...(datos.urbanPlanSources || []));
+          documentExtractionSources.splice(0, documentExtractionSources.length, ...(datos.documentSources || []));
+
+          ATTACHMENT_COLLECTIONS.forEach(name => {
+            attachmentState[name] = datos.attachments?.[name] || [];
+            renderAttachmentList(name);
+          });
+          renderAttachmentPreview();
+          Object.entries(comparablePhotos).forEach(([group, cards]) => {
+            cards.forEach((photos, index) => {
+              photos.splice(0, photos.length, ...(datos.comparablePhotos?.[group]?.[index] || []));
+              comparablePhotoRenderers[group][index]?.();
+            });
+          });
+          renderComparablePhotoGalleries();
+
+          setValuerSignature(datos.valuerSignature || '');
+          setValuerLogo(datos.valuerLogo || '');
+          urbanInvestigationText.value = datos.panels?.urbanInvestigation || '';
+          constructionElementsText.value = datos.panels?.constructionElements || '';
+
+          form.querySelectorAll('select[data-multi-select]').forEach(select => select.dispatchEvent(new Event('change', { bubbles: true })));
+          updateGeneratedDescriptions();
+          updateValuationDateDisplay();
+          renderValuerData();
+          const coordinates = currentCoordinates();
+          if (coordinates && !coordinates.invalid) updateUrbanMaps(coordinates);
+        } finally {
+          restoringValuation = false;
+        }
+      }
+
+      // Tras guardar, las imágenes ya viven en el servidor: se usan sus URL para no volver a enviarlas.
+      function adoptStoredImageReferences(saved) {
+        ATTACHMENT_COLLECTIONS.forEach(name => {
+          attachmentState[name].forEach((item, index) => {
+            const stored = saved.attachments?.[name]?.[index];
+            if (stored) {
+              item.preview = stored.preview;
+              item.file = stored.file || '';
+            }
+          });
+        });
+        Object.entries(comparablePhotos).forEach(([group, cards]) => {
+          cards.forEach((photos, index) => {
+            photos.forEach((photo, photoIndex) => {
+              const stored = saved.comparablePhotos?.[group]?.[index]?.[photoIndex];
+              if (stored) photo.preview = stored.preview;
+            });
+          });
+        });
+        valuerSignature = saved.valuerSignature ?? valuerSignature;
+        valuerLogo = saved.valuerLogo ?? valuerLogo;
+      }
+
+      // El perfil del valuador se actualiza con cada avalúo guardado y se carga en los avalúos nuevos.
+      async function saveValuerProfile(datos) {
+        if (!String(datos.fields?.valuadorNombre || '').trim()) return '';
+        try {
+          const response = await fetch('/api/perfil-valuador', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields: datos.fields, valuerLogo: datos.valuerLogo, valuerSignature: datos.valuerSignature })
+          });
+          if (response.ok) return '';
+          return (await response.json()).error || 'error del servidor';
+        } catch (error) {
+          return error.message;
+        }
+      }
+
+      async function loadValuerProfile() {
+        try {
+          const response = await fetch('/api/perfil-valuador');
+          const result = await response.json();
+          if (!response.ok || !result.perfil) return;
+          restoringValuation = true;
+          try {
+            Object.entries(result.perfil.fields || {}).forEach(([name, value]) => {
+              const field = form.elements.namedItem(name);
+              if (field && value) setNamedField(field, value);
+            });
+            setValuerSignature(result.perfil.valuerSignature || '');
+            setValuerLogo(result.perfil.valuerLogo || '');
+          } finally {
+            restoringValuation = false;
+          }
+          renderValuerData();
+          setRecordStatus('Sin guardar · datos del valuador cargados de su perfil');
+        } catch {
+          // Sin perfil disponible: el avalúo nuevo empieza con los datos del valuador en blanco.
+        }
+      }
+
+      async function saveValuation() {
+        if (pendingUploads > 0) {
+          setRecordStatus('Espere a que terminen de subir los anexos antes de guardar', 'dirty');
+          return;
+        }
+        saveValuationButton.disabled = true;
+        setRecordStatus('Guardando…');
+        const counterAtSave = changeCounter;
+        try {
+          await generateReport();
+          const datos = serializeValuation();
+          const response = await fetch(currentValuationId ? `/api/avaluos/${currentValuationId}` : '/api/avaluos', {
+            method: currentValuationId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ datos, resumen: lastValuationSummary, revision: currentValuationRevision })
+          });
+          const record = await response.json();
+          if (response.status === 409) {
+            setRecordStatus('No se guardó: el avalúo recibió cambios desde otro dispositivo (por ejemplo, una visita de campo).', 'error');
+            if (confirm(`${record.error}\n\n¿Recargar el avalúo para ver esos cambios? Se perderá lo que modificó en esta pantalla desde la última vez que guardó.`)) {
+              leavingPage = true;
+              location.reload();
+            }
+            return;
+          }
+          if (!response.ok) throw new Error(record.error || 'No se pudo guardar el avalúo.');
+          currentValuationId = record.id;
+          currentValuationRevision = record.revision;
+          adoptStoredImageReferences(record.datos);
+          history.replaceState(null, '', `/?avaluo=${record.id}`);
+          savedChangeCounter = counterAtSave;
+          updateRecordTitle(record);
+          const profileError = await saveValuerProfile(record.datos);
+          if (hasUnsavedChanges()) setRecordStatus('Cambios sin guardar', 'dirty');
+          else if (profileError) setRecordStatus(`Avalúo guardado, pero no se actualizó el perfil del valuador: ${profileError}`, 'error');
+        } catch (error) {
+          setRecordStatus(`No se guardó: ${error.message}`, 'error');
+        } finally {
+          saveValuationButton.disabled = false;
+        }
+      }
+
+      function navigateTo(url) {
+        if (hasUnsavedChanges() && !confirm('Hay cambios sin guardar en el avalúo actual. ¿Deseas descartarlos?')) return;
+        leavingPage = true;
+        location.href = url;
+      }
+
+      const valuationsDialog = document.getElementById('valuationsDialog');
+      const valuationsList = document.getElementById('valuationsList');
+      const valuationsSearch = document.getElementById('valuationsSearch');
+      const valuationsMessage = document.getElementById('valuationsMessage');
+      let valuationsSearchTimer;
+
+      async function loadValuationsList() {
+        valuationsMessage.textContent = 'Cargando…';
+        try {
+          const response = await fetch(`/api/avaluos?${new URLSearchParams({ q: valuationsSearch.value.trim() })}`);
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'No se pudo consultar la lista.');
+          valuationsMessage.textContent = result.avaluos.length ? '' : (valuationsSearch.value.trim() ? 'Ningún avalúo coincide con la búsqueda.' : 'Aún no hay avalúos guardados.');
+          valuationsList.replaceChildren(...result.avaluos.map(record => {
+            const row = document.createElement('tr');
+            const cells = [
+              record.folio || `#${record.id}`,
+              formatValuationDate(record.fecha_avaluo) || '—',
+              [record.solicitante, record.propietario].filter(Boolean).join(' / ') || '—',
+              [record.calle, record.colonia, record.municipio, record.estado].filter(Boolean).join(', ') || '—',
+              record.valor_concluido ? money(record.valor_concluido) : 'Pendiente',
+              formatStoredDate(record.actualizado_en)
+            ];
+            cells.forEach(value => {
+              const cell = document.createElement('td');
+              cell.textContent = value;
+              row.appendChild(cell);
+            });
+            const actions = document.createElement('td');
+            actions.className = 'record-row-actions';
+            const open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'secondary-button';
+            open.textContent = record.id === currentValuationId ? 'Abierto' : 'Abrir';
+            open.disabled = record.id === currentValuationId;
+            open.addEventListener('click', () => navigateTo(`/?avaluo=${record.id}`));
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'secondary-button';
+            remove.textContent = 'Eliminar';
+            remove.addEventListener('click', () => deleteValuation(record));
+            actions.append(open, remove);
+            row.appendChild(actions);
+            return row;
+          }));
+        } catch (error) {
+          valuationsMessage.textContent = `No se pudo consultar la lista: ${error.message}`;
+        }
+      }
+
+      async function deleteValuation(record) {
+        const label = record.folio || `#${record.id}`;
+        if (!confirm(`¿Eliminar definitivamente el avalúo ${label} y sus fotografías? Esta acción no se puede deshacer.`)) return;
+        const response = await fetch(`/api/avaluos/${record.id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          valuationsMessage.textContent = 'No se pudo eliminar el avalúo.';
+          return;
+        }
+        if (record.id === currentValuationId) {
+          currentValuationId = null;
+          history.replaceState(null, '', '/');
+          savedChangeCounter = -1;
+          updateRecordTitle();
+          setRecordStatus('El avalúo guardado se eliminó; la captura en pantalla no está guardada', 'dirty');
+        }
+        loadValuationsList();
+      }
+
+      document.getElementById('newValuation').addEventListener('click', () => navigateTo('/'));
+      document.getElementById('openValuations').addEventListener('click', () => {
+        valuationsDialog.showModal();
+        valuationsSearch.focus();
+        loadValuationsList();
+      });
+      document.getElementById('closeValuationsDialog').addEventListener('click', () => valuationsDialog.close());
+      valuationsSearch.addEventListener('input', () => {
+        clearTimeout(valuationsSearchTimer);
+        valuationsSearchTimer = setTimeout(loadValuationsList, 300);
+      });
+      saveValuationButton.addEventListener('click', saveValuation);
+      document.addEventListener('keydown', event => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+          event.preventDefault();
+          if (!saveValuationButton.disabled) saveValuation();
+        }
+      });
+
+      async function openValuationFromUrl() {
+        const id = Number(new URLSearchParams(location.search).get('avaluo'));
+        if (!Number.isInteger(id) || id <= 0) {
+          await loadValuerProfile();
+          return;
+        }
+        setRecordStatus('Abriendo avalúo…');
+        try {
+          const response = await fetch(`/api/avaluos/${id}`);
+          const record = await response.json();
+          if (!response.ok) throw new Error(record.error || 'No se pudo abrir el avalúo.');
+          restoreValuation(record.datos);
+          currentValuationId = record.id;
+          currentValuationRevision = record.revision;
+          savedChangeCounter = changeCounter;
+          updateRecordTitle(record);
+          await generateReport();
+        } catch (error) {
+          history.replaceState(null, '', '/');
+          setRecordStatus(`No se pudo abrir el avalúo #${id}: ${error.message}`, 'error');
+        }
+      }
+      openValuationFromUrl();
     </script>
   </body>
 </html>

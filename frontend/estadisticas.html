@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Estadísticas de avalúos</title>
+    <style>
+      :root {
+        --surface: #ffffff;
+        --page: #f4f8fc;
+        --line: #dfe7f0;
+        --grid: #e8eef5;
+        --ink: #18293a;
+        --ink-2: #33506b;
+        --muted: #5d7590;
+        --accent: #0f4c81;
+        --mark: #1f6fb5;
+        --mark-ink-inside: #ffffff;
+        --header: linear-gradient(135deg, #0a2f4f 0%, #0f4c81 100%);
+        color-scheme: light;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --surface: #1a1a19;
+          --page: #111312;
+          --line: #2e3438;
+          --grid: #262b2f;
+          --ink: #e8edf2;
+          --ink-2: #c3ceda;
+          --muted: #93a3b5;
+          --accent: #8cbdf0;
+          --mark: #4a8fd4;
+          --mark-ink-inside: #0b1520;
+          --header: linear-gradient(135deg, #0a1a2a 0%, #123456 100%);
+          color-scheme: dark;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 16px 24px;
+        background: var(--header);
+        color: #fff;
+      }
+
+      header h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.04em; }
+      header p { margin: 2px 0 0; font-size: 0.8rem; opacity: 0.85; }
+      header a { color: #fff; font-weight: 700; font-size: 0.85rem; }
+
+      main { max-width: 1280px; margin: 0 auto; padding: 18px 16px 40px; }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+
+      .filters label { display: grid; gap: 4px; font-size: 0.72rem; font-weight: 700; color: var(--ink-2); min-width: 160px; }
+      .filters select { width: 100%; min-width: 0; }
+
+      select, button {
+        font: inherit;
+        font-size: 0.88rem;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--ink);
+      }
+
+      button { cursor: pointer; font-weight: 700; color: var(--accent); }
+      .filters .spacer { flex: 1; }
+
+      .kpis {
+        display: grid;
+        grid-template-columns: 2fr repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .tile {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: grid;
+        gap: 4px;
+        align-content: start;
+      }
+
+      .tile .label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+      .tile .value { font-size: 1.6rem; font-weight: 650; color: var(--ink); }
+      .tile.hero .value { font-size: 3rem; line-height: 1.1; }
+      .tile .sub { font-size: 0.78rem; color: var(--muted); }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        min-width: 0;
+      }
+
+      .card.wide { grid-column: 1 / -1; }
+
+      .card-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+      .card h2 { margin: 0; font-size: 0.95rem; color: var(--ink); }
+      .card .subtitle { margin: 2px 0 10px; font-size: 0.78rem; color: var(--muted); }
+
+      .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .segmented button { border: none; border-radius: 0; padding: 5px 10px; font-size: 0.75rem; color: var(--muted); }
+      .segmented button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+
+      .chart { position: relative; width: 100%; }
+      .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+      .chart .hit { fill: transparent; cursor: default; outline: none; }
+      .chart .hit:focus-visible { stroke: var(--accent); stroke-width: 2px; }
+      .chart text { font-family: inherit; }
+      .axis-text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+      .label-text { fill: var(--ink-2); font-size: 12px; }
+      .value-text { fill: var(--ink); font-size: 12px; font-weight: 600; }
+      .value-inside { fill: var(--mark-ink-inside); font-size: 12px; font-weight: 600; }
+      .gridline { stroke: var(--grid); stroke-width: 1; }
+      .baseline { stroke: var(--line); stroke-width: 1; }
+      .mark { fill: var(--mark); }
+      .mark.dim { opacity: 0.35; }
+
+      .empty { padding: 24px 8px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+
+      details.data { margin-top: 8px; font-size: 0.78rem; }
+      details.data summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+
+      table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+      th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+      th { color: var(--muted); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+      td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+      td a { color: var(--accent); font-weight: 600; white-space: nowrap; }
+      td:nth-child(2) { white-space: nowrap; }
+      .table-scroll { overflow-x: auto; }
+
+      .tooltip {
+        position: fixed;
+        z-index: 50;
+        pointer-events: none;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: var(--ink);
+        color: var(--surface);
+        font-size: 0.78rem;
+        line-height: 1.4;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        max-width: 260px;
+      }
+
+      .tooltip strong { display: block; }
+
+      @media (max-width: 900px) {
+        .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .tile.hero { grid-column: 1 / -1; }
+        .grid { grid-template-columns: minmax(0, 1fr); }
+        .filters label { min-width: 0; flex: 1 1 140px; }
+      }
+
+      @media print {
+        .filters button, details.data summary, header a { display: none; }
+        body { background: #fff; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Estadísticas de avalúos</h1>
+        <p id="updatedAt">Cargando…</p>
+      </div>
+      <a href="/">← Volver al formato</a>
+    </header>
+
+    <main>
+      <section class="filters" aria-label="Filtros">
+        <label>Periodo <select id="filterPeriod"></select></label>
+        <label>Tipo de inmueble <select id="filterType"></select></label>
+        <label>Municipio <select id="filterMunicipality"></select></label>
+        <label>Estado del avalúo
+          <select id="filterStatus">
+            <option value="todos">Todos</option>
+            <option value="concluidos">Con valor concluido</option>
+            <option value="proceso">En proceso</option>
+          </select>
+        </label>
+        <span class="spacer"></span>
+        <button type="button" id="exportCsv">Exportar CSV (Excel / Power BI)</button>
+      </section>
+
+      <section class="kpis" aria-label="Indicadores">
+        <div class="tile hero"><span class="label">Valor total concluido</span><span class="value" id="kpiTotal">—</span><span class="sub" id="kpiTotalSub"></span></div>
+        <div class="tile"><span class="label">Avalúos</span><span class="value" id="kpiCount">—</span><span class="sub" id="kpiCountSub"></span></div>
+        <div class="tile"><span class="label">Valor promedio</span><span class="value" id="kpiAverage">—</span><span class="sub">De los avalúos con valor concluido</span></div>
+        <div class="tile"><span class="label">Valor mediano</span><span class="value" id="kpiMedian">—</span><span class="sub">La mitad vale más y la mitad menos</span></div>
+        <div class="tile"><span class="label">Valor unitario promedio</span><span class="value" id="kpiUnit">—</span><span class="sub">$/m² sobre superficie construida (terrenos: superficie de terreno)</span></div>
+      </section>
+
+      <section class="grid">
+        <article class="card wide">
+          <h2>Avalúos por mes</h2>
+          <p class="subtitle" id="monthlySubtitle">Número de avalúos según su fecha</p>
+          <div class="chart" id="chartMonthly"></div>
+          <details class="data"><summary>Ver datos</summary><div class="table-scroll" id="tableMonthly"></div></details>
+        </article>
+
+        <article class="card">
+          <h2>Valor promedio por tipo de inmueble</h2>
+          <p class="subtitle">Promedio del valor concluido; entre paréntesis, número de avalúos</p>
+          <div class="chart" id="chartType"></div>
+          <details class="data"><summary>Ver datos</summary><div class="table-scroll" id="tableType"></div></details>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h2>Valor unitario promedio por zona</h2>
+            <div class="segmented" role="group" aria-label="Agrupar por">
+              <button type="button" data-zone="municipio" aria-pressed="true">Municipio</button>
+              <button type="button" data-zone="colonia" aria-pressed="false">Colonia</button>
+            </div>
+          </div>
+          <p class="subtitle">$/m², las 10 zonas con más avalúos; entre paréntesis, número de avalúos</p>
+          <div class="chart" id="chartZone"></div>
+          <details class="data"><summary>Ver datos</summary><div class="table-scroll" id="tableZone"></div></details>
+        </article>
+
+        <article class="card">
+          <h2>Enfoque del valor concluido</h2>
+          <p class="subtitle">Avalúos concluidos según el enfoque elegido</p>
+          <div class="chart" id="chartApproach"></div>
+          <details class="data"><summary>Ver datos</summary><div class="table-scroll" id="tableApproach"></div></details>
+        </article>
+
+        <article class="card">
+          <h2>Avalúos por solicitante</h2>
+          <p class="subtitle">Los 8 solicitantes con más avalúos</p>
+          <div class="chart" id="chartApplicant"></div>
+          <details class="data"><summary>Ver datos</summary><div class="table-scroll" id="tableApplicant"></div></details>
+        </article>
+
+        <article class="card wide">
+          <h2>Detalle de avalúos</h2>
+          <p class="subtitle" id="detailSubtitle"></p>
+          <div class="table-scroll" id="tableDetail"></div>
+        </article>
+      </section>
+    </main>
+
+    <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+    <script>
+      const SVG_NS = 'http://www.w3.org/2000/svg';
+      const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      const money = value => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(value);
+      const compactMoney = value => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', notation: 'compact', maximumFractionDigits: 1 }).format(value);
+      const integer = value => new Intl.NumberFormat('es-MX').format(value);
+      const area = value => value ? `${new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(value)}` : '';
+      const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+      const median = values => {
+        if (!values.length) return null;
+        const sorted = [...values].sort((a, b) => a - b);
+        const middle = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+      };
+
+      let allRows = [];
+      let zoneDimension = 'municipio';
+      const tooltip = document.getElementById('tooltip');
+
+      function svgElement(name, attributes = {}, text) {
+        const element = document.createElementNS(SVG_NS, name);
+        Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+        if (text !== undefined) element.textContent = text;
+        return element;
+      }
+
+      // --- Tooltip compartido: aparece con el puntero y con el foco del teclado ---
+      function attachTooltip(target, html) {
+        const show = event => {
+          tooltip.innerHTML = html;
+          tooltip.hidden = false;
+          const rect = event.type === 'focus' ? target.getBoundingClientRect() : { left: event.clientX, top: event.clientY, width: 0 };
+          const x = Math.min(window.innerWidth - tooltip.offsetWidth - 8, rect.left + rect.width / 2 + 12);
+          const y = Math.max(8, rect.top - tooltip.offsetHeight - 10);
+          tooltip.style.left = `${Math.max(8, x)}px`;
+          tooltip.style.top = `${y}px`;
+        };
+        const hide = () => { tooltip.hidden = true; };
+        target.addEventListener('pointermove', show);
+        target.addEventListener('focus', show);
+        target.addEventListener('pointerleave', hide);
+        target.addEventListener('blur', hide);
+      }
+
+      const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+
+      function textWidth(text, size = 12) {
+        return text.length * size * 0.56;
+      }
+
+      // Barra horizontal: extremo de datos redondeado (4 px), cuadrada en la línea base.
+      function horizontalBar(x0, x1, y, height) {
+        const r = Math.min(4, (x1 - x0) / 2, height / 2);
+        return `M${x0},${y} H${x1 - r} A${r},${r} 0 0 1 ${x1},${y + r} V${y + height - r} A${r},${r} 0 0 1 ${x1 - r},${y + height} H${x0} Z`;
+      }
+
+      function verticalBar(x, width, y0, y1) {
+        const r = Math.min(4, width / 2, (y0 - y1) / 2);
+        return `M${x},${y0} V${y1 + r} A${r},${r} 0 0 1 ${x + r},${y1} H${x + width - r} A${r},${r} 0 0 1 ${x + width},${y1 + r} V${y0} Z`;
+      }
+
+      function emptyState(container, message) {
+        const empty = document.createElement('p');
+        empty.className = 'empty';
+        empty.textContent = message;
+        container.replaceChildren(empty);
+      }
+
+      // --- Lista de barras horizontales: etiqueta arriba, barra debajo, valor en la punta ---
+      function renderBarList(container, items, { format, tooltipHtml, emptyMessage }) {
+        if (!items.length) {
+          emptyState(container, emptyMessage);
+          return;
+        }
+        const width = Math.max(280, container.clientWidth);
+        const rowHeight = 44;
+        const barHeight = 16;
+        const max = Math.max(...items.map(item => item.value));
+        const valueRoom = Math.max(...items.map(item => textWidth(format(item.value)))) + 10;
+        const plotWidth = width - valueRoom;
+        const svg = svgElement('svg', { viewBox: `0 0 ${width} ${items.length * rowHeight}`, role: 'img', 'aria-label': items.map(item => `${item.label}: ${format(item.value)}`).join('; ') });
+        items.forEach((item, index) => {
+          const y = index * rowHeight;
+          const barWidth = Math.max(4, (item.value / max) * plotWidth);
+          svg.appendChild(svgElement('text', { x: 0, y: y + 13, class: 'label-text' }, `${item.label}${item.count !== undefined ? ` (${integer(item.count)})` : ''}`));
+          svg.appendChild(svgElement('path', { d: horizontalBar(0, barWidth, y + 19, barHeight), class: 'mark' }));
+          svg.appendChild(svgElement('text', { x: barWidth + 6, y: y + 19 + barHeight - 3, class: 'value-text' }, format(item.value)));
+          const hit = svgElement('rect', { x: 0, y, width, height: rowHeight - 2, class: 'hit', tabindex: 0, 'aria-label': `${item.label}: ${format(item.value)}` });
+          attachTooltip(hit, tooltipHtml(item));
+          svg.appendChild(hit);
+        });
+        container.replaceChildren(svg);
+      }
+
+      // --- Columnas por mes ---
+      function renderMonthly(container, months) {
+        if (!months.some(month => month.count)) {
+          emptyState(container, 'No hay avalúos en el periodo seleccionado.');
+          return;
+        }
+        const width = Math.max(300, container.clientWidth);
+        const height = 220;
+        const margin = { top: 22, right: 8, bottom: 30, left: 34 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const maxCount = Math.max(...months.map(month => month.count));
+        const step = maxCount <= 5 ? 1 : maxCount <= 10 ? 2 : Math.ceil(maxCount / 4 / 5) * 5;
+        const top = Math.ceil(maxCount / step) * step;
+        const yScale = value => margin.top + plotHeight - (value / top) * plotHeight;
+        const band = plotWidth / months.length;
+        const barWidth = Math.min(24, band * 0.6);
+        const svg = svgElement('svg', { viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': 'Avalúos por mes' });
+
+        for (let tick = 0; tick <= top; tick += step) {
+          const y = yScale(tick);
+          svg.appendChild(svgElement('line', { x1: margin.left, x2: width - margin.right, y1: y, y2: y, class: tick === 0 ? 'baseline' : 'gridline' }));
+          svg.appendChild(svgElement('text', { x: margin.left - 6, y: y + 4, 'text-anchor': 'end', class: 'axis-text' }, integer(tick)));
+        }
+
+        const maxIndex = months.findIndex(month => month.count === maxCount);
+        const labelEvery = Math.ceil(months.length / Math.max(1, Math.floor(plotWidth / 42)));
+        months.forEach((month, index) => {
+          const x = margin.left + index * band + (band - barWidth) / 2;
+          if (month.count) {
+            svg.appendChild(svgElement('path', { d: verticalBar(x, barWidth, yScale(0), yScale(month.count)), class: 'mark' }));
+          }
+          // Etiquetas selectivas: el máximo y el mes más reciente.
+          if (month.count && (index === maxIndex || index === months.length - 1)) {
+            svg.appendChild(svgElement('text', { x: x + barWidth / 2, y: yScale(month.count) - 6, 'text-anchor': 'middle', class: 'value-text' }, integer(month.count)));
+          }
+          if (index % labelEvery === 0 || index === months.length - 1) {
+            const showYear = index === 0 || month.month === 0;
+            svg.appendChild(svgElement('text', { x: x + barWidth / 2, y: height - margin.bottom + 15, 'text-anchor': 'middle', class: 'axis-text' }, MONTHS[month.month]));
+            if (showYear) svg.appendChild(svgElement('text', { x: x + barWidth / 2, y: height - margin.bottom + 27, 'text-anchor': 'middle', class: 'axis-text' }, String(month.year)));
+          }
+          const hit = svgElement('rect', { x: margin.left + index * band, y: margin.top, width: band, height: plotHeight, class: 'hit', tabindex: 0, 'aria-label': `${MONTHS[month.month]} ${month.year}: ${month.count} avalúos` });
+          attachTooltip(hit, `<strong>${MONTHS[month.month]} ${month.year}</strong>${integer(month.count)} avalúo(s)${month.total ? `<br>Valor concluido: ${money(month.total)}` : ''}`);
+          svg.appendChild(hit);
+        });
+        container.replaceChildren(svg);
+      }
+
+      function renderTable(container, headers, rows) {
+        const table = document.createElement('table');
+        const head = document.createElement('tr');
+        headers.forEach(([text, numeric]) => {
+          const cell = document.createElement('th');
+          cell.textContent = text;
+          if (numeric) cell.className = 'num';
+          head.appendChild(cell);
+        });
+        const thead = document.createElement('thead');
+        thead.appendChild(head);
+        const tbody = document.createElement('tbody');
+        rows.forEach(values => {
+          const row = document.createElement('tr');
+          values.forEach((value, index) => {
+            const cell = document.createElement('td');
+            if (value instanceof Node) cell.appendChild(value);
+            else cell.textContent = value ?? '';
+            if (headers[index][1]) cell.className = 'num';
+            row.appendChild(cell);
+          });
+          tbody.appendChild(row);
+        });
+        table.append(thead, tbody);
+        container.replaceChildren(table);
+      }
+
+      // --- Filtros ---
+      function fillSelect(select, options, keep) {
+        const previous = keep ? select.value : '';
+        select.replaceChildren(...options.map(([value, label]) => new Option(label, value)));
+        if (options.some(([value]) => value === previous)) select.value = previous;
+      }
+
+      function setupFilters() {
+        const years = [...new Set(allRows.map(row => row.fecha.slice(0, 4)))].sort().reverse();
+        fillSelect(document.getElementById('filterPeriod'), [['todo', 'Todo el periodo'], ['12m', 'Últimos 12 meses'], ...years.map(year => [year, year])], true);
+        const distinct = key => [...new Set(allRows.map(row => row[key]))].sort((a, b) => a.localeCompare(b, 'es'));
+        fillSelect(document.getElementById('filterType'), [['', 'Todos'], ...distinct('tipo').map(value => [value, value])], true);
+        fillSelect(document.getElementById('filterMunicipality'), [['', 'Todos'], ...distinct('municipio').map(value => [value, value])], true);
+      }
+
+      function periodRange() {
+        const period = document.getElementById('filterPeriod').value;
+        const today = new Date();
+        if (period === '12m') {
+          const start = new Date(today.getFullYear(), today.getMonth() - 11, 1);
+          return { start, end: new Date(today.getFullYear(), today.getMonth(), 1) };
+        }
+        if (/^\d{4}$/.test(period)) return { start: new Date(Number(period), 0, 1), end: new Date(Number(period), 11, 1) };
+        const dates = allRows.map(row => new Date(`${row.fecha}T00:00:00`)).filter(date => !Number.isNaN(date.getTime()));
+        if (!dates.length) return { start: new Date(today.getFullYear(), today.getMonth(), 1), end: new Date(today.getFullYear(), today.getMonth(), 1) };
+        const min = new Date(Math.min(...dates));
+        const max = new Date(Math.max(...dates));
+        return { start: new Date(min.getFullYear(), min.getMonth(), 1), end: new Date(max.getFullYear(), max.getMonth(), 1) };
+      }
+
+      function filteredRows() {
+        const { start, end } = periodRange();
+        const endOfRange = new Date(end.getFullYear(), end.getMonth() + 1, 1);
+        const type = document.getElementById('filterType').value;
+        const municipality = document.getElementById('filterMunicipality').value;
+        const status = document.getElementById('filterStatus').value;
+        return allRows.filter(row => {
+          const date = new Date(`${row.fecha}T00:00:00`);
+          if (date < start || date >= endOfRange) return false;
+          if (type && row.tipo !== type) return false;
+          if (municipality && row.municipio !== municipality) return false;
+          if (status === 'concluidos' && !row.valor) return false;
+          if (status === 'proceso' && row.valor) return false;
+          return true;
+        });
+      }
+
+      // `key` es un campo o una función; las colonias se agrupan junto con su municipio porque los nombres se repiten (Centro).
+      function groupBy(rows, key) {
+        const groups = new Map();
+        rows.forEach(row => {
+          const name = typeof key === 'function' ? key(row) : row[key];
+          if (!groups.has(name)) groups.set(name, []);
+          groups.get(name).push(row);
+        });
+        return groups;
+      }
+
+      // --- Render principal ---
+      function render() {
+        const rows = filteredRows();
+        const concluded = rows.filter(row => row.valor);
+        const values = concluded.map(row => row.valor);
+        const unitValues = rows.map(row => row.valorUnitario).filter(Boolean);
+
+        document.getElementById('kpiTotal').textContent = values.length ? compactMoney(values.reduce((sum, value) => sum + value, 0)) : '—';
+        document.getElementById('kpiTotalSub').textContent = values.length ? money(values.reduce((sum, value) => sum + value, 0)) : 'Sin avalúos con valor concluido en la selección';
+        document.getElementById('kpiCount').textContent = integer(rows.length);
+        document.getElementById('kpiCountSub').textContent = `${integer(concluded.length)} con valor concluido · ${integer(rows.length - concluded.length)} en proceso`;
+        document.getElementById('kpiAverage').textContent = values.length ? compactMoney(average(values)) : '—';
+        document.getElementById('kpiMedian').textContent = values.length ? compactMoney(median(values)) : '—';
+        document.getElementById('kpiUnit').textContent = unitValues.length ? `${compactMoney(average(unitValues))}/m²` : '—';
+
+        // Por mes, con todos los meses del periodo (también los que no tienen avalúos).
+        const { start, end } = periodRange();
+        const months = [];
+        for (let cursor = new Date(start); cursor <= end; cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)) {
+          months.push({ year: cursor.getFullYear(), month: cursor.getMonth(), count: 0, total: 0 });
+        }
+        const visibleMonths = months.slice(-36);
+        rows.forEach(row => {
+          const date = new Date(`${row.fecha}T00:00:00`);
+          const month = visibleMonths.find(item => item.year === date.getFullYear() && item.month === date.getMonth());
+          if (month) {
+            month.count += 1;
+            month.total += row.valor || 0;
+          }
+        });
+        document.getElementById('monthlySubtitle').textContent = `Número de avalúos según su fecha${months.length > 36 ? ' (últimos 36 meses del periodo)' : ''}`;
+        renderMonthly(document.getElementById('chartMonthly'), visibleMonths);
+        renderTable(document.getElementById('tableMonthly'), [['Mes'], ['Avalúos', true], ['Valor concluido', true]],
+          visibleMonths.filter(month => month.count).map(month => [`${MONTHS[month.month]} ${month.year}`, integer(month.count), month.total ? money(month.total) : '—']));
+
+        const typeItems = [...groupBy(concluded, 'tipo')].map(([label, group]) => ({ label, value: average(group.map(row => row.valor)), count: group.length })).sort((a, b) => b.value - a.value);
+        renderBarList(document.getElementById('chartType'), typeItems, {
+          format: compactMoney,
+          tooltipHtml: item => `<strong>${escapeHtml(item.label)}</strong>Valor promedio: ${money(item.value)}<br>${integer(item.count)} avalúo(s)`,
+          emptyMessage: 'Sin avalúos con valor concluido en la selección.'
+        });
+        renderTable(document.getElementById('tableType'), [['Tipo de inmueble'], ['Avalúos', true], ['Valor promedio', true]], typeItems.map(item => [item.label, integer(item.count), money(item.value)]));
+
+        const zoneKey = zoneDimension === 'colonia' ? row => `${row.colonia} · ${row.municipio}` : 'municipio';
+        const zoneItems = [...groupBy(rows.filter(row => row.valorUnitario), zoneKey)]
+          .map(([label, group]) => ({ label, value: average(group.map(row => row.valorUnitario)), count: group.length }))
+          .sort((a, b) => b.count - a.count || b.value - a.value)
+          .slice(0, 10)
+          .sort((a, b) => b.value - a.value);
+        renderBarList(document.getElementById('chartZone'), zoneItems, {
+          format: value => `${compactMoney(value)}/m²`,
+          tooltipHtml: item => `<strong>${escapeHtml(item.label)}</strong>Valor unitario promedio: ${money(item.value)}/m²<br>${integer(item.count)} avalúo(s)`,
+          emptyMessage: 'Sin avalúos con valor y superficie capturados en la selección.'
+        });
+        renderTable(document.getElementById('tableZone'), [[zoneDimension === 'municipio' ? 'Municipio' : 'Colonia'], ['Avalúos', true], ['$/m² promedio', true]], zoneItems.map(item => [item.label, integer(item.count), money(item.value)]));
+
+        const approachItems = [...groupBy(concluded, 'enfoque')].map(([label, group]) => ({ label: label || 'Sin especificar', value: group.length, share: group.length / concluded.length })).sort((a, b) => b.value - a.value);
+        renderBarList(document.getElementById('chartApproach'), approachItems, {
+          format: value => `${integer(value)} · ${Math.round((value / concluded.length) * 100)}%`,
+          tooltipHtml: item => `<strong>${escapeHtml(item.label)}</strong>${integer(item.value)} avalúo(s), ${Math.round(item.share * 100)}% de los concluidos`,
+          emptyMessage: 'Sin avalúos con valor concluido en la selección.'
+        });
+        renderTable(document.getElementById('tableApproach'), [['Enfoque'], ['Avalúos', true], ['Porcentaje', true]], approachItems.map(item => [item.label, integer(item.value), `${Math.round(item.share * 100)}%`]));
+
+        const applicantItems = [...groupBy(rows, 'solicitante')].map(([label, group]) => ({ label, value: group.length, total: group.reduce((sum, row) => sum + (row.valor || 0), 0) })).sort((a, b) => b.value - a.value).slice(0, 8);
+        renderBarList(document.getElementById('chartApplicant'), applicantItems, {
+          format: integer,
+          tooltipHtml: item => `<strong>${escapeHtml(item.label)}</strong>${integer(item.value)} avalúo(s)${item.total ? `<br>Valor concluido: ${money(item.total)}` : ''}`,
+          emptyMessage: 'Sin avalúos en la selección.'
+        });
+        renderTable(document.getElementById('tableApplicant'), [['Solicitante'], ['Avalúos', true], ['Valor concluido', true]], applicantItems.map(item => [item.label, integer(item.value), item.total ? money(item.total) : '—']));
+
+        document.getElementById('detailSubtitle').textContent = `${integer(rows.length)} avalúo(s) en la selección, del más reciente al más antiguo`;
+        if (!rows.length) {
+          emptyState(document.getElementById('tableDetail'), allRows.length ? 'Ningún avalúo coincide con los filtros.' : 'Aún no hay avalúos guardados. Las estadísticas aparecen al guardar avalúos en el formato.');
+        } else {
+          renderTable(document.getElementById('tableDetail'),
+            [['Folio'], ['Fecha'], ['Tipo'], ['Solicitante'], ['Ubicación'], ['Municipio'], ['Sup. constr. (m²)', true], ['Valor concluido', true], ['$/m²', true], ['Enfoque']],
+            rows.map(row => {
+              const link = document.createElement('a');
+              link.href = `/?avaluo=${row.id}`;
+              link.textContent = row.folio || `#${row.id}`;
+              const [year, month, day] = row.fecha.split('-');
+              return [link, `${day}/${month}/${year}`, row.tipo, row.solicitante, row.ubicacion, row.municipio, area(row.superficieConstruccion), row.valor ? money(row.valor) : 'En proceso', row.valorUnitario ? money(row.valorUnitario) : '', row.enfoque || ''];
+            }));
+        }
+      }
+
+      // --- Exportación CSV (UTF-8 con BOM para que Excel respete los acentos) ---
+      function exportCsv() {
+        const headers = ['Folio', 'Fecha', 'Tipo de inmueble', 'Solicitante', 'Ubicación', 'Colonia', 'Municipio', 'Estado', 'Uso del avalúo', 'Superficie construida (m2)', 'Superficie de terreno (m2)', 'Valor concluido', 'Valor unitario ($/m2)', 'Base del valor unitario', 'Enfoque concluido'];
+        const quote = value => {
+          const text = value === null || value === undefined ? '' : String(value);
+          return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+        };
+        const lines = filteredRows().map(row => [row.folio || `#${row.id}`, row.fecha, row.tipo, row.solicitante, row.ubicacion, row.colonia, row.municipio, row.estado, row.usoAvaluo, row.superficieConstruccion, row.superficieTerreno, row.valor, row.valorUnitario, row.baseUnitaria, row.enfoque].map(quote).join(','));
+        const blob = new Blob(['﻿' + [headers.join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `avaluos-estadisticas-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      }
+
+      ['filterPeriod', 'filterType', 'filterMunicipality', 'filterStatus'].forEach(id => document.getElementById(id).addEventListener('change', render));
+      document.getElementById('exportCsv').addEventListener('click', exportCsv);
+      document.querySelectorAll('[data-zone]').forEach(button => {
+        button.addEventListener('click', () => {
+          zoneDimension = button.dataset.zone;
+          document.querySelectorAll('[data-zone]').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+          render();
+        });
+      });
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(render, 150);
+      });
+
+      (async () => {
+        try {
+          const response = await fetch('/api/estadisticas');
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error);
+          allRows = result.avaluos;
+          document.getElementById('updatedAt').textContent = `Datos al ${new Date().toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })} · ${integer(allRows.length)} avalúo(s) guardado(s)`;
+          setupFilters();
+          render();
+        } catch (error) {
+          document.getElementById('updatedAt').textContent = `No se pudieron cargar los datos: ${error.message || 'error del servidor'}`;
+        }
+      })();
+    </script>
+  </body>
+</html>
