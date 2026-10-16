@@ -3,6 +3,8 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $url = 'http://localhost:3000'
+# La revisión usa 127.0.0.1: el servidor solo escucha en IPv4 y Windows resuelve "localhost" primero a IPv6 (::1).
+$healthUrl = 'http://127.0.0.1:3000/health'
 
 function Show-Message([string]$text, [string]$icon = 'Error') {
   Add-Type -AssemblyName PresentationFramework
@@ -11,7 +13,7 @@ function Show-Message([string]$text, [string]$icon = 'Error') {
 
 function Test-Server {
   try {
-    Invoke-WebRequest "$url/health" -UseBasicParsing -TimeoutSec 2 | Out-Null
+    Invoke-WebRequest $healthUrl -UseBasicParsing -TimeoutSec 2 | Out-Null
     return $true
   } catch {
     return $false
