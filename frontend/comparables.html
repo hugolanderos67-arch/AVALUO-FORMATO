@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Banco de comparables</title>
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
     <style>
       :root {
         --surface: #ffffff;
@@ -95,7 +96,26 @@
       .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
       .error { color: var(--danger); font-weight: 600; font-size: 0.82rem; }
 
+      .map-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); gap: 14px; margin-bottom: 14px; }
+      .map-card { padding: 0; overflow: hidden; position: relative; }
+      .map-frame { height: 440px; width: 100%; }
+      .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; color: var(--muted); background: rgba(255, 255, 255, 0.75); z-index: 500; font-size: 0.85rem; }
+      .map-caption { padding: 8px 12px; font-size: 0.75rem; color: var(--muted); border-top: 1px solid var(--line); }
+      .summary-panel h2 { margin: 0 0 4px; font-size: 1rem; color: var(--accent); }
+      .summary-panel .placeholder { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+      .summary-panel dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 12px 0 0; font-size: 0.82rem; }
+      .summary-panel dt { color: var(--muted); font-weight: 600; }
+      .summary-panel dd { margin: 0; }
+      .summary-panel .headline { font-size: 1.5rem; font-weight: 650; margin-top: 6px; }
+      .summary-panel img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid var(--line); }
+      .summary-panel .panel-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .summary-panel .panel-actions a { color: var(--accent); font-weight: 700; font-size: 0.82rem; }
+      tbody tr { cursor: pointer; }
+      tbody tr.selected { background: rgba(31, 111, 181, 0.12); }
+
       @media (max-width: 760px) {
+        .map-layout { grid-template-columns: minmax(0, 1fr); }
+        .map-frame { height: 320px; }
         .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .form-grid { grid-template-columns: minmax(0, 1fr); }
       }
@@ -144,6 +164,16 @@
         <div class="tile"><span class="label">Rango</span><span class="value" id="tileRange">—</span><span class="sub">Mínimo – máximo</span></div>
       </section>
 
+      <section class="map-layout" aria-label="Mapa de comparables">
+        <div class="card map-card">
+          <div class="map-frame" id="comparablesMap"></div>
+          <p class="map-caption" id="mapCaption"></p>
+        </div>
+        <aside class="card summary-panel" id="summaryPanel" aria-live="polite">
+          <p class="placeholder">Seleccione un comparable en el mapa o en la tabla para ver su ficha.</p>
+        </aside>
+      </section>
+
       <section class="card">
         <div class="table-scroll" id="comparablesTable"></div>
         <p class="note">Los comparables de cada avalúo se agregan solos al guardarlo, y se actualizan cada vez que se vuelve a guardar. Lo que edite o quite aquí se respeta en los siguientes guardados. Ubicación: "📍 ubicado" tiene coordenadas propias; "📍 aprox." se ubicó en la zona del inmueble valuado porque no tiene coordenadas propias; "sin coordenadas" no podrá localizarse por distancia.</p>
@@ -187,6 +217,8 @@
     <datalist id="propertyTypes"></datalist>
     <datalist id="municipalities"></datalist>
 
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script src="/frontend/mapa-resumen.js"></script>
     <script>
       const CATEGORY = {
         construccion: { price: 'Precio ($)', surface: 'Superficie construida (m²)', unit: '$/m²', dataTypes: ['Oferta', 'Venta'] },
@@ -282,6 +314,18 @@
         document.getElementById('tileAverage').textContent = items.length ? money(unitValues.reduce((sum, value) => sum + value, 0) / items.length) : '—';
         document.getElementById('tileRange').textContent = items.length ? `${money(Math.min(...unitValues))} – ${money(Math.max(...unitValues))}` : '—';
 
+        const placed = summaryMap.setPoints(items.map(item => ({
+          id: item.id,
+          lat: item.latitud,
+          lon: item.longitud,
+          approximate: item.ubicacion_aproximada,
+          label: `${item.direccion || 'Sin dirección'} · ${money(item.valor_unitario)} ${config.unit}`
+        })));
+        const withoutLocation = items.length - placed;
+        document.getElementById('mapCaption').textContent = `${integer(placed)} comparable(s) en el mapa${withoutLocation ? ` · ${integer(withoutLocation)} sin coordenadas` : ''}. Punto con borde punteado: ubicación aproximada (zona del inmueble valuado).`;
+        if (!items.some(item => item.id === selectedId)) selectComparable(null);
+        else summaryMap.select(selectedId, { pan: false });
+
         const container = document.getElementById('comparablesTable');
         if (!items.length) {
           const empty = document.createElement('p');
@@ -306,6 +350,11 @@
         const tbody = document.createElement('tbody');
         items.forEach(item => {
           const row = document.createElement('tr');
+          row.dataset.id = String(item.id);
+          if (item.id === selectedId) row.classList.add('selected');
+          row.addEventListener('click', event => {
+            if (!event.target.closest('a, button')) selectComparable(item.id);
+          });
           const [year, month, day] = String(item.fecha_dato).split('-');
           const dateCell = [`${day}/${month}/${year}`];
           if (monthsAgo(item.fecha_dato) > 12) {
@@ -353,6 +402,79 @@
         });
         table.append(thead, tbody);
         container.replaceChildren(table);
+      }
+
+      // --- Mapa y ficha del comparable seleccionado ---
+      let selectedId = null;
+      const summaryMap = SummaryMap.createSummaryMap(document.getElementById('comparablesMap'), {
+        onSelect: id => selectComparable(id, { fromMap: true }),
+        emptyText: 'Ningún comparable filtrado tiene coordenadas. Captúrelas en "Datos para el banco de comparables" o al editar el comparable.'
+      });
+
+      function selectComparable(id, { fromMap = false } = {}) {
+        selectedId = id;
+        document.querySelectorAll('#comparablesTable tbody tr').forEach(row => row.classList.toggle('selected', Number(row.dataset.id) === id));
+        const item = all.find(candidate => candidate.id === id);
+        renderSummary(item);
+        if (!item) return;
+        const located = summaryMap.select(id, { pan: !fromMap });
+        if (fromMap) document.querySelector(`#comparablesTable tbody tr[data-id="${id}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        else if (!located) document.getElementById('summaryPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+
+      function renderSummary(item) {
+        const panel = document.getElementById('summaryPanel');
+        if (!item) {
+          panel.innerHTML = '<p class="placeholder">Seleccione un comparable en el mapa o en la tabla para ver su ficha.</p>';
+          return;
+        }
+        const config = CATEGORY[item.categoria];
+        const title = document.createElement('h2');
+        title.textContent = item.direccion || 'Sin dirección';
+        const subtitle = document.createElement('p');
+        subtitle.className = 'note';
+        subtitle.textContent = [{ construccion: 'Construcción', terreno: 'Terreno', renta: 'Renta' }[item.categoria], item.categoria !== 'terreno' && item.tipo_inmueble, item.tipo_dato].filter(Boolean).join(' · ');
+        const headline = document.createElement('div');
+        headline.className = 'headline';
+        headline.textContent = `${money(item.valor_unitario)} ${config.unit}`;
+
+        const [year, month, day] = String(item.fecha_dato).split('-');
+        const age = monthsAgo(item.fecha_dato);
+        const location = item.latitud === null ? 'Sin coordenadas' : item.ubicacion_aproximada ? 'Aproximada (zona del inmueble valuado)' : `${item.latitud.toFixed(5)}, ${item.longitud.toFixed(5)}`;
+        const entries = [
+          [config.price.replace(' ($)', ''), money(item.precio)],
+          [config.surface, area(item.superficie)],
+          ['Superficie de terreno (m²)', area(item.superficie_terreno)],
+          ['Edad', item.edad !== null && item.edad !== undefined ? `${item.edad} años` : ''],
+          ['Fecha del dato', `${day}/${month}/${year}${age > 0 ? ` (hace ${age} ${age === 1 ? 'mes' : 'meses'})` : ''}`],
+          ['Zona', [item.colonia, item.municipio, item.estado].filter(Boolean).join(', ')],
+          ['Ubicación', location],
+          ['Fuente', item.fuente || ''],
+          ['Notas', item.notas || '']
+        ].filter(([, value]) => value);
+        const list = document.createElement('dl');
+        entries.forEach(([label, value]) => {
+          const term = document.createElement('dt');
+          term.textContent = label;
+          const description = document.createElement('dd');
+          if (label === 'Fuente' && /^https?:\/\//i.test(value)) {
+            description.appendChild(Object.assign(document.createElement('a'), { href: value, target: '_blank', rel: 'noopener noreferrer', textContent: 'Ver anuncio o fuente' }));
+          } else {
+            description.textContent = value;
+          }
+          list.append(term, description);
+        });
+
+        const actions = document.createElement('div');
+        actions.className = 'panel-actions';
+        const edit = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Editar' });
+        edit.addEventListener('click', () => openDialog(item));
+        actions.appendChild(edit);
+        if (item.origen_avaluo_id) actions.appendChild(Object.assign(document.createElement('a'), { href: `/?avaluo=${item.origen_avaluo_id}`, textContent: `Abrir avalúo #${item.origen_avaluo_id}` }));
+
+        panel.replaceChildren(title, subtitle, headline, list);
+        if (item.fotos.length) panel.appendChild(Object.assign(document.createElement('img'), { src: item.fotos[0], alt: `Foto de ${item.direccion || 'comparable'}` }));
+        panel.appendChild(actions);
       }
 
       // --- Captura y edición ---

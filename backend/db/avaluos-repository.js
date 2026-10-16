@@ -319,7 +319,9 @@ function createAvaluosRepository({ databasePath, filesDir }) {
         valor_concluido, enfoque_concluido, actualizado_en,
         json_extract(datos, '$.fields.superficieConstruccion') AS superficie_construccion,
         json_extract(datos, '$.fields.superficieTerreno') AS superficie_terreno,
-        json_extract(datos, '$.fields.usoAvaluo') AS uso_avaluo
+        json_extract(datos, '$.fields.usoAvaluo') AS uso_avaluo,
+        json_extract(datos, '$.fields.latitud') AS latitud,
+        json_extract(datos, '$.fields.longitud') AS longitud
       FROM avaluos ORDER BY COALESCE(NULLIF(fecha_avaluo, ''), date(creado_en)) DESC, id DESC`).all().map(row => {
       const value = number(row.valor_concluido);
       const construction = number(row.superficie_construccion);
@@ -343,6 +345,8 @@ function createAvaluosRepository({ databasePath, filesDir }) {
         superficieTerreno: land,
         valorUnitario: value && unitSurface ? Math.round((value / unitSurface) * 100) / 100 : null,
         baseUnitaria: construction ? 'construcción' : land ? 'terreno' : null,
+        latitud: row.latitud !== '' && row.latitud != null && Number.isFinite(Number(row.latitud)) && Number(row.latitud) !== 0 ? Number(row.latitud) : null,
+        longitud: row.longitud !== '' && row.longitud != null && Number.isFinite(Number(row.longitud)) && Number(row.longitud) !== 0 ? Number(row.longitud) : null,
         actualizado: row.actualizado_en
       };
     });

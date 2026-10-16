@@ -167,7 +167,7 @@ test('una visita sin avalúo crea uno nuevo con su folio, y reintentarla no lo d
 
 test('resume cada avalúo para las estadísticas con su valor unitario', t => {
   const { repository } = createTempRepository(t);
-  repository.save(null, { datos: { fields: { folioExpediente: 'AV-1', fechaAvaluo: '2026-03-10', tipoInmueble: 'Casa habitación', municipio: 'Puebla', superficieConstruccion: '120', superficieTerreno: '200' } }, resumen: { valorConcluido: 1800000, enfoque: 'Comparativo de mercado' } });
+  repository.save(null, { datos: { fields: { folioExpediente: 'AV-1', fechaAvaluo: '2026-03-10', tipoInmueble: 'Casa habitación', municipio: 'Puebla', superficieConstruccion: '120', superficieTerreno: '200', latitud: '19.0414', longitud: '-98.2063' } }, resumen: { valorConcluido: 1800000, enfoque: 'Comparativo de mercado' } });
   repository.save(null, { datos: { fields: { folioExpediente: 'AV-2', tipoInmueble: 'Terreno urbano', superficieTerreno: '250' } }, resumen: { valorConcluido: 1000000 } });
   repository.save(null, { datos: { fields: { folioExpediente: 'AV-3' } } });
 
@@ -177,6 +177,9 @@ test('resume cada avalúo para las estadísticas con su valor unitario', t => {
   assert.equal(byFolio['AV-1'].valorUnitario, 15000);
   assert.equal(byFolio['AV-1'].baseUnitaria, 'construcción');
   assert.equal(byFolio['AV-1'].fecha, '2026-03-10');
+  assert.equal(byFolio['AV-1'].latitud, 19.0414);
+  assert.equal(byFolio['AV-1'].longitud, -98.2063);
+  assert.equal(byFolio['AV-2'].latitud, null, 'sin coordenadas capturadas no se ubica en el mapa');
   assert.equal(byFolio['AV-2'].valorUnitario, 4000);
   assert.equal(byFolio['AV-2'].baseUnitaria, 'terreno');
   assert.equal(byFolio['AV-3'].valor, null);

@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Estadísticas de avalúos</title>
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
     <style>
       :root {
         --surface: #ffffff;
@@ -180,7 +181,23 @@
 
       .tooltip strong { display: block; }
 
+      .map-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); gap: 14px; }
+      .map-frame { height: 420px; width: 100%; border-radius: 8px; overflow: hidden; position: relative; }
+      .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; color: #5d7590; background: rgba(255, 255, 255, 0.75); z-index: 500; font-size: 0.85rem; }
+      .summary-panel { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+      .summary-panel h3 { margin: 0 0 2px; font-size: 1rem; color: var(--accent); }
+      .summary-panel .placeholder { color: var(--muted); font-size: 0.85rem; line-height: 1.5; margin: 0; }
+      .summary-panel .headline { font-size: 1.5rem; font-weight: 650; margin-top: 6px; }
+      .summary-panel dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 12px 0 0; font-size: 0.82rem; }
+      .summary-panel dt { color: var(--muted); font-weight: 600; }
+      .summary-panel dd { margin: 0; }
+      .summary-panel a { color: var(--accent); font-weight: 700; font-size: 0.85rem; display: inline-block; margin-top: 12px; }
+      #tableDetail tbody tr { cursor: pointer; }
+      #tableDetail tbody tr.selected { background: rgba(31, 111, 181, 0.12); }
+
       @media (max-width: 900px) {
+        .map-layout { grid-template-columns: minmax(0, 1fr); }
+        .map-frame { height: 320px; }
         .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .tile.hero { grid-column: 1 / -1; }
         .grid { grid-template-columns: minmax(0, 1fr); }
@@ -269,6 +286,17 @@
         </article>
 
         <article class="card wide">
+          <h2>Mapa de avalúos</h2>
+          <p class="subtitle" id="mapSubtitle">Seleccione un punto o una fila del detalle para ver el resumen del avalúo</p>
+          <div class="map-layout">
+            <div class="map-frame" id="avaluosMap"></div>
+            <aside class="summary-panel" id="summaryPanel" aria-live="polite">
+              <p class="placeholder">Seleccione un avalúo en el mapa o en la tabla de detalle para ver su resumen.</p>
+            </aside>
+          </div>
+        </article>
+
+        <article class="card wide">
           <h2>Detalle de avalúos</h2>
           <p class="subtitle" id="detailSubtitle"></p>
           <div class="table-scroll" id="tableDetail"></div>
@@ -278,6 +306,8 @@
 
     <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script src="/frontend/mapa-resumen.js"></script>
     <script>
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -577,6 +607,21 @@
         });
         renderTable(document.getElementById('tableApplicant'), [['Solicitante'], ['Avalúos', true], ['Valor concluido', true]], applicantItems.map(item => [item.label, integer(item.value), item.total ? money(item.total) : '—']));
 
+        // Mapa: se reencuadra solo cuando cambian los filtros (no al redimensionar la ventana).
+        const fitKey = ['filterPeriod', 'filterType', 'filterMunicipality', 'filterStatus'].map(id => document.getElementById(id).value).join('|');
+        const placed = summaryMap.setPoints(rows.map(row => ({
+          id: row.id,
+          lat: row.latitud,
+          lon: row.longitud,
+          hollow: !row.valor,
+          label: `${row.folio || `#${row.id}`} · ${row.valor ? compactMoney(row.valor) : 'En proceso'}`
+        })), { fit: fitKey !== lastMapFitKey });
+        lastMapFitKey = fitKey;
+        const withoutLocation = rows.length - placed;
+        document.getElementById('mapSubtitle').textContent = `${integer(placed)} avalúo(s) en el mapa${withoutLocation ? ` · ${integer(withoutLocation)} sin coordenadas` : ''}. Punto hueco: avalúo en proceso. Seleccione un punto o una fila del detalle para ver su resumen.`;
+        if (!rows.some(row => row.id === selectedAvaluoId)) selectAvaluo(null);
+        else summaryMap.select(selectedAvaluoId, { pan: false });
+
         document.getElementById('detailSubtitle').textContent = `${integer(rows.length)} avalúo(s) en la selección, del más reciente al más antiguo`;
         if (!rows.length) {
           emptyState(document.getElementById('tableDetail'), allRows.length ? 'Ningún avalúo coincide con los filtros.' : 'Aún no hay avalúos guardados. Las estadísticas aparecen al guardar avalúos en el formato.');
@@ -590,7 +635,62 @@
               const [year, month, day] = row.fecha.split('-');
               return [link, `${day}/${month}/${year}`, row.tipo, row.solicitante, row.ubicacion, row.municipio, area(row.superficieConstruccion), row.valor ? money(row.valor) : 'En proceso', row.valorUnitario ? money(row.valorUnitario) : '', row.enfoque || ''];
             }));
+          document.querySelectorAll('#tableDetail tbody tr').forEach((tableRow, index) => {
+            const avaluoId = rows[index].id;
+            tableRow.dataset.id = String(avaluoId);
+            tableRow.classList.toggle('selected', avaluoId === selectedAvaluoId);
+            tableRow.addEventListener('click', event => {
+              if (!event.target.closest('a')) selectAvaluo(avaluoId);
+            });
+          });
         }
+      }
+
+      // --- Mapa y resumen del avalúo seleccionado ---
+      let selectedAvaluoId = null;
+      let lastMapFitKey = null;
+      const summaryMap = SummaryMap.createSummaryMap(document.getElementById('avaluosMap'), {
+        onSelect: id => selectAvaluo(id, { fromMap: true }),
+        emptyText: 'Ningún avalúo de la selección tiene coordenadas. Se capturan en la sección II del formato.'
+      });
+
+      function selectAvaluo(id, { fromMap = false } = {}) {
+        selectedAvaluoId = id;
+        document.querySelectorAll('#tableDetail tbody tr').forEach(row => row.classList.toggle('selected', Number(row.dataset.id) === id));
+        const row = allRows.find(candidate => candidate.id === id);
+        const panel = document.getElementById('summaryPanel');
+        if (!row) {
+          panel.innerHTML = '<p class="placeholder">Seleccione un avalúo en el mapa o en la tabla de detalle para ver su resumen.</p>';
+          return;
+        }
+        const title = document.createElement('h3');
+        title.textContent = row.folio || `Avalúo #${row.id}`;
+        const subtitle = document.createElement('p');
+        subtitle.className = 'subtitle';
+        subtitle.textContent = [row.tipo, row.valor ? 'Con valor concluido' : 'En proceso'].join(' · ');
+        const headline = document.createElement('div');
+        headline.className = 'headline';
+        headline.textContent = row.valor ? money(row.valor) : 'Sin valor concluido';
+        const [year, month, day] = row.fecha.split('-');
+        const entries = [
+          ['Fecha', `${day}/${month}/${year}`],
+          ['Solicitante', row.solicitante],
+          ['Ubicación', [row.ubicacion, row.municipio, row.estado].filter(Boolean).join(', ')],
+          ['Uso del avalúo', row.usoAvaluo],
+          ['Sup. construida', row.superficieConstruccion ? `${area(row.superficieConstruccion)} m²` : ''],
+          ['Sup. de terreno', row.superficieTerreno ? `${area(row.superficieTerreno)} m²` : ''],
+          ['Valor unitario', row.valorUnitario ? `${money(row.valorUnitario)}/m² (sobre ${row.baseUnitaria})` : ''],
+          ['Enfoque concluido', row.enfoque]
+        ].filter(([, value]) => value);
+        const list = document.createElement('dl');
+        entries.forEach(([label, value]) => {
+          list.append(Object.assign(document.createElement('dt'), { textContent: label }), Object.assign(document.createElement('dd'), { textContent: value }));
+        });
+        const open = Object.assign(document.createElement('a'), { href: `/?avaluo=${row.id}`, textContent: 'Abrir el avalúo →' });
+        panel.replaceChildren(title, subtitle, headline, list, open);
+        const located = summaryMap.select(id, { pan: !fromMap });
+        if (fromMap) document.querySelector(`#tableDetail tbody tr[data-id="${id}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        else if (!located) panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
 
       // --- Exportación CSV (UTF-8 con BOM para que Excel respete los acentos) ---
