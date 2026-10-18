@@ -64,6 +64,15 @@
         object-fit: contain;
       }
 
+      .app-credit {
+        margin: 0;
+        padding: 6px 24px 10px;
+        text-align: right;
+        font-size: 0.68rem;
+        color: #7a8ea3;
+        background: #f7fbff;
+      }
+
       .report-footer {
         padding: 10px 24px;
         border-top: 1px solid #dfeaf3;
@@ -1405,6 +1414,7 @@
         .valuations-dialog,
         .capture,
         .report-footer,
+        .app-credit,
         #result,
         #resultTitle {
           display: none !important;
@@ -2974,6 +2984,7 @@
         </div>
       </div>
       <div id="reportFooter" class="report-footer" hidden></div>
+      <p class="app-credit">Created and developed by Hugo Landeros Rizo</p>
     </div>
     <style id="printFooterStyle"></style>
 
@@ -5313,6 +5324,9 @@
       }
 
       // El pie se repite en cada hoja impresa mediante los márgenes de página (@page); en pantalla se muestra al final del dictamen.
+      // Crédito del sistema: aparece arriba a la derecha en cada hoja impresa y al final del reporte en pantalla.
+      const APP_CREDIT = 'Created and developed by Hugo Landeros Rizo';
+
       function renderValuerFooter(name, profession) {
         const identity = [
           [profession, name].filter(Boolean).join(' '),
@@ -5334,6 +5348,7 @@
           margin: 14mm 12mm 20mm;
           @bottom-left { content: ${cssString(footerText)}; white-space: pre-wrap; font-size: 7.5pt; color: #49627a; vertical-align: top; padding-top: 3mm; }
           @bottom-right { content: "Página " counter(page) " de " counter(pages); font-size: 7.5pt; color: #49627a; vertical-align: top; padding-top: 3mm; }
+          @top-right { content: ${cssString(APP_CREDIT)}; font-size: 7pt; color: #7a8ea3; vertical-align: bottom; padding-bottom: 2mm; }
         }`;
       }
 
