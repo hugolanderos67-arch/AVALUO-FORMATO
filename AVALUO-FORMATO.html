@@ -953,6 +953,17 @@
         pointer-events: none;
       }
 
+      .map-attribution {
+        font-size: 0.72rem;
+        color: #4b6680;
+      }
+
+      .report-location-coordinates {
+        margin: 0;
+        font-size: 0.78rem;
+        color: #33506b;
+      }
+
       .urban-plan-uploader {
         display: grid;
         gap: 10px;
@@ -1611,7 +1622,6 @@
         .mini-card,
         .meta-pill,
         .formula-box,
-        .report-valuer,
         .signature-box,
         .official-stamp,
         .urban-map-panel,
@@ -1628,9 +1638,20 @@
 
         .signature-row {
           break-inside: avoid;
+          gap: 12px;
+          margin-top: 10px;
         }
 
-        #reportUrbanMapLink {
+        .signature-box p {
+          margin: 2px 0;
+        }
+
+        .official-stamp {
+          align-self: start;
+          min-height: 120px;
+        }
+
+        .map-attribution {
           font-size: 7pt;
           color: #4b6680;
           text-decoration: none;
@@ -1677,6 +1698,7 @@
               <button type="button" class="secondary-button" onclick="window.open('/comparables', '_blank')">🏘️ Comparables</button>
               <button type="button" class="secondary-button" id="newValuation">Nuevo</button>
               <button type="button" class="secondary-button" id="openValuations">Abrir…</button>
+              <button type="button" class="secondary-button" id="printValuation" title="Imprimir o guardar en PDF (Ctrl+P)">🖨️ Imprimir avalúo</button>
               <button type="button" id="saveValuation" title="Guardar (Ctrl+S)">Guardar avalúo</button>
             </div>
           </div>
@@ -2973,7 +2995,7 @@
                 <div class="urban-map-tiles"></div>
                 <span class="urban-map-marker"></span>
               </div>
-              <a id="reportUrbanMapLink" target="_blank" rel="noreferrer">© OpenStreetMap contributors · Abrir mapa</a>
+              <a id="reportUrbanMapLink" class="map-attribution" target="_blank" rel="noreferrer">© OpenStreetMap contributors · Abrir mapa</a>
             </div>
             <div class="toggle-row">
               <button type="button" class="toggle-button" data-target="urban-investigation">Proceso investigatorio</button>
@@ -3107,6 +3129,14 @@
           <div class="formal-section">
             <h4>ANEXO II.- LOCALIZACIÓN DEL INMUEBLE</h4>
             <p id="reportAddress">La dirección se integrará con los datos capturados.</p>
+            <div id="reportLocationMapPanel" class="urban-map-panel" hidden>
+              <p id="reportLocationCoordinates" class="report-location-coordinates"></p>
+              <div id="reportLocationMap" class="urban-map-frame" role="img" aria-label="Mapa de macrolocalización con marcador en la ubicación del inmueble">
+                <div class="urban-map-tiles"></div>
+                <span class="urban-map-marker"></span>
+              </div>
+              <a id="reportLocationMapLink" class="map-attribution" target="_blank" rel="noreferrer">Macrolocalización · © OpenStreetMap contributors · Abrir mapa</a>
+            </div>
           </div>
 
           <div class="formal-section">
@@ -3529,7 +3559,10 @@
       const reportUrbanMapPanel = document.getElementById('reportUrbanMapPanel');
       const reportUrbanMap = document.getElementById('reportUrbanMap');
       const reportUrbanMapLink = document.getElementById('reportUrbanMapLink');
-      const urbanMapViews = [];
+      const reportLocationMapPanel = document.getElementById('reportLocationMapPanel');
+      const reportLocationMap = document.getElementById('reportLocationMap');
+      const reportLocationMapLink = document.getElementById('reportLocationMapLink');
+      const reportLocationCoordinates = document.getElementById('reportLocationCoordinates');
       const urbanAutoFieldNames = [
         'calle', 'colonia', 'municipio', 'estado', 'poblacion', 'vialidades', 'viasAcceso',
         'urbGeorreferenciacion', 'urbContexto', 'urbEntorno'
@@ -3543,80 +3576,70 @@
       let lastUrbanLookupKey = '';
       let lastEquipmentLookupKey = '';
 
-      function updateUrbanMaps(coordinates) {
-        if (!coordinates || coordinates.invalid) {
-          urbanMapPanel.hidden = true;
-          reportUrbanMapPanel.hidden = true;
-          return;
-        }
-
-        const latitude = coordinates.latitude;
-        const longitude = coordinates.longitude;
-        const zoom = 16;
+      // Mapas de la ubicación: el del apartado urbano (zoom 16, entorno inmediato) y el del Anexo II
+      // (zoom 14, macrolocalización). Los mosaicos se miden en proporción al marco, así que se ajustan
+      // solos a la pantalla y a la hoja impresa sin recalcular al cambiar el tamaño.
+      function renderMapStage(stage, latitude, longitude, zoom) {
         const tileCount = 2 ** zoom;
         const latitudeRadians = latitude * Math.PI / 180;
         const mapX = (longitude + 180) / 360 * tileCount;
         const mapY = (1 - Math.asinh(Math.tan(latitudeRadians)) / Math.PI) / 2 * tileCount;
-        const stageWidth = urbanMap.clientWidth || 768;
-        const stageHeight = urbanMap.clientHeight || stageWidth * 9 / 16;
-        const scale = stageWidth / 768;
+        // El marco es 16:9 y muestra 3 mosaicos de ancho: 1.5 a cada lado y 0.85 arriba y abajo del centro.
         const firstTileX = Math.floor(mapX - 1.5);
         const lastTileX = Math.floor(mapX + 1.5);
-        const firstTileY = Math.floor(mapY - stageHeight / scale / 512);
-        const lastTileY = Math.floor(mapY + stageHeight / scale / 512);
+        const firstTileY = Math.floor(mapY - 0.85);
+        const lastTileY = Math.floor(mapY + 0.85);
         const columns = lastTileX - firstTileX + 1;
         const rows = lastTileY - firstTileY + 1;
-
-        function updateMapStage(stage) {
-          const tileGrid = stage.querySelector('.urban-map-tiles');
-          const centerTileX = ((Math.floor(mapX) % tileCount) + tileCount) % tileCount;
-          const gridKey = `${zoom}/${centerTileX}/${Math.floor(mapY)}/${columns}/${rows}`;
-          if (tileGrid.dataset.tileKey !== gridKey) {
-            tileGrid.replaceChildren();
-            tileGrid.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
-            for (let row = 0; row < rows; row += 1) {
-              const tileY = firstTileY + row;
-              for (let column = 0; column < columns; column += 1) {
-                const rawTileX = firstTileX + column;
-                const tileX = ((rawTileX % tileCount) + tileCount) % tileCount;
-                const image = document.createElement('img');
-                image.alt = '';
-                image.width = 256;
-                image.height = 256;
-                image.loading = 'lazy';
-                image.decoding = 'async';
-                image.referrerPolicy = 'strict-origin-when-cross-origin';
-                if (tileY >= 0 && tileY < tileCount) image.src = `/api/map-tiles/${zoom}/${tileX}/${tileY}.png`;
-                tileGrid.appendChild(image);
-              }
+        const tileGrid = stage.querySelector('.urban-map-tiles');
+        const centerTileX = ((Math.floor(mapX) % tileCount) + tileCount) % tileCount;
+        const gridKey = `${zoom}/${centerTileX}/${Math.floor(mapY)}/${columns}/${rows}`;
+        if (tileGrid.dataset.tileKey !== gridKey) {
+          tileGrid.replaceChildren();
+          tileGrid.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+          for (let row = 0; row < rows; row += 1) {
+            const tileY = firstTileY + row;
+            for (let column = 0; column < columns; column += 1) {
+              const rawTileX = firstTileX + column;
+              const tileX = ((rawTileX % tileCount) + tileCount) % tileCount;
+              const image = document.createElement('img');
+              image.alt = '';
+              image.width = 256;
+              image.height = 256;
+              image.decoding = 'async';
+              image.referrerPolicy = 'strict-origin-when-cross-origin';
+              if (tileY >= 0 && tileY < tileCount) image.src = `/api/map-tiles/${zoom}/${tileX}/${tileY}.png`;
+              tileGrid.appendChild(image);
             }
-            tileGrid.dataset.tileKey = gridKey;
           }
-          // Cada mosaico mide un tercio del ancho del mapa; con porcentajes (margin-top se mide sobre el ancho)
-          // el mapa se ajusta solo a la pantalla y a la hoja impresa.
-          const tileShare = 100 / 3;
-          tileGrid.style.width = `${columns * tileShare}%`;
-          tileGrid.style.left = `calc(50% - ${(mapX - firstTileX) * tileShare}%)`;
-          tileGrid.style.top = '50%';
-          tileGrid.style.marginTop = `-${(mapY - firstTileY) * tileShare}%`;
-          stage.setAttribute('aria-label', `Mapa OpenStreetMap con marcador en ${latitude.toFixed(6)}, ${longitude.toFixed(6)}.`);
+          tileGrid.dataset.tileKey = gridKey;
+        }
+        const tileShare = 100 / 3;
+        tileGrid.style.width = `${columns * tileShare}%`;
+        tileGrid.style.left = `calc(50% - ${(mapX - firstTileX) * tileShare}%)`;
+        tileGrid.style.top = '50%';
+        tileGrid.style.marginTop = `-${(mapY - firstTileY) * tileShare}%`;
+        stage.setAttribute('aria-label', `Mapa OpenStreetMap con marcador en ${latitude.toFixed(6)}, ${longitude.toFixed(6)}.`);
+      }
+
+      function updateUrbanMaps(coordinates) {
+        const panels = [urbanMapPanel, reportUrbanMapPanel, reportLocationMapPanel];
+        if (!coordinates || coordinates.invalid) {
+          panels.forEach(panel => { panel.hidden = true; });
+          return;
         }
 
-        [urbanMap, reportUrbanMap].forEach(stage => {
-          if (!urbanMapViews.some(view => view.stage === stage)) {
-            urbanMapViews.push({ stage, update: () => updateMapStage(stage) });
-          }
-        });
-        urbanMapPanel.hidden = false;
-        reportUrbanMapPanel.hidden = false;
-        [urbanMap, reportUrbanMap].forEach(updateMapStage);
+        const { latitude, longitude } = coordinates;
+        panels.forEach(panel => { panel.hidden = false; });
+        renderMapStage(urbanMap, latitude, longitude, 16);
+        renderMapStage(reportUrbanMap, latitude, longitude, 16);
+        renderMapStage(reportLocationMap, latitude, longitude, 14);
         const linkUrl = new URL('https://www.openstreetmap.org/');
         linkUrl.search = new URLSearchParams({ mlat: String(latitude), mlon: String(longitude) });
         linkUrl.hash = `map=17/${latitude}/${longitude}`;
-        [urbanMapLink, reportUrbanMapLink].forEach(link => { link.href = linkUrl.href; });
+        [urbanMapLink, reportUrbanMapLink, reportLocationMapLink].forEach(link => { link.href = linkUrl.href; });
+        reportLocationCoordinates.textContent = `Coordenadas (WGS84): ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
       }
-
-      window.addEventListener('resize', () => urbanMapViews.forEach(view => view.update()));
 
       function currentCoordinates() {
         const latitudeField = form.elements.namedItem('latitud');
@@ -4691,6 +4714,11 @@
         return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
       }
 
+      function conservationLabel(code) {
+        const state = technicalDescriptions.CONSERVATION_STATES.find(entry => entry.value === code);
+        return state ? state.label : code;
+      }
+
       function comparableDistanceText(index) {
         const subject = currentCoordinates();
         const read = field => document.querySelector(`[data-comparable="${index}"][data-field="${field}"]`)?.value.trim() || '';
@@ -4987,20 +5015,20 @@
           ['Instalaciones hidrosanitarias', captured.instalacionesHidrosanitarias],
           ['Instalación eléctrica', captured.descripcionElectrica || captured.instalacionElectrica], ['Instalación de gas', captured.descripcionGas || captured.instalacionGas],
           ['Instalaciones especiales', captured.instalacionesEspecialesGeneradas || captured.instalacionesEspeciales], ['Obra complementaria', captured.obraComplementaria],
-          ['Instalación hidráulica', captured.descripcionHidraulica || captured.instalacionHidraulicaGeneral], ['Estado conservación hidráulica', captured.estadoConservacionHidraulica],
+          ['Instalación hidráulica', captured.descripcionHidraulica || captured.instalacionHidraulicaGeneral], ['Estado conservación hidráulica', conservationLabel(captured.estadoConservacionHidraulica)],
           ['Abastecimiento hidráulico', captured.abastecimientoHidraulico], ['Almacenamiento hidráulico', captured.almacenamientoHidraulico],
           ['Material red hidráulica', captured.materialRedHidraulica], ['Presurización hidráulica', captured.presurizacionHidraulica], ['Agua caliente', captured.aguaCalienteHidraulica],
-          ['Instalación sanitaria', captured.descripcionSanitaria || captured.instalacionSanitariaGeneral], ['Estado conservación sanitaria', captured.estadoConservacionSanitaria],
+          ['Instalación sanitaria', captured.descripcionSanitaria || captured.instalacionSanitariaGeneral], ['Estado conservación sanitaria', conservationLabel(captured.estadoConservacionSanitaria)],
           ['Sistema de desalojo sanitario', captured.sistemaDesalojoSanitario], ['Material tubería sanitaria', captured.materialTuberiaSanitaria],
           ['Sistema pluvial', captured.sistemaPluvialSanitario], ['Drenaje interior sanitario', captured.drenajeInteriorSanitario], ['Registros sanitarios', captured.registrosSanitario],
           ['Ventilación sanitaria', captured.ventilacionSanitaria], ['Trampa de grasas', captured.trampaGrasas],
-          ['Instalación de gas', captured.instalacionGasGeneral], ['Estado conservación gas', captured.estadoConservacionGas], ['Combustible gas', captured.combustibleGas],
+          ['Instalación de gas', captured.instalacionGasGeneral], ['Estado conservación gas', conservationLabel(captured.estadoConservacionGas)], ['Combustible gas', captured.combustibleGas],
           ['Almacenamiento gas', captured.almacenamientoGas], ['Material tubería gas', captured.materialTuberiaGas], ['Equipos alimentados gas', captured.equiposGas],
-          ['Tipo instalación gas', captured.tipoInstalacionGas], ['Instalación eléctrica general', captured.instalacionElectricaGeneral], ['Estado conservación eléctrica', captured.estadoConservacionElectrica],
+          ['Tipo instalación gas', captured.tipoInstalacionGas], ['Instalación eléctrica general', captured.instalacionElectricaGeneral], ['Estado conservación eléctrica', conservationLabel(captured.estadoConservacionElectrica)],
           ['Alimentación eléctrica', captured.alimentacionElectrica], ['Conductores eléctricos', captured.conductoresElectricos], ['Canalización eléctrica', captured.canalizacionElectrica],
           ['Tipo instalación eléctrica', captured.tipoInstalacionElectrica], ['Distribución eléctrica', captured.distribucionElectrica], ['Protección eléctrica', captured.proteccionElectrica],
           ['Tierra física eléctrica', captured.tierraFisicaElectrica], ['Iluminación eléctrica', captured.iluminacionElectrica],
-          ['Instalaciones especiales generales', captured.instalacionesEspecialesGeneral], ['Estado conservación especial', captured.estadoConservacionEspecial],
+          ['Instalaciones especiales generales', captured.instalacionesEspecialesGeneral], ['Estado conservación especial', conservationLabel(captured.estadoConservacionEspecial)],
           ['Aire acondicionado especial', captured.aireAcondicionadoEspecial], ['Calefacción especial', captured.calefaccionEspecial], ['Alarma especial', captured.alarmaEspecial],
           ['CCTV especial', captured.cctvEspecial], ['Control de acceso especial', captured.controlAccesoEspecial], ['Portero especial', captured.porteroEspecial],
           ['Telefonía especial', captured.telefoniaEspecial], ['Datos especial', captured.datosEspecial], ['Antena especial', captured.antenaEspecial],
@@ -6108,10 +6136,49 @@
         valuationsSearchTimer = setTimeout(loadValuationsList, 300);
       });
       saveValuationButton.addEventListener('click', saveValuation);
+      const printValuationButton = document.getElementById('printValuation');
+
+      // Actualiza el dictamen, espera a que carguen logotipo, firma, mapas y fotos, y abre el diálogo de impresión
+      // del navegador (impresora o "Guardar como PDF").
+      async function printValuation() {
+        if (pendingUploads > 0) {
+          setRecordStatus('Espere a que terminen de subir los anexos antes de imprimir', 'dirty');
+          return;
+        }
+        const previousStatus = [recordStatus.textContent, recordStatus.className];
+        printValuationButton.disabled = true;
+        setRecordStatus('Preparando impresión…');
+        try {
+          updateGeneratedDescriptions();
+          await generateReport();
+          const images = Array.from(document.querySelectorAll('.sheet img')).filter(image => image.getAttribute('src') && !image.closest('[hidden]'));
+          await Promise.race([
+            Promise.all(images.map(image => image.complete ? null : new Promise(resolve => {
+              image.addEventListener('load', resolve, { once: true });
+              image.addEventListener('error', resolve, { once: true });
+            }))),
+            new Promise(resolve => setTimeout(resolve, 10000))
+          ]);
+          recordStatus.textContent = previousStatus[0];
+          recordStatus.className = previousStatus[1];
+          window.print();
+        } catch (error) {
+          setRecordStatus(`No se pudo preparar la impresión: ${error.message}`, 'error');
+        } finally {
+          printValuationButton.disabled = false;
+        }
+      }
+
+      printValuationButton.addEventListener('click', printValuation);
+
       document.addEventListener('keydown', event => {
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
           event.preventDefault();
           if (!saveValuationButton.disabled) saveValuation();
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'p') {
+          event.preventDefault();
+          if (!printValuationButton.disabled) printValuation();
         }
       });
 
