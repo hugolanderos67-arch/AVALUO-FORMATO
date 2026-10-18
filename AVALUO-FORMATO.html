@@ -629,6 +629,79 @@
         color: #314b67;
       }
 
+      .annex-gallery {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 8px 0;
+      }
+
+      .annex-gallery-wide {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .annex-gallery figure {
+        margin: 0;
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        padding: 6px;
+        background: #f9fbff;
+        break-inside: avoid;
+      }
+
+      .annex-gallery img {
+        display: block;
+        width: 100%;
+        height: 220px;
+        object-fit: contain;
+        background: #f4f7f8;
+        border-radius: 6px;
+      }
+
+      .annex-gallery-wide img {
+        height: auto;
+        max-height: 520px;
+      }
+
+      .annex-gallery figcaption {
+        margin-top: 4px;
+        font-size: 0.72rem;
+        color: #314b67;
+      }
+
+      .annex-file {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #dfeaf3;
+        border-radius: 8px;
+        padding: 8px;
+        margin: 8px 0;
+        background: #f9fbff;
+      }
+
+      .annex-file-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef5ff;
+        border: 1px solid #d9e7f6;
+      }
+
+      .annex-file-label {
+        font-size: 0.72rem;
+        color: #0d4478;
+        font-weight: 700;
+      }
+
+      .annex-file-name {
+        font-size: 0.72rem;
+        color: #314b67;
+      }
+
       button {
         padding: 12px 20px;
         border: none;
@@ -857,17 +930,13 @@
       .urban-map-tiles {
         position: absolute;
         display: grid;
-        width: 768px;
-        height: 768px;
-        grid-template-columns: repeat(3, 256px);
-        grid-template-rows: repeat(3, 256px);
-        transform-origin: top left;
       }
 
       .urban-map-tiles img {
         display: block;
-        width: 256px;
-        height: 256px;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1;
       }
 
       .urban-map-marker {
@@ -1474,6 +1543,97 @@
         .capture {
           border-right: none;
           border-bottom: 1px solid #d2dbe6;
+        }
+      }
+
+      /* La hoja carta mide menos de 980 px: en papel se restablece el acomodo de escritorio. */
+      @media print {
+        .document-banner {
+          grid-template-columns: 1.3fr 0.7fr;
+        }
+
+        .official-meta-bar,
+        .summary-box {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        /* Dos columnas con flex: Chrome no parte una cuadrícula de dos columnas entre hojas y la mueve completa. */
+        .report-data-grid {
+          display: flex;
+          flex-wrap: wrap;
+          column-gap: 14px;
+          row-gap: 8px;
+        }
+
+        .report-data-grid > .report-data-item {
+          flex: 0 0 calc(50% - 7px);
+          box-sizing: border-box;
+          break-inside: avoid;
+        }
+
+        .signature-row {
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .meta-pill,
+        .mini-card {
+          padding: 8px 10px;
+          min-height: 0;
+        }
+
+        .report .toggle-row,
+        .report .toggle-panel {
+          display: none !important;
+        }
+
+        .table-scroll {
+          overflow: visible;
+        }
+
+        .report table,
+        .report .capture-table {
+          width: 100%;
+          min-width: 0;
+          font-size: 7.5pt;
+        }
+
+        .report th,
+        .report td {
+          padding: 4px 5px;
+          overflow-wrap: break-word;
+        }
+
+        .report thead {
+          display: table-header-group;
+        }
+
+        .report tr,
+        .mini-card,
+        .meta-pill,
+        .formula-box,
+        .report-valuer,
+        .signature-box,
+        .official-stamp,
+        .urban-map-panel,
+        .comparable-gallery figure {
+          break-inside: avoid;
+        }
+
+        .section-title,
+        .formal-section h4,
+        .formal-section h5,
+        .signature-place {
+          break-after: avoid;
+        }
+
+        .signature-row {
+          break-inside: avoid;
+        }
+
+        #reportUrbanMapLink {
+          font-size: 7pt;
+          color: #4b6680;
+          text-decoration: none;
         }
       }
     </style>
@@ -3413,8 +3573,7 @@
           const gridKey = `${zoom}/${centerTileX}/${Math.floor(mapY)}/${columns}/${rows}`;
           if (tileGrid.dataset.tileKey !== gridKey) {
             tileGrid.replaceChildren();
-            tileGrid.style.gridTemplateColumns = `repeat(${columns}, 256px)`;
-            tileGrid.style.gridTemplateRows = `repeat(${rows}, 256px)`;
+            tileGrid.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
             for (let row = 0; row < rows; row += 1) {
               const tileY = firstTileY + row;
               for (let column = 0; column < columns; column += 1) {
@@ -3433,12 +3592,13 @@
             }
             tileGrid.dataset.tileKey = gridKey;
           }
-          const currentWidth = stage.clientWidth || 768;
-          const currentHeight = stage.clientHeight || currentWidth * 9 / 16;
-          const currentScale = currentWidth / 768;
-          tileGrid.style.transform = `scale(${currentScale})`;
-          tileGrid.style.left = `${currentWidth / 2 - (mapX - firstTileX) * 256 * currentScale}px`;
-          tileGrid.style.top = `${currentHeight / 2 - (mapY - firstTileY) * 256 * currentScale}px`;
+          // Cada mosaico mide un tercio del ancho del mapa; con porcentajes (margin-top se mide sobre el ancho)
+          // el mapa se ajusta solo a la pantalla y a la hoja impresa.
+          const tileShare = 100 / 3;
+          tileGrid.style.width = `${columns * tileShare}%`;
+          tileGrid.style.left = `calc(50% - ${(mapX - firstTileX) * tileShare}%)`;
+          tileGrid.style.top = '50%';
+          tileGrid.style.marginTop = `-${(mapY - firstTileY) * tileShare}%`;
           stage.setAttribute('aria-label', `Mapa OpenStreetMap con marcador en ${latitude.toFixed(6)}, ${longitude.toFixed(6)}.`);
         }
 
@@ -3807,12 +3967,18 @@
             return;
           }
 
-          container.innerHTML = items.map(item => `
-            <div style="display:flex;align-items:center;gap:10px;border:1px solid #dfeaf3;border-radius:8px;padding:8px;margin:8px 0;background:#f9fbff;">
-              ${item.preview ? `<img src="${item.preview}" alt="${item.name}" style="width:46px;height:46px;object-fit:cover;border-radius:8px;border:1px solid #d9e7f6;" />` : `<div style="width:46px;height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eef5ff;border:1px solid #d9e7f6;">📄</div>`}
+          const images = items.filter(item => item.preview);
+          const files = items.filter(item => !item.preview);
+          const gallery = images.length
+            ? `<div class="annex-gallery${label === 'Croquis' ? ' annex-gallery-wide' : ''}">${images.map((item, index) => `
+              <figure><img src="${escapeHtml(item.preview)}" alt="${escapeHtml(item.name)}" /><figcaption>${escapeHtml(label === 'Fotos' ? `Fotografía ${index + 1}` : label)} · ${escapeHtml(item.name)}</figcaption></figure>`).join('')}</div>`
+            : '';
+          container.innerHTML = gallery + files.map(item => `
+            <div class="annex-file">
+              <div class="annex-file-icon">📄</div>
               <div>
-                <div style="font-size:0.72rem;color:#0d4478;font-weight:700;">${label}</div>
-                <div style="font-size:0.72rem;color:#314b67;">${item.name}</div>
+                <div class="annex-file-label">${escapeHtml(label)}</div>
+                <div class="annex-file-name">${escapeHtml(item.name)}</div>
               </div>
             </div>
           `).join('');
@@ -4525,17 +4691,30 @@
         return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
       }
 
+      function comparableDistanceText(index) {
+        const subject = currentCoordinates();
+        const read = field => document.querySelector(`[data-comparable="${index}"][data-field="${field}"]`)?.value.trim() || '';
+        const latitude = Number(read('latitud'));
+        const longitude = Number(read('longitud'));
+        if (!subject || !read('latitud') || !read('longitud') || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return '—';
+        const radians = degrees => degrees * Math.PI / 180;
+        const a = Math.sin(radians(latitude - subject.latitude) / 2) ** 2 +
+          Math.cos(radians(subject.latitude)) * Math.cos(radians(latitude)) * Math.sin(radians(longitude - subject.longitude) / 2) ** 2;
+        return `${(12742 * Math.asin(Math.sqrt(a))).toFixed(2)} km`;
+      }
+
       function renderReportData(containerId, entries) {
         const container = document.getElementById(containerId);
         container.replaceChildren();
         entries.forEach(([label, value]) => {
           if (value === null || value === undefined || String(value).trim() === '') return;
+          if (Array.isArray(value) && !value.some(entry => String(entry).trim())) return;
           const item = document.createElement('div');
           item.className = 'report-data-item';
           const title = document.createElement('strong');
           title.textContent = label;
           const text = document.createElement('span');
-          text.textContent = String(value);
+          text.textContent = Array.isArray(value) ? value.join(', ') : String(value);
           item.append(title, text);
           container.appendChild(item);
         });
@@ -4868,7 +5047,7 @@
             <td>${factors}</td>
             <td>${money(item.adjustedValue)}</td>
             <td>${money(item.unitValuePerM2)}</td>
-            <td>${Number(item.distanceKm || 0).toFixed(2)} km</td>
+            <td>${comparableDistanceText(item.id - 1)}</td>
           </tr>
         `;
         }).join('');
