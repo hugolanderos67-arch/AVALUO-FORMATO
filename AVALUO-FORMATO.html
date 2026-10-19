@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dictamen de Avalúo Inmobiliario</title>
+    <title>PERITIA · Ecosistema de valuación profesional</title>
     <style>
       body {
         margin: 0;
@@ -335,6 +335,17 @@
         gap: 2px;
         font-size: 0.8rem;
         color: #18293a;
+      }
+
+      .app-brand {
+        font-size: 0.68rem;
+        letter-spacing: 0.04em;
+        color: #4b6680;
+      }
+
+      .app-brand b {
+        color: #0f4c81;
+        letter-spacing: 0.12em;
       }
 
       .record-info span {
@@ -1690,6 +1701,7 @@
         <div class="capture">
           <div class="record-toolbar">
             <div class="record-info">
+              <div class="app-brand"><b>PERITIA</b> · Ecosistema de valuación profesional</div>
               <strong id="recordTitle">Avalúo nuevo</strong>
               <span id="recordStatus" role="status" aria-live="polite">Sin guardar</span>
             </div>
@@ -3174,7 +3186,7 @@
         </div>
       </div>
       <div id="reportFooter" class="report-footer" hidden></div>
-      <p class="app-credit">Created and developed by Hugo Landeros Rizo</p>
+      <p class="app-credit">PERITIA · Ecosistema de valuación profesional · Created and developed by Hugo Landeros Rizo</p>
     </div>
     <style id="printFooterStyle"></style>
 
@@ -5532,7 +5544,7 @@
 
       // El pie se repite en cada hoja impresa mediante los márgenes de página (@page); en pantalla se muestra al final del dictamen.
       // Crédito del sistema: aparece arriba a la derecha en cada hoja impresa y al final del reporte en pantalla.
-      const APP_CREDIT = 'Created and developed by Hugo Landeros Rizo';
+      const APP_CREDIT = 'Elaborado con PERITIA · Created and developed by Hugo Landeros Rizo';
 
       function renderValuerFooter(name, profession) {
         const identity = [

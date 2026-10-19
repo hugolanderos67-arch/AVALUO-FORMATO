@@ -1,4 +1,5 @@
-﻿# Crea los íconos "Avalúos" y "Detener Avalúos" en el escritorio y en el menú Inicio.
+﻿# Crea los íconos "PERITIA" y "Detener PERITIA" en el escritorio y en el menú Inicio
+# (y quita los anteriores "Avalúos" y "Detener Avalúos" si existen).
 # Se ejecuta una vez en cada computadora: clic derecho > Ejecutar con PowerShell.
 $root = Split-Path -Parent $PSScriptRoot
 $icon = Join-Path $root 'assets\avaluo.ico'
@@ -18,9 +19,15 @@ function New-Shortcut([string]$folder, [string]$name, [string]$script, [string]$
 
 $folders = @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))
 foreach ($folder in $folders) {
-  New-Shortcut $folder 'Avalúos' 'iniciar-avaluo.ps1' 'Abrir el sistema de avalúos'
+  foreach ($old in @('Avalúos.lnk', 'Detener Avalúos.lnk')) {
+    $oldPath = Join-Path $folder $old
+    if (Test-Path -LiteralPath $oldPath) { Remove-Item -LiteralPath $oldPath }
+  }
+  New-Shortcut $folder 'PERITIA' 'iniciar-avaluo.ps1' 'PERITIA · Ecosistema de valuación profesional'
 }
-New-Shortcut ([Environment]::GetFolderPath('Programs')) 'Detener Avalúos' 'detener-avaluo.ps1' 'Apagar el servidor de avalúos'
+New-Shortcut ([Environment]::GetFolderPath('Programs')) 'Detener PERITIA' 'detener-avaluo.ps1' 'Apagar el servidor de PERITIA'
 
 Add-Type -AssemblyName PresentationFramework
-[System.Windows.MessageBox]::Show("Listo: el ícono 'Avalúos' quedó en el escritorio y en el menú Inicio.`n`nPara apagar el servidor use 'Detener Avalúos' del menú Inicio.", 'Avalúos', 'OK', 'Information') | Out-Null
+if ($env:PERITIA_SIN_AVISO -ne '1') {
+  [System.Windows.MessageBox]::Show("Listo: el ícono 'PERITIA' quedó en el escritorio y en el menú Inicio.`n`nPara apagar el servidor use 'Detener PERITIA' del menú Inicio.", 'PERITIA', 'OK', 'Information') | Out-Null
+}

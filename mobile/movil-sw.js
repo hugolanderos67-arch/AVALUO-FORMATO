@@ -1,6 +1,6 @@
 // Service worker de la app móvil: guarda la app y el formato (de donde salen los catálogos) para trabajar sin señal.
 // Primero intenta la red para recibir actualizaciones; sin conexión usa la copia guardada.
-const CACHE_NAME = 'avaluo-movil-v1';
+const CACHE_NAME = 'peritia-campo-v2';
 const APP_SHELL = [
   '/movil',
   '/',

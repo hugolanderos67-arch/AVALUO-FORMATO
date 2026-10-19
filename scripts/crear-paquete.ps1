@@ -11,7 +11,7 @@ try {
   git archive --format=zip --prefix=AVALUO-FORMATO/ -o $zip HEAD
   Add-Type -AssemblyName PresentationFramework
   $note = if ($pending) { "`n`nAviso: hay cambios sin commit que NO se incluyeron; el paquete tiene la última versión guardada en git." } else { '' }
-  [System.Windows.MessageBox]::Show("Paquete creado en el escritorio:`n$zip`n`nNo incluye su base de datos ni las fotos de sus avalúos.$note", 'Avalúos', 'OK', 'Information') | Out-Null
+  [System.Windows.MessageBox]::Show("Paquete creado en el escritorio:`n$zip`n`nNo incluye su base de datos ni las fotos de sus avalúos.$note", 'PERITIA', 'OK', 'Information') | Out-Null
 } finally {
   Pop-Location
 }

@@ -1,5 +1,5 @@
 ﻿# Abre el sistema de avalúos como una aplicación: enciende el servidor en segundo plano (si no está encendido)
-# y abre el formato en su propia ventana de Chrome o Edge. Lo usa el ícono "Avalúos" del escritorio.
+# y abre el formato en su propia ventana de Chrome o Edge. Lo usa el ícono "PERITIA" del escritorio.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $url = 'http://localhost:3000'
@@ -8,7 +8,7 @@ $healthUrl = 'http://127.0.0.1:3000/health'
 
 function Show-Message([string]$text, [string]$icon = 'Error') {
   Add-Type -AssemblyName PresentationFramework
-  [System.Windows.MessageBox]::Show($text, 'Avalúos', 'OK', $icon) | Out-Null
+  [System.Windows.MessageBox]::Show($text, 'PERITIA', 'OK', $icon) | Out-Null
 }
 
 function Test-Server {

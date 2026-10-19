@@ -1,6 +1,8 @@
-# AVALUO-FORMATO
+# PERITIA · Ecosistema de valuación profesional
 
-Formato para elaboración de avalúos inmobiliarios.
+Sistema para elaborar avalúos inmobiliarios: captura en oficina y en campo, cálculo de los tres enfoques de valor, dictamen impreso o en PDF, banco de comparables y estadísticas. El código vive en el repositorio AVALUO-FORMATO.
+
+Created and developed by Hugo Landeros Rizo.
 
 ## Arquitectura propuesta
 
@@ -28,13 +30,13 @@ Formato para elaboración de avalúos inmobiliarios.
   - $V_f = V_u \times S_{objeto}$
 
 ## Abrir el sistema como aplicación
-- Ícono "Avalúos" en el escritorio y en el menú Inicio (`scripts/iniciar-avaluo.ps1`): enciende el servidor en segundo plano si no está encendido (registros en `data/servidor.log` y `data/servidor-errores.log`) y abre el formato en una ventana propia de Chrome o Edge.
-- "Detener Avalúos" en el menú Inicio (`scripts/detener-avaluo.ps1`) apaga el servidor.
+- Ícono "PERITIA" en el escritorio y en el menú Inicio (`scripts/iniciar-avaluo.ps1`): enciende el servidor en segundo plano si no está encendido (registros en `data/servidor.log` y `data/servidor-errores.log`) y abre el formato en una ventana propia de Chrome o Edge.
+- "Detener PERITIA" en el menú Inicio (`scripts/detener-avaluo.ps1`) apaga el servidor.
 - Los íconos se crean con `instalar.bat` (revisa que Node.js 24+ esté instalado) o con `scripts/crear-accesos-directos.ps1`.
 
 ## Imprimir el dictamen
 - Botón "🖨️ Imprimir avalúo" de la barra del formato (o Ctrl+P): actualiza el dictamen, espera a que carguen logotipo, firma, mapas y fotos, y abre el diálogo de impresión del navegador. Ahí se elige la impresora o "Guardar como PDF"; en "Más opciones" conviene activar "Gráficos de fondo".
-- En hoja carta se imprime con el acomodo de escritorio: datos a dos columnas, tablas completas con encabezado repetido, fotos y croquis grandes, mapa de entorno (sección II) y de macrolocalización (Anexo II). Cada hoja lleva los datos del valuador, "Página X de Y" y el crédito del sistema.
+- En hoja carta se imprime con el acomodo de escritorio: datos a dos columnas, tablas completas con encabezado repetido, fotos y croquis grandes, mapa de entorno (sección II) y de macrolocalización (Anexo II). Cada hoja lleva los datos del valuador, "Página X de Y" y el crédito "Elaborado con PERITIA · Created and developed by Hugo Landeros Rizo".
 
 ## Compartir con otra persona
 - Instalación propia (cada quien con su base de datos): `scripts/crear-paquete.ps1` genera en el escritorio un ZIP con la última versión guardada en git, sin la carpeta `data`. Quien lo recibe sigue `INSTALAR.txt`: instalar Node.js 24+, descomprimir y abrir `instalar.bat`.

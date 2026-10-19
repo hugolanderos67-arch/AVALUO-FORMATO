@@ -1,5 +1,5 @@
-SISTEMA DE AVALÚOS - INSTALACIÓN EN OTRA COMPUTADORA
-====================================================
+PERITIA · ECOSISTEMA DE VALUACIÓN PROFESIONAL - INSTALACIÓN EN OTRA COMPUTADORA
+===============================================================================
 
 Requisitos: Windows 10 u 11, y Google Chrome o Microsoft Edge.
 
@@ -12,9 +12,9 @@ Requisitos: Windows 10 u 11, y Google Chrome o Microsoft Edge.
 3. Abra la carpeta AVALUO-FORMATO y haga doble clic en "instalar.bat".
    Si Windows muestra "Windows protegió su PC", elija "Más información" y "Ejecutar de todas formas".
 
-4. Listo: aparecerá el ícono "Avalúos" en el escritorio y en el menú Inicio.
+4. Listo: aparecerá el ícono "PERITIA" en el escritorio y en el menú Inicio.
    Al abrirlo se enciende el sistema y se abre el formato en su propia ventana.
-   Para apagarlo, use "Detener Avalúos" en el menú Inicio.
+   Para apagarlo, use "Detener PERITIA" en el menú Inicio.
 
 Cada computadora tiene su propia base de datos: sus avalúos, fotos y perfil de valuador
 quedan en la carpeta "data" dentro de AVALUO-FORMATO. Respalde esa carpeta con regularidad.
