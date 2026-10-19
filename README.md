@@ -67,7 +67,7 @@ La extracción de datos de PDF con IA es opcional y necesita la variable `ANTHRO
 
 ## Abrir el sistema como aplicación
 - Ícono "PERITIA" en el escritorio y en el menú Inicio (`scripts/iniciar-avaluo.ps1`): enciende el servidor en segundo plano si no está encendido (registros en `data/servidor.log` y `data/servidor-errores.log`) y abre el formato en una ventana propia de Chrome o Edge.
-- "Detener PERITIA" en el menú Inicio (`scripts/detener-avaluo.ps1`) apaga el servidor.
+- "Detener PERITIA" en el escritorio y en el menú Inicio (`scripts/detener-avaluo.ps1`) apaga el servidor.
 - Los íconos se crean con `instalar.bat` (revisa que Node.js 24+ esté instalado) o con `scripts/crear-accesos-directos.ps1`.
 
 ## Imprimir el dictamen

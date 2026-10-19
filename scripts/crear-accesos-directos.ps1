@@ -24,10 +24,10 @@ foreach ($folder in $folders) {
     if (Test-Path -LiteralPath $oldPath) { Remove-Item -LiteralPath $oldPath }
   }
   New-Shortcut $folder 'PERITIA' 'iniciar-avaluo.ps1' 'PERITIA · Ecosistema de valuación profesional'
+  New-Shortcut $folder 'Detener PERITIA' 'detener-avaluo.ps1' 'Apagar el servidor de PERITIA'
 }
-New-Shortcut ([Environment]::GetFolderPath('Programs')) 'Detener PERITIA' 'detener-avaluo.ps1' 'Apagar el servidor de PERITIA'
 
 Add-Type -AssemblyName PresentationFramework
 if ($env:PERITIA_SIN_AVISO -ne '1') {
-  [System.Windows.MessageBox]::Show("Listo: el ícono 'PERITIA' quedó en el escritorio y en el menú Inicio.`n`nPara apagar el servidor use 'Detener PERITIA' del menú Inicio.", 'PERITIA', 'OK', 'Information') | Out-Null
+  [System.Windows.MessageBox]::Show("Listo: el ícono 'PERITIA' quedó en el escritorio y en el menú Inicio.`n`nPara apagar el servidor use 'Detener PERITIA' del escritorio o del menú Inicio.", 'PERITIA', 'OK', 'Information') | Out-Null
 }
