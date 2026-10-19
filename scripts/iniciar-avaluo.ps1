@@ -23,7 +23,11 @@ function Test-Server {
 if (-not (Test-Server)) {
   $node = (Get-Command node -ErrorAction SilentlyContinue).Source
   if (-not $node) {
-    Show-Message "No se encontró Node.js en esta computadora.`n`nInstálelo desde https://nodejs.org (versión 24 o posterior) y vuelva a abrir Avalúos."
+    Show-Message "No se encontró Node.js en esta computadora.`n`nInstálelo desde https://nodejs.org (versión 24 o posterior) y vuelva a abrir PERITIA."
+    exit 1
+  }
+  if (-not (Test-Path (Join-Path $root 'node_modules'))) {
+    Show-Message "Faltan las librerías del sistema.`n`nAbra la carpeta AVALUO-FORMATO y ejecute instalar.bat (requiere internet esa vez)."
     exit 1
   }
   $dataDir = Join-Path $root 'data'

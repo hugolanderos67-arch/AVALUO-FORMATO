@@ -4,6 +4,42 @@ Sistema para elaborar avalúos inmobiliarios: captura en oficina y en campo, cá
 
 Created and developed by Hugo Landeros Rizo.
 
+![Pantalla principal de PERITIA: captura a la izquierda y dictamen a la derecha](docs/captura-formato.png)
+
+## Cómo probarlo en 3 pasos
+Requisitos: Node.js 24 o posterior (https://nodejs.org) y Chrome o Edge.
+
+```
+git clone https://github.com/hugolanderos67-arch/AVALUO-FORMATO.git
+cd AVALUO-FORMATO
+npm install
+npm start
+```
+
+1. Abra http://localhost:3000 y capture un avalúo (o use "Abrir…" para uno guardado).
+2. Presione "🖨️ Imprimir avalúo" para ver el dictamen en hoja carta o guardarlo en PDF.
+3. Revise "🏘️ Comparables" y "📊 Estadísticas", que se alimentan de los avalúos guardados.
+
+Pruebas automáticas de cálculos y almacenamiento: `npm test`.
+En Windows también se puede instalar con doble clic en `instalar.bat`, que crea el ícono "PERITIA" en el escritorio.
+La extracción de datos de PDF con IA es opcional y necesita la variable `ANTHROPIC_API_KEY` (ver más abajo); todo lo demás funciona sin ella.
+
+## Módulos
+| Módulo | Dónde está |
+|---|---|
+| Formato de captura y dictamen | `AVALUO-FORMATO.html`, `frontend/technical-descriptions.js`, `frontend/finishes-catalog.js` |
+| Motor de valuación (enfoques físico, de mercado y de ingresos) | `backend/valuation/` |
+| Ubicación, equipamiento urbano y documentos de planeación | `backend/valuation/urban-*.js` |
+| Extracción de datos con IA (Claude, de Anthropic) | `backend/valuation/document-extraction.js` |
+| Expedientes y base de datos SQLite | `backend/db/` |
+| Banco de comparables e importación Excel/CSV | `frontend/comparables.html`, `backend/db/comparables-*.js` |
+| Estadísticas | `frontend/estadisticas.html` |
+| App móvil PERITIA Campo | `mobile/` |
+| Servidor y API | `server.js` |
+| Pruebas | `tests/` |
+
+![Banco de comparables con mapa y ficha](docs/captura-comparables.png)
+
 ## Arquitectura propuesta
 
 ### Frontend

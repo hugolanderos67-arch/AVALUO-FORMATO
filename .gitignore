@@ -1,2 +1,5 @@
 # Base de datos local y fotografías de los avalúos (información de clientes)
 data/
+
+# Librerías de Node.js: se instalan con "npm install" (instalar.bat lo hace solo)
+node_modules/

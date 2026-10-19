@@ -21,6 +21,16 @@ if %NODE_MAJOR% LSS 24 (
   pause
   exit /b 1
 )
+rem Descarga las librerias del sistema (carpeta node_modules); requiere internet solo esta vez.
+echo Instalando las librerias del sistema, espere un momento...
+call npm ci --omit=dev --no-audit --no-fund
+if errorlevel 1 (
+  echo.
+  echo No se pudieron instalar las librerias. Revise la conexion a internet y vuelva a ejecutar instalar.bat.
+  echo.
+  pause
+  exit /b 1
+)
 rem Los archivos descargados de internet vienen bloqueados; se desbloquean los scripts del sistema.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-ChildItem -Path '%~dp0scripts' -Filter *.ps1 | Unblock-File"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\crear-accesos-directos.ps1"

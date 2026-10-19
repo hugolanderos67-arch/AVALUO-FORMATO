@@ -1,7 +1,7 @@
 {
   "name": "avaluo-formato",
   "version": "1.0.0",
-  "description": "Esqueleto técnico para un sistema de valuación inmobiliaria alineado a SHF/INDAABIN",
+  "description": "PERITIA · Ecosistema de valuación profesional: avalúos inmobiliarios con el orden SHF/INDAABIN",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

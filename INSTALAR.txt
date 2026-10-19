@@ -10,6 +10,7 @@ Requisitos: Windows 10 u 11, y Google Chrome o Microsoft Edge.
    No lo use desde dentro del ZIP ni desde la carpeta de Descargas temporal.
 
 3. Abra la carpeta AVALUO-FORMATO y haga doble clic en "instalar.bat".
+   Necesita internet esa vez: descarga las librerías del sistema.
    Si Windows muestra "Windows protegió su PC", elija "Más información" y "Ejecutar de todas formas".
 
 4. Listo: aparecerá el ícono "PERITIA" en el escritorio y en el menú Inicio.
