@@ -3396,7 +3396,7 @@
             <p id="buildingTotalSurface"></p>
             <h5>Elementos accesorios, obra complementaria e instalaciones especiales</h5>
             <div id="reportAccessoryTable" class="table-scroll"></div>
-            <p class="technical-note">F.R.H. mostrado como factor de apoyo: [1 − 0.5 × (e/V + (e/V)²)] × (1 − K/100), con V = edad + vida útil remanente y K según el estado seleccionado. Confirmar coeficientes, tablas y alcance con la metodología aplicable al encargo; no constituye certificación normativa.</p>
+            <p class="technical-note">F.R.H. (Ross-Heidecke) = [1 − 0.5 × (e/V + (e/V)²)] × (1 − K/100): depreciación por edad de Ross, con e = edad y V = edad + vida útil remanente, y coeficiente K de Heidecke según el estado de conservación (1 nuevo 0 %, 1.5 0.032 %, 2 regular 2.52 %, 2.5 8.09 %, 3 reparaciones sencillas 18.10 %, 3.5 33.20 %, 4 reparaciones importantes 52.60 %, 4.5 75.20 %, 5 sin valor 100 %). Confirmar coeficientes, tablas y alcance con la metodología aplicable al encargo; no constituye certificación normativa.</p>
           </div>
 
           <div class="formal-section">
@@ -4455,7 +4455,35 @@
 
       const buildingRows = document.getElementById('buildingRows');
       const accessoryRows = document.getElementById('accessoryRows');
-      const conservationCoefficients = { Nuevo: 0, Bueno: 2.52, Regular: 18.1, Malo: 52.6, Ruinoso: 100 };
+      // Tabla de Heidecke: estado de conservación → coeficiente de depreciación K (%). Con la edad y la vida útil, el
+      // F.R.H. se calcula solo: [1 − ½ (e/V + (e/V)²)] × (1 − K/100).
+      const HEIDECKE_STATES = [
+        ['1', 'Nuevo', 0],
+        ['1.5', 'Entre nuevo y regular', 0.032],
+        ['2', 'Regular (normal)', 2.52],
+        ['2.5', 'Entre regular y reparaciones sencillas', 8.09],
+        ['3', 'Requiere reparaciones sencillas', 18.1],
+        ['3.5', 'Entre reparaciones sencillas e importantes', 33.2],
+        ['4', 'Requiere reparaciones importantes', 52.6],
+        ['4.5', 'Entre reparaciones importantes y sin valor', 75.2],
+        ['5', 'Sin valor (para demolición)', 100]
+      ];
+      // Nombres que se usaban antes, con el mismo coeficiente, para que los avalúos guardados conserven su cálculo.
+      const LEGACY_CONSERVATION = { Nuevo: '1', Bueno: '2', Regular: '3', Malo: '4', Ruinoso: '5' };
+      const conservationCoefficients = Object.fromEntries(HEIDECKE_STATES.map(([code, , coefficient]) => [code, coefficient]));
+      const heideckeCode = value => LEGACY_CONSERVATION[value] ?? value;
+      const formatHeidecke = coefficient => (coefficient > 0 && coefficient < 0.1 ? coefficient.toFixed(3) : coefficient.toFixed(2));
+
+      function heideckeLabel(value) {
+        const state = HEIDECKE_STATES.find(([code]) => code === heideckeCode(value));
+        return state ? `${state[0]} · ${state[1]} · K ${formatHeidecke(state[2])} %` : (value || '');
+      }
+
+      function conservationSelect(selected) {
+        const code = heideckeCode(selected);
+        return `<select data-column="conservation" title="Estado de conservación según la tabla de Heidecke"><option value="">Seleccione</option>${HEIDECKE_STATES.map(([value, label, coefficient]) =>
+          `<option value="${value}" ${value === code ? 'selected' : ''}>${value} · ${label} · K ${formatHeidecke(coefficient)} %</option>`).join('')}</select>`;
+      }
 
       function inputCell(column, type = 'text', value = '', extra = '') {
         return `<td><input data-column="${column}" type="${type}" value="${String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" ${type === 'number' ? 'min="0" step="any"' : ''} ${extra}></td>`;
@@ -4472,7 +4500,7 @@
           inputCell('age', 'number', values.age) +
           inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining, 'readonly') +
           '<td data-column="frh">—</td>' +
-          `<td><select data-column="conservation"><option value="">Seleccione</option>${Object.keys(conservationCoefficients).map(state => `<option ${values.conservation === state ? 'selected' : ''}>${state}</option>`).join('')}</select></td>` +
+          `<td>${conservationSelect(values.conservation)}</td>` +
           '<td><button type="button" class="secondary-button" data-remove-row>Quitar</button></td>';
         buildingRows.appendChild(row);
         updateBuildingRow(row);
@@ -4520,10 +4548,11 @@
 
       function rossHeideckeFactor(age, remainingLife, conservation) {
         const totalLife = Number(age) + Number(remainingLife);
-        if (!Number.isFinite(totalLife) || totalLife <= 0 || conservationCoefficients[conservation] === undefined) return '';
+        const coefficient = conservationCoefficients[heideckeCode(conservation)];
+        if (!Number.isFinite(totalLife) || totalLife <= 0 || coefficient === undefined) return '';
         const ageRatio = Math.min(Math.max(Number(age) / totalLife, 0), 1);
         const ageFactor = 1 - 0.5 * (ageRatio + ageRatio ** 2);
-        const conservationFactor = 1 - conservationCoefficients[conservation] / 100;
+        const conservationFactor = 1 - coefficient / 100;
         return Math.max(0, Math.min(1, ageFactor * conservationFactor));
       }
 
@@ -4540,7 +4569,7 @@
           inputCell('usefulLifeRemaining', 'number', values.usefulLifeRemaining, 'readonly') +
           '<td data-column="frh">—</td>' +
           '<td data-column="netTotalValue">—</td>' +
-          `<td><select data-column="conservation"><option value="">Seleccione</option>${Object.keys(conservationCoefficients).map(state => `<option ${values.conservation === state ? 'selected' : ''}>${state}</option>`).join('')}</select></td>` +
+          `<td>${conservationSelect(values.conservation)}</td>` +
           '<td data-column="rhCoefficient">—</td>' +
           '<td><button type="button" class="secondary-button" data-remove-row>Quitar</button></td>';
         accessoryRows.appendChild(row);
@@ -4553,7 +4582,7 @@
         const totalLife = Number(value('totalUsefulLife'));
         const remainingLife = value('age') !== '' && value('totalUsefulLife') !== '' ? Math.max(0, totalLife - age) : '';
         row.querySelector('[data-column="usefulLifeRemaining"]').value = remainingLife === '' ? '' : String(remainingLife);
-        const coefficient = conservationCoefficients[value('conservation')];
+        const coefficient = conservationCoefficients[heideckeCode(value('conservation'))];
         const frh = rossHeideckeFactor(value('age'), remainingLife, value('conservation'));
         const unitValue = Number(value('unitValue')) || 0;
         const quantity = Number(value('quantity')) || 0;
@@ -4561,7 +4590,7 @@
         row.querySelector('[data-column="frh"]').textContent = frh === '' ? '—' : frh.toFixed(4);
         row.querySelector('[data-column="netUnitValue"]').textContent = frh === '' || unitValue <= 0 ? '—' : money(unitValue * frh);
         row.querySelector('[data-column="netTotalValue"]').textContent = frh === '' || unitValue <= 0 || quantity <= 0 ? '—' : money(quantity * unitValue * indiviso * frh);
-        row.querySelector('[data-column="rhCoefficient"]').textContent = coefficient === undefined ? '—' : `${coefficient.toFixed(2)}%`;
+        row.querySelector('[data-column="rhCoefficient"]').textContent = coefficient === undefined ? '—' : `${formatHeidecke(coefficient)}%`;
       }
 
       function readEditableRows(tbody) {
@@ -4578,7 +4607,7 @@
           });
           if (tbody === accessoryRows) {
             item.frh = rossHeideckeFactor(item.age, item.usefulLifeRemaining, item.conservation);
-            item.rhCoefficient = conservationCoefficients[item.conservation] ?? null;
+            item.rhCoefficient = conservationCoefficients[heideckeCode(item.conservation)] ?? null;
           }
           return item;
         }).filter(item => Object.values(item).some(value => value !== '' && value !== null));
@@ -5943,7 +5972,7 @@
         const buildingRowsData = payload.buildingItems;
         document.getElementById('reportBuildingTable').innerHTML = `<table><thead><tr><th>Tipo</th><th>Calidad y clasificación</th><th>Superficie (m²)</th><th>Vida útil total (años)</th><th>V.R.N. ($/m²)</th><th>F.R.H.</th><th>V.N.R. ($/m²)</th><th>Edad (años)</th><th>Vida útil remanente (años)</th><th>Estado</th></tr></thead><tbody>${buildingRowsData.map(row => {
           const netValue = typeof row.frh === 'number' && Number(row.unitValue) > 0 ? money(Number(row.unitValue) * row.frh) : 'Pendiente';
-          return `<tr><td>${escapeHtml(row.type || 'Sin especificar')}</td><td>${escapeHtml(row.quality || 'Sin especificar')}</td><td>${escapeHtml(row.surface ?? '—')}</td><td>${escapeHtml(row.totalUsefulLife ?? '—')}</td><td>${row.unitValue == null ? 'Pendiente' : money(row.unitValue)}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td><td>${netValue}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(row.conservation || 'Sin especificar')}</td></tr>`;
+          return `<tr><td>${escapeHtml(row.type || 'Sin especificar')}</td><td>${escapeHtml(row.quality || 'Sin especificar')}</td><td>${escapeHtml(row.surface ?? '—')}</td><td>${escapeHtml(row.totalUsefulLife ?? '—')}</td><td>${row.unitValue == null ? 'Pendiente' : money(row.unitValue)}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td><td>${netValue}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(heideckeLabel(row.conservation) || 'Sin especificar')}</td></tr>`;
         }).join('')}</tbody></table>`;
         const totalBuilt = buildingRowsData.reduce((sum, row) => sum + (Number(row.surface) || 0), 0);
         document.getElementById('buildingTotalSurface').textContent = `Superficie total desglosada: ${totalBuilt.toFixed(2)} m². Captura general: ${Number(captured.superficieConstruccion || 0).toFixed(2)} m².`;
@@ -5952,7 +5981,7 @@
           const netUnitValue = typeof row.frh === 'number' && Number(row.unitValue) > 0 ? Number(row.unitValue) * row.frh : 0;
           const indiviso = row.indiviso == null ? 1 : Number(row.indiviso) / 100;
           const netTotalValue = netUnitValue * (Number(row.quantity) || 0) * indiviso;
-          return `<tr><td>${escapeHtml(row.description || '—')}</td><td>${escapeHtml(row.quantity ?? '—')}</td><td>${escapeHtml(row.unit || '—')}</td><td>${escapeHtml(row.indiviso ?? '—')}</td><td>${escapeHtml(row.totalUsefulLife ?? '—')}</td><td>${row.unitValue == null ? '—' : money(row.unitValue)}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td><td>${netUnitValue > 0 ? money(netUnitValue) : 'Pendiente'}</td><td>${netTotalValue > 0 ? money(netTotalValue) : 'Pendiente'}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(row.conservation || '—')}</td><td>${row.rhCoefficient == null ? '—' : `${row.rhCoefficient.toFixed(2)}%`}</td></tr>`;
+          return `<tr><td>${escapeHtml(row.description || '—')}</td><td>${escapeHtml(row.quantity ?? '—')}</td><td>${escapeHtml(row.unit || '—')}</td><td>${escapeHtml(row.indiviso ?? '—')}</td><td>${escapeHtml(row.totalUsefulLife ?? '—')}</td><td>${row.unitValue == null ? '—' : money(row.unitValue)}</td><td>${typeof row.frh === 'number' ? row.frh.toFixed(4) : 'Pendiente'}</td><td>${netUnitValue > 0 ? money(netUnitValue) : 'Pendiente'}</td><td>${netTotalValue > 0 ? money(netTotalValue) : 'Pendiente'}</td><td>${escapeHtml(row.age ?? '—')}</td><td>${escapeHtml(row.usefulLifeRemaining ?? '—')}</td><td>${escapeHtml(heideckeLabel(row.conservation) || '—')}</td><td>${row.rhCoefficient == null ? '—' : `${formatHeidecke(row.rhCoefficient)}%`}</td></tr>`;
         }).join('') : '<tr><td colspan="13">Sin accesorios o instalaciones capturados.</td></tr>'}</tbody></table>`;
         renderReportData('reportConstructionDetail', [
           ['Descripción técnica por sistemas/áreas', payload.constructionElements], ['Calidad y clasificación', captured.calidadConstruccion],
@@ -6782,7 +6811,8 @@
           Object.entries(columns).forEach(([column, state]) => {
             const element = row.querySelector(`[data-column="${column}"]`);
             if (!element) return;
-            element.value = state.value ?? '';
+            // Estados de conservación guardados con los nombres anteriores (Bueno, Regular…) pasan a su estado de Heidecke.
+            element.value = column === 'conservation' ? heideckeCode(state.value ?? '') : state.value ?? '';
             if (state.manualOverride) element.dataset.manualOverride = state.manualOverride;
             if (state.source) element.dataset.source = state.source;
           });

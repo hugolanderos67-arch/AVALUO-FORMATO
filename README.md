@@ -64,6 +64,7 @@ Enfoque comparativo de mercado, cuadro "Análisis por homologación y ajustes" (
 - Valor ajustado: $VA = VU \times FRe$; componente del valor: $VA \times Pond$
 - Valor unitario ajustado y ponderado: $VUP = \sum (VA \times Pond)$. Sin ponderación capturada, todos los comparables pesan igual; si las capturadas no suman 100 %, se ajustan en proporción y el dictamen lo indica.
 - Valor de mercado: $V_m = VUP \times S_{sujeto} \times$ ajuste de mercado
+- Enfoque físico, depreciación de construcciones y accesorios (Ross-Heidecke): $F.R.H. = [1 - \tfrac{1}{2}(e/V + (e/V)^2)] \times (1 - K/100)$, con $e$ = edad, $V$ = edad + vida útil remanente y $K$ de la tabla de Heidecke según el estado de conservación elegido: 1 nuevo 0 %, 1.5 0.032 %, 2 regular (normal) 2.52 %, 2.5 8.09 %, 3 reparaciones sencillas 18.10 %, 3.5 33.20 %, 4 reparaciones importantes 52.60 %, 4.5 75.20 %, 5 sin valor 100 %. Los estados guardados con los nombres anteriores (Bueno, Regular, Malo, Ruinoso) se abren con su mismo coeficiente.
 - Comparables de terreno (enfoque físico) y de renta (enfoque de ingresos): valor homologado = valor unitario × los factores propios de cada grupo, con la misma ponderación por comparable; el resultado es la suma de componentes.
 
 ## Abrir el sistema como aplicación
