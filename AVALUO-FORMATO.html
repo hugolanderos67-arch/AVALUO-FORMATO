@@ -1833,7 +1833,7 @@
             <p id="bankPickerMessage" class="technical-note" role="status"></p>
             <div class="table-scroll">
               <table class="capture-table">
-                <thead><tr><th></th><th>Fecha</th><th>Dirección y zona</th><th>Tipo · dato</th><th class="num">Precio</th><th class="num">Superficie</th><th class="num">Valor unitario</th><th class="num">Distancia</th><th>Respaldo</th></tr></thead>
+                <thead><tr><th></th><th>Publicación</th><th>Dirección y zona</th><th>Tipo · dato</th><th class="num">Precio</th><th class="num">Superficie</th><th class="num">Valor unitario</th><th class="num">Distancia</th><th>Respaldo</th></tr></thead>
                 <tbody id="bankPickerList"></tbody>
               </table>
             </div>
@@ -2843,7 +2843,7 @@
 
             <div class="section-title capture-target" id="capture-comparables" tabindex="-1">VII.- ENFOQUE COMPARATIVO DE MERCADO</div>
             <h3 class="capture-subtitle">Comparables de construcción</h3>
-            <p class="technical-note">Al guardar el avalúo, los comparables con precio y superficie (de construcción, terreno y renta) se agregan al banco de comparables. Complete "Datos para el banco de comparables" en cada uno para poder localizarlos y depurarlos en avalúos futuros. Los que se traen del banco no se duplican.</p>
+            <p class="technical-note">Al guardar el avalúo, los comparables con precio y superficie (de construcción, terreno y renta) se agregan al banco de comparables. Complete "Datos para el banco de comparables" en cada uno para poder localizarlos y depurarlos en avalúos futuros. Los que se traen del banco no se duplican. Capture en cada uno la fecha de publicación del anuncio (o de la operación): mide la antigüedad del dato y, si queda vacía, se toma la fecha del avalúo.</p>
             <div class="bank-pick-row">
               <button type="button" class="secondary-button" data-bank-pick="construction">🏘️ Elegir comparables del banco</button>
               <p class="technical-note" data-bank-pick-status="construction" role="status"></p>
@@ -4593,6 +4593,7 @@
               title,
               createBankOrigin(group, index),
               createField('Dirección', 'address', { placeholder: 'Calle, número y colonia' }),
+              createDataDateFields(group, index),
               createField(config.priceLabel, 'price', { type: 'number', min: '0', step: '0.01' }),
               createField(config.surfaceLabel, 'surface', { type: 'number', min: '0', step: '0.01' }),
               factors,
@@ -4605,6 +4606,7 @@
         });
         document.querySelectorAll('#constructionComparables .comparable-card').forEach((card, index) => {
           card.querySelector('h3').after(createBankOrigin('construction', index));
+          card.querySelector('[data-field="address"]').closest('label').after(createDataDateFields('construction', index));
           card.append(createBankDetails('construction', index), createComparablePhotoField('construction', index), createComparableEvidenceField('construction', index));
         });
       }
@@ -4696,19 +4698,58 @@
       // Datos que el banco de comparables necesita para buscar y depurar comparables en avalúos futuros.
       const BANK_FIELDS = {
         construction: [
-          ['tipoDato', 'Tipo de dato', ['Oferta', 'Venta']], ['fechaDato', 'Fecha del dato', 'date'], ['fuente', 'Fuente o enlace', 'text'],
+          ['fuente', 'Fuente o enlace', 'text'],
           ['edad', 'Edad (años)', 'number'], ['superficieTerreno', 'Superficie de terreno (m²)', 'number'],
           ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
         ],
         land: [
-          ['tipoDato', 'Tipo de dato', ['Oferta', 'Venta']], ['fechaDato', 'Fecha del dato', 'date'], ['fuente', 'Fuente o enlace', 'text'],
+          ['fuente', 'Fuente o enlace', 'text'],
           ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
         ],
         rent: [
-          ['tipoDato', 'Tipo de dato', ['Oferta de renta', 'Renta contratada']], ['fechaDato', 'Fecha del dato', 'date'], ['fuente', 'Fuente o enlace', 'text'],
+          ['fuente', 'Fuente o enlace', 'text'],
           ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
         ]
       };
+
+      // Tipo de dato y fecha de publicación del anuncio van a la vista en cada tarjeta, junto a la dirección:
+      // la fecha mide la antigüedad del comparable. En una venta o una renta contratada es la fecha de la operación.
+      const DATA_TYPE_OPTIONS = { construction: ['Oferta', 'Venta'], land: ['Oferta', 'Venta'], rent: ['Oferta de renta', 'Renta contratada'] };
+
+      function dataDateLabel(type) {
+        if (type === 'Venta') return 'Fecha de la operación (venta)';
+        if (type === 'Renta contratada') return 'Fecha del contrato de renta';
+        return 'Fecha de publicación del anuncio';
+      }
+
+      function createDataDateFields(group, index) {
+        const grid = document.createElement('div');
+        grid.className = 'comparable-factors';
+        const typeSelect = document.createElement('select');
+        typeSelect.append(new Option('Seleccione', ''), ...DATA_TYPE_OPTIONS[group].map(option => new Option(option, option)));
+        const dateInput = Object.assign(document.createElement('input'), { type: 'date', title: 'Si queda vacía, al guardar se toma la fecha del avalúo.' });
+        [[typeSelect, 'tipoDato'], [dateInput, 'fechaDato']].forEach(([control, field]) => {
+          if (group === 'construction') control.dataset.comparable = String(index);
+          else {
+            control.dataset.marketGroup = group;
+            control.dataset.index = String(index);
+          }
+          control.dataset.field = field;
+        });
+        const typeLabel = document.createElement('label');
+        typeLabel.append('Tipo de dato ', typeSelect);
+        const dateLabel = document.createElement('label');
+        dateLabel.dataset.dataDateLabel = `${group}:${index}`;
+        dateLabel.append(Object.assign(document.createElement('span'), { textContent: dataDateLabel('') }), ' ', dateInput);
+        typeSelect.addEventListener('change', () => renderDataDateLabel(group, index));
+        grid.append(typeLabel, dateLabel);
+        return grid;
+      }
+
+      function renderDataDateLabel(group, index) {
+        const label = form.querySelector(`[data-data-date-label="${group}:${index}"] span`);
+        if (label) label.textContent = dataDateLabel(comparableControl(group, index, 'tipoDato')?.value || '');
+      }
 
       function createBankDetails(group, index) {
         const details = document.createElement('details');
@@ -4829,13 +4870,17 @@
 
       function renderAllBankOrigins() {
         Object.keys(BANK_CATEGORY).forEach(group => {
-          for (let index = 0; index < comparableCount(group); index += 1) renderBankOrigin(group, index);
+          for (let index = 0; index < comparableCount(group); index += 1) {
+            renderBankOrigin(group, index);
+            renderDataDateLabel(group, index);
+          }
         });
       }
 
       function clearComparable(group, index) {
-        ['address', comparablePriceField(group), 'surface', 'bancoId', ...BANK_FIELDS[group].map(([field]) => field)]
+        ['address', comparablePriceField(group), 'surface', 'bancoId', 'tipoDato', 'fechaDato', ...BANK_FIELDS[group].map(([field]) => field)]
           .forEach(field => setComparableControl(comparableControl(group, index, field), ''));
+        renderDataDateLabel(group, index);
         comparableFactorFields(group).forEach(field => setComparableControl(comparableControl(group, index, field), '1'));
         comparablePhotos[group][index].splice(0);
         comparableEvidence[group][index].splice(0);
@@ -4868,6 +4913,7 @@
         comparablePhotoRenderers[group][index]?.();
         comparableEvidenceRenderers[group][index]?.();
         renderBankOrigin(group, index);
+        renderDataDateLabel(group, index);
       }
 
       // Avisa al formato del cambio: marca el avalúo como modificado y recalcula la homologación.

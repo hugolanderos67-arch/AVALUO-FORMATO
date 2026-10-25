@@ -4,13 +4,14 @@ const readXlsx = (mod => mod.default || mod)(require('read-excel-file/node'));
 const MAX_ROWS = 5000;
 
 // Encabezados de la plantilla y otras formas comunes de escribirlos (se comparan sin acentos ni mayúsculas).
-const TEMPLATE_HEADERS = ['Tipo de comparable', 'Tipo de inmueble', 'Tipo de dato', 'Fecha del dato', 'Dirección', 'Colonia', 'Municipio', 'Estado',
+const TEMPLATE_HEADERS = ['Tipo de comparable', 'Tipo de inmueble', 'Tipo de dato', 'Fecha de publicación u operación', 'Dirección', 'Colonia', 'Municipio', 'Estado',
   'Latitud', 'Longitud', 'Precio', 'Superficie (m2)', 'Superficie de terreno (m2)', 'Edad (años)', 'Fuente', 'Notas'];
 const HEADER_ALIASES = {
   categoria: ['tipo de comparable', 'categoria', 'comparable', 'clase de comparable'],
   tipoInmueble: ['tipo de inmueble', 'inmueble', 'tipo inmueble', 'tipo de propiedad'],
   tipoDato: ['tipo de dato', 'dato', 'operacion', 'tipo de operacion'],
-  fechaDato: ['fecha del dato', 'fecha', 'fecha de publicacion', 'fecha de consulta'],
+  fechaDato: ['fecha de publicacion u operacion', 'fecha de publicacion', 'fecha de publicacion del anuncio', 'fecha del anuncio',
+    'fecha de operacion', 'fecha del dato', 'fecha', 'fecha de consulta'],
   direccion: ['direccion', 'ubicacion', 'domicilio', 'calle', 'calle y numero'],
   colonia: ['colonia', 'fraccionamiento', 'barrio'],
   municipio: ['municipio', 'alcaldia', 'ciudad'],

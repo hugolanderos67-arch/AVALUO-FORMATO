@@ -213,7 +213,7 @@
           </label>
           <label data-hide-for="terreno">Tipo de inmueble <input name="tipoInmueble" list="propertyTypes" placeholder="Casa habitación, departamento…" /></label>
           <label>Tipo de dato <select name="tipoDato"></select></label>
-          <label>Fecha del dato <input name="fechaDato" type="date" /></label>
+          <label>Fecha de publicación u operación <input name="fechaDato" type="date" title="Fecha en que se publicó el anuncio; en una venta o renta contratada, fecha de la operación" /></label>
           <label class="wide">Dirección <input name="direccion" placeholder="Calle, número" /></label>
           <label>Colonia <input name="colonia" /></label>
           <label>Municipio <input name="municipio" list="municipalities" /></label>
@@ -495,7 +495,7 @@
           [config.surface, area(item.superficie)],
           ['Superficie de terreno (m²)', area(item.superficie_terreno)],
           ['Edad', item.edad !== null && item.edad !== undefined ? `${item.edad} años` : ''],
-          ['Fecha del dato', `${day}/${month}/${year}${age > 0 ? ` (hace ${age} ${age === 1 ? 'mes' : 'meses'})` : ''}`],
+          ['Publicación u operación', `${day}/${month}/${year}${age > 0 ? ` (hace ${age} ${age === 1 ? 'mes' : 'meses'})` : ''}`],
           ['Zona', [item.colonia, item.municipio, item.estado].filter(Boolean).join(', ')],
           ['Ubicación', location],
           ['Fuente', item.fuente || ''],
@@ -677,7 +677,7 @@
 
       function exportCsv() {
         const config = CATEGORY[category];
-        const headers = ['Fecha del dato', 'Tipo de dato', 'Tipo de inmueble', 'Dirección', 'Colonia', 'Municipio', 'Estado', 'Latitud', 'Longitud', 'Ubicación aproximada', config.price, config.surface, 'Superficie de terreno (m2)', 'Edad (años)', `Valor unitario (${config.unit})`, 'Fuente', 'Notas', 'Avalúo de origen'];
+        const headers = ['Fecha de publicación u operación', 'Tipo de dato', 'Tipo de inmueble', 'Dirección', 'Colonia', 'Municipio', 'Estado', 'Latitud', 'Longitud', 'Ubicación aproximada', config.price, config.surface, 'Superficie de terreno (m2)', 'Edad (años)', `Valor unitario (${config.unit})`, 'Fuente', 'Notas', 'Avalúo de origen'];
         const quote = value => {
           const text = value === null || value === undefined ? '' : String(value);
           return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
