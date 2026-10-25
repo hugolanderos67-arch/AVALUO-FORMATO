@@ -444,9 +444,11 @@
           actions.className = 'actions';
           const edit = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Editar' });
           edit.addEventListener('click', () => openDialog(item));
+          const clone = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Clonar', title: 'Mismo inmueble con otro dato (venta, oferta o renta)' });
+          clone.addEventListener('click', () => openDialog(item, { clone: true }));
           const remove = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Quitar', className: 'remove' });
           remove.addEventListener('click', () => removeComparable(item));
-          actions.append(edit, remove);
+          actions.append(edit, clone, remove);
           row.appendChild(cell(actions));
           tbody.appendChild(row);
         });
@@ -519,7 +521,9 @@
         actions.className = 'panel-actions';
         const edit = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Editar' });
         edit.addEventListener('click', () => openDialog(item));
-        actions.appendChild(edit);
+        const clone = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Clonar con otro dato', title: 'Mismo inmueble con otro dato (venta, oferta o renta)' });
+        clone.addEventListener('click', () => openDialog(item, { clone: true }));
+        actions.append(edit, clone);
         if (item.origen_avaluo_id) actions.appendChild(Object.assign(document.createElement('a'), { href: `/?avaluo=${item.origen_avaluo_id}`, textContent: `Abrir avalúo #${item.origen_avaluo_id}` }));
 
         panel.replaceChildren(title, subtitle, headline, list);
@@ -568,11 +572,14 @@
         comparableForm.querySelectorAll('[data-hide-for]').forEach(label => { label.hidden = label.dataset.hideFor === selected; });
       }
 
-      function openDialog(item) {
-        editingId = item?.id || null;
+      // Clonar: el mismo inmueble con otro dato (por ejemplo, la casa en venta que también se ofrece en renta).
+      // Se conservan ubicación, superficies, edad y tipo de inmueble; precio, tipo y fecha del dato, fuente y
+      // evidencias quedan vacíos porque son propios de cada anuncio u operación. Se guarda como un comparable nuevo.
+      function openDialog(item, { clone = false } = {}) {
+        editingId = clone ? null : item?.id || null;
         comparableForm.reset();
         document.getElementById('formError').textContent = '';
-        document.getElementById('dialogTitle').textContent = item ? 'Editar comparable' : 'Agregar comparable';
+        document.getElementById('dialogTitle').textContent = clone ? `Clonar comparable #${item.id} con otro dato` : (item ? 'Editar comparable' : 'Agregar comparable');
         const values = item ? {
           categoria: item.categoria, tipoInmueble: item.tipo_inmueble, tipoDato: item.tipo_dato, fechaDato: item.fecha_dato,
           direccion: item.direccion, colonia: item.colonia, municipio: item.municipio, estado: item.estado, precio: item.precio,
@@ -580,13 +587,23 @@
           latitud: item.ubicacion_aproximada ? '' : item.latitud, longitud: item.ubicacion_aproximada ? '' : item.longitud,
           fuente: item.fuente, notas: item.notas
         } : { categoria: category, fechaDato: new Date().toISOString().slice(0, 10) };
+        if (clone) {
+          Object.assign(values, {
+            tipoDato: '', fechaDato: new Date().toISOString().slice(0, 10), precio: '', fuente: '',
+            notas: `Mismo inmueble que el comparable #${item.id}${item.tipo_dato ? ` (${item.tipo_dato.toLowerCase()})` : ''}.`
+          });
+        }
         comparableForm.elements.categoria.value = values.categoria;
         applyCategoryToForm(values.categoria);
         Object.entries(values).forEach(([name, value]) => {
           if (comparableForm.elements[name] && name !== 'categoria') comparableForm.elements[name].value = value ?? '';
         });
-        if (item?.origen_avaluo_id) document.getElementById('formError').textContent = 'Este comparable viene de un avalúo: al guardar los cambios aquí, el banco ya no lo actualizará desde ese avalúo.';
-        dialogEvidence = (item?.evidencias || []).map(evidence => ({ ...evidence }));
+        if (clone) {
+          document.getElementById('formError').textContent = 'Clon: capture el precio o la renta, el tipo de dato, su fecha y la fuente de este nuevo dato. Puede cambiar el tipo de comparable (por ejemplo, de construcción a renta).';
+        } else if (item?.origen_avaluo_id) {
+          document.getElementById('formError').textContent = 'Este comparable viene de un avalúo: al guardar los cambios aquí, el banco ya no lo actualizará desde ese avalúo.';
+        }
+        dialogEvidence = clone ? [] : (item?.evidencias || []).map(evidence => ({ ...evidence }));
         renderDialogEvidence();
         dialog.showModal();
       }

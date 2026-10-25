@@ -475,6 +475,47 @@
         font-size: 0.7rem;
       }
 
+      .clone-menu {
+        position: relative;
+      }
+
+      .clone-menu summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 5px 9px;
+        border: 1px solid #cfe3fa;
+        border-radius: 10px;
+        background: #eaf4ff;
+        color: #0d4478;
+        font-size: 0.7rem;
+        font-weight: 800;
+      }
+
+      .clone-menu summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .clone-menu[open] > div {
+        position: absolute;
+        z-index: 30;
+        top: calc(100% + 4px);
+        right: 0;
+        display: grid;
+        gap: 6px;
+        width: max-content;
+        max-width: 260px;
+        padding: 8px;
+        border: 1px solid #c8d4e2;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 8px 20px rgba(15, 76, 129, 0.18);
+      }
+
+      .clone-menu[open] > div .secondary-button {
+        text-align: left;
+        font-size: 0.72rem;
+      }
+
       .bank-origin-badge {
         font-size: 0.7rem;
         font-weight: 700;
@@ -4608,6 +4649,13 @@
         document.querySelectorAll('#constructionComparables .comparable-card').forEach((card, index) => {
           card.querySelector('h3').after(createBankOrigin('construction', index));
           card.querySelector('[data-field="address"]').closest('label').after(createDataDateFields('construction', index));
+          // Superficie de terreno del comparable: solo de referencia, no entra en la homologación.
+          const terrain = document.createElement('label');
+          const terrainInput = Object.assign(document.createElement('input'), { type: 'number', min: '0', step: '0.01', placeholder: 'Solo de referencia' });
+          terrainInput.dataset.comparable = String(index);
+          terrainInput.dataset.field = 'superficieTerreno';
+          terrain.append('Superficie de terreno (m²) · referencia, no se usa en el cálculo ', terrainInput);
+          card.querySelector('[data-field="surface"]').closest('label').after(terrain);
           card.append(createBankDetails('construction', index), createComparablePhotoField('construction', index), createComparableEvidenceField('construction', index));
         });
       }
@@ -4700,7 +4748,7 @@
       const BANK_FIELDS = {
         construction: [
           ['fuente', 'Fuente o enlace', 'text'],
-          ['edad', 'Edad (años)', 'number'], ['superficieTerreno', 'Superficie de terreno (m²)', 'number'],
+          ['edad', 'Edad (años)', 'number'],
           ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
         ],
         land: [
@@ -4854,8 +4902,70 @@
           clearComparable(group, index);
           notifyComparableChange(group, index);
         });
-        wrapper.append(hidden, pick, badge, clear);
+        wrapper.append(hidden, pick, badge, clear, createCloneMenu(group, index));
         return wrapper;
+      }
+
+      // Clonar: el mismo inmueble con otro dato (la casa en venta que también se ofrece en renta, o una oferta que
+      // después se vendió). Pasa a la primera tarjeta libre del grupo elegido con dirección, superficies, edad,
+      // ubicación y fotos; precio o renta, tipo y fecha del dato, fuente y evidencias se capturan de nuevo porque
+      // son propios de cada anuncio. Al guardar, el clon entra al banco como un comparable distinto.
+      const CLONE_TARGETS = {
+        construction: [['construction', 'Otro dato de construcción (venta u oferta)'], ['rent', 'Comparable de renta']],
+        land: [['land', 'Otro dato de terreno (venta u oferta)']],
+        rent: [['rent', 'Otro dato de renta'], ['construction', 'Comparable de construcción (venta u oferta)']]
+      };
+
+      function createCloneMenu(group, index) {
+        const menu = document.createElement('details');
+        menu.className = 'clone-menu';
+        const summary = Object.assign(document.createElement('summary'), { textContent: '⧉ Clonar como…', title: 'Mismo inmueble con otro dato (venta, oferta o renta)' });
+        const options = document.createElement('div');
+        CLONE_TARGETS[group].forEach(([target, label]) => {
+          const option = Object.assign(document.createElement('button'), { type: 'button', className: 'secondary-button', textContent: label });
+          option.addEventListener('click', () => {
+            menu.open = false;
+            cloneComparable(group, index, target);
+          });
+          options.appendChild(option);
+        });
+        menu.append(summary, options);
+        return menu;
+      }
+
+      function cloneComparable(group, index, target) {
+        const read = field => comparableControl(group, index, field)?.value || '';
+        const sourceStatus = form.querySelector(`[data-bank-pick-status="${group}"]`);
+        if (!read('address').trim() && !Number(read('surface'))) {
+          sourceStatus.textContent = `La tarjeta ${index + 1} está vacía: capture al menos la dirección y la superficie antes de clonarla.`;
+          return;
+        }
+        const slot = freeComparableSlots(target)[0];
+        if (slot === undefined) {
+          sourceStatus.textContent = `No hay tarjetas libres en comparables de ${BANK_GROUP_NAME[target]}: vacíe una para recibir el clon.`;
+          return;
+        }
+        const set = (field, value) => setComparableControl(comparableControl(target, slot, field), value);
+        set('address', read('address'));
+        set('surface', read('surface'));
+        set('latitud', read('latitud'));
+        set('longitud', read('longitud'));
+        if (group === 'construction' && target === 'construction') {
+          set('edad', read('edad'));
+          set('superficieTerreno', read('superficieTerreno'));
+        }
+        comparablePhotos[target][slot].push(...comparablePhotos[group][index].map(photo => ({ ...photo })));
+        comparablePhotoRenderers[target][slot]?.();
+        renderBankOrigin(target, slot);
+        renderDataDateLabel(target, slot);
+        notifyComparableChange(target, slot);
+        const amount = target === 'rent' ? 'la renta mensual' : 'el precio';
+        const targetStatus = form.querySelector(`[data-bank-pick-status="${target}"]`);
+        targetStatus.textContent = `Tarjeta ${slot + 1}: clon del comparable ${index + 1} de ${BANK_GROUP_NAME[group]} (misma dirección, superficie, ubicación y fotos). Capture ${amount}, el tipo de dato, su fecha y la fuente.`;
+        if (targetStatus !== sourceStatus) sourceStatus.textContent = '';
+        const priceField = comparableControl(target, slot, comparablePriceField(target));
+        priceField?.closest('.comparable-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        priceField?.focus({ preventScroll: true });
       }
 
       function renderBankOrigin(group, index) {
@@ -4879,7 +4989,7 @@
       }
 
       function clearComparable(group, index) {
-        ['address', comparablePriceField(group), 'surface', 'bancoId', 'tipoDato', 'fechaDato', ...BANK_FIELDS[group].map(([field]) => field)]
+        ['address', comparablePriceField(group), 'surface', 'superficieTerreno', 'bancoId', 'tipoDato', 'fechaDato', ...BANK_FIELDS[group].map(([field]) => field)]
           .forEach(field => setComparableControl(comparableControl(group, index, field), ''));
         renderDataDateLabel(group, index);
         comparableFactorFields(group).forEach(field => setComparableControl(comparableControl(group, index, field), '1'));
@@ -5244,6 +5354,11 @@
         return state ? state.label : code;
       }
 
+      function comparableTerrainText(index) {
+        const value = Number(document.querySelector(`[data-comparable="${index}"][data-field="superficieTerreno"]`)?.value);
+        return value > 0 ? `${value.toLocaleString('es-MX', { maximumFractionDigits: 2 })} m²` : '—';
+      }
+
       function comparableDistanceText(index) {
         const subject = currentCoordinates();
         const read = field => document.querySelector(`[data-comparable="${index}"][data-field="${field}"]`)?.value.trim() || '';
@@ -5597,6 +5712,7 @@
             <td>${factors}</td>
             <td>${money(item.adjustedValue)}</td>
             <td>${money(item.unitValuePerM2)}</td>
+            <td>${comparableTerrainText(item.id - 1)}</td>
             <td>${comparableDistanceText(item.id - 1)}</td>
           </tr>
         `;
@@ -5611,11 +5727,13 @@
                 <th>Factores aplicados</th>
                 <th>Valor ajustado</th>
                 <th>$/m²</th>
+                <th>Terreno (m²)*</th>
                 <th>Distancia</th>
               </tr>
             </thead>
-            <tbody>${rows || '<tr><td colspan="6">Sin comparables completos; capture precio y superficie construida verificables.</td></tr>'}</tbody>
+            <tbody>${rows || '<tr><td colspan="7">Sin comparables completos; capture precio y superficie construida verificables.</td></tr>'}</tbody>
           </table>
+          <p class="technical-note">* Superficie de terreno del comparable, solo de referencia: no interviene en la homologación.</p>
         `;
         renderSubjectCalculationTable(data, payload);
         renderIncomeApproach(data.incomeApproach, captured);
