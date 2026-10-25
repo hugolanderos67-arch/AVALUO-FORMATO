@@ -157,8 +157,15 @@ function readJsonBody(req, limit) {
 
 async function handleAvaluosApi(req, res, pathname, searchParams) {
   const idMatch = pathname.match(/^\/api\/avaluos\/(\d+)$/);
+  const statusMatch = pathname.match(/^\/api\/avaluos\/(\d+)\/estatus$/);
   try {
-    if (pathname === '/api/avaluos' && req.method === 'GET') {
+    if (pathname === '/api/avaluos/folio' && req.method === 'GET') {
+      // Siguiente folio consecutivo del año y, si se pregunta por uno, qué avalúo lo usa.
+      const inUse = searchParams.get('folio') ? avaluos.folioInUse(searchParams.get('folio'), searchParams.get('excluir')) : null;
+      sendJson(res, 200, { siguiente: avaluos.nextFolio(searchParams.get('anio') || undefined), enUso: inUse });
+    } else if (statusMatch && req.method === 'PUT') {
+      sendJson(res, 200, avaluos.setStatus(statusMatch[1], await readJsonBody(req, 64 * 1024)));
+    } else if (pathname === '/api/avaluos' && req.method === 'GET') {
       sendJson(res, 200, { avaluos: avaluos.list(searchParams.get('q') || '') });
     } else if (pathname === '/api/avaluos' && req.method === 'POST') {
       sendJson(res, 201, avaluos.save(null, await readJsonBody(req, MAX_VALUATION_BODY_BYTES)));

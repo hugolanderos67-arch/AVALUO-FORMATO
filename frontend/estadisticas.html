@@ -731,7 +731,7 @@
           const result = await response.json();
           if (!response.ok) throw new Error(result.error);
           allRows = result.avaluos;
-          document.getElementById('updatedAt').textContent = `Datos al ${DateField.formatDateTime(new Date().toISOString())} · ${integer(allRows.length)} avalúo(s) guardado(s)`;
+          document.getElementById('updatedAt').textContent = `Datos al ${DateField.formatDateTime(new Date().toISOString())} · ${integer(allRows.length)} avalúo(s) guardado(s), sin contar los cancelados`;
           setupFilters();
           render();
         } catch (error) {

@@ -407,6 +407,93 @@
         white-space: nowrap;
       }
 
+      /* Folio y estatus del avalúo */
+      .folio-hint {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.68rem;
+        font-weight: 400;
+        color: #4b6680;
+      }
+
+      .folio-hint.is-error {
+        color: #a3281e;
+        font-weight: 700;
+      }
+
+      .estatus-chip {
+        justify-self: start;
+        padding: 2px 9px;
+        border-radius: 999px;
+        border: 1px solid #cfe3fa;
+        background: #eaf4ff;
+        color: #0d4478 !important;
+        font-size: 0.68rem !important;
+        font-weight: 800;
+      }
+
+      .estatus-chip.is-concluido {
+        border-color: #bfe0cc;
+        background: #e6f4ec;
+        color: #1f6a3f !important;
+      }
+
+      .estatus-chip.is-cancelado {
+        border-color: #f0c4bd;
+        background: #fbe9e6;
+        color: #a3281e !important;
+      }
+
+      .estatus-dialog {
+        width: min(620px, calc(100vw - 32px));
+      }
+
+      .estatus-options {
+        display: grid;
+        gap: 8px;
+        margin: 0 0 10px;
+        padding: 0;
+        border: none;
+        font-size: 0.82rem;
+      }
+
+      .estatus-options label {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+      }
+
+      .estatus-motivo {
+        display: grid;
+        gap: 4px;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .valuations-dialog button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .valuations-dialog tr.is-cancelado td {
+        color: #7a8ea3;
+      }
+
+      .cancelled-banner {
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        border: 2px solid #c62828;
+        border-radius: 10px;
+        background: #fdecea;
+        color: #8e1b12;
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+
+      .cancelled-watermark {
+        display: none;
+      }
+
       /* Selección de comparables desde el banco */
       .bank-picker-dialog {
         width: min(1180px, calc(100vw - 32px));
@@ -1865,6 +1952,21 @@
           min-height: 120px;
         }
 
+        /* Avalúo cancelado: leyenda diagonal en cada hoja impresa. */
+        body.is-cancelled .cancelled-watermark {
+          display: block;
+          position: fixed;
+          top: 45%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-35deg);
+          font-size: 110pt;
+          font-weight: 900;
+          letter-spacing: 8pt;
+          color: rgba(198, 40, 40, 0.14);
+          pointer-events: none;
+          z-index: 10;
+        }
+
         .report .homologation-table th,
         .report .homologation-table td {
           white-space: normal;
@@ -1885,6 +1987,7 @@
     </style>
   </head>
   <body>
+    <div class="cancelled-watermark" aria-hidden="true">CANCELADO</div>
     <div class="sheet">
       <div class="topbar">Dictamen de Avalúo Inmobiliario</div>
       <div class="institutional-header">
@@ -1918,12 +2021,14 @@
               <div class="app-brand"><b>PERITIA</b> · Ecosistema de valuación profesional</div>
               <strong id="recordTitle">Avalúo nuevo</strong>
               <span id="recordStatus" role="status" aria-live="polite">Sin guardar</span>
+              <span id="recordEstatus" class="estatus-chip is-en_proceso">En proceso</span>
             </div>
             <div class="record-actions">
               <button type="button" class="secondary-button" onclick="window.open('/estadisticas', '_blank')">📊 Estadísticas</button>
               <button type="button" class="secondary-button" onclick="window.open('/comparables', '_blank')">🏘️ Comparables</button>
               <button type="button" class="secondary-button" id="newValuation">Nuevo</button>
               <button type="button" class="secondary-button" id="openValuations">Abrir…</button>
+              <button type="button" class="secondary-button" id="changeEstatus" disabled title="Guarde el avalúo para cambiar su estatus">Estatus…</button>
               <button type="button" class="secondary-button" id="printValuation" title="Imprimir o guardar en PDF (Ctrl+P)">🖨️ Imprimir avalúo</button>
               <button type="button" id="saveValuation" title="Guardar (Ctrl+S)">Guardar avalúo</button>
             </div>
@@ -1937,9 +2042,29 @@
             <p id="valuationsMessage" class="technical-note" role="status"></p>
             <div class="table-scroll">
               <table class="capture-table">
-                <thead><tr><th>Folio</th><th>Fecha</th><th>Solicitante / propietario</th><th>Ubicación</th><th>Valor concluido</th><th>Modificado</th><th></th></tr></thead>
+                <thead><tr><th>Folio</th><th>Estatus</th><th>Fecha</th><th>Solicitante / propietario</th><th>Ubicación</th><th>Valor concluido</th><th>Modificado</th><th></th></tr></thead>
                 <tbody id="valuationsList"></tbody>
               </table>
+            </div>
+          </dialog>
+          <dialog id="estatusDialog" class="valuations-dialog estatus-dialog" aria-labelledby="estatusDialogTitle">
+            <div class="valuations-dialog-header">
+              <h2 id="estatusDialogTitle">Estatus del avalúo</h2>
+              <button type="button" class="secondary-button" id="closeEstatusDialog">Cerrar</button>
+            </div>
+            <fieldset class="estatus-options">
+              <legend class="technical-note">El folio se conserva en cualquier estatus. Un avalúo cancelado sigue en la lista, no cuenta en las estadísticas y su dictamen se imprime con la leyenda "CANCELADO".</legend>
+              <label><input type="radio" name="estatusOption" value="en_proceso" /> <strong>En proceso</strong> — se sigue trabajando.</label>
+              <label><input type="radio" name="estatusOption" value="concluido" /> <strong>Concluido</strong> — dictamen firmado y entregado; ya no se puede eliminar.</label>
+              <label><input type="radio" name="estatusOption" value="cancelado" /> <strong>Cancelado</strong> — no se concluirá; se conserva con su folio.</label>
+            </fieldset>
+            <label id="estatusMotivoLabel" class="estatus-motivo" hidden>Motivo de la cancelación
+              <textarea id="estatusMotivo" rows="3" placeholder="Por ejemplo: el cliente desistió, el inmueble tiene un litigio, documentación incompleta"></textarea>
+            </label>
+            <p id="estatusMessage" class="technical-note" role="status"></p>
+            <div class="bank-picker-footer">
+              <span></span>
+              <button type="button" id="saveEstatus">Guardar estatus</button>
             </div>
           </dialog>
           <dialog id="bankPickerDialog" class="valuations-dialog bank-picker-dialog" aria-labelledby="bankPickerTitle">
@@ -2079,7 +2204,7 @@
                 <label>Registro Público / libertad de gravamen <input name="registroPublico" /></label>
                 <label>Medidas y colindancias según <input name="medidasSegun" placeholder="Escritura, levantamiento, catastro, etc." /></label>
                 <label>Clave catastral <input name="claveCatastral" /></label>
-                <label>Folio del expediente <input name="folioExpediente" /></label>
+                <label>Folio del expediente <input name="folioExpediente" autocomplete="off" /><small id="folioHint" class="folio-hint">Consecutivo del año (AV-aaaa-nnn). Puede cambiarlo; un folio no se repite ni se reutiliza, aunque el avalúo se cancele.</small></label>
               </div>
             </div>
 
@@ -3229,6 +3354,7 @@
         </div>
 
         <div class="report">
+          <div id="cancelledBanner" class="cancelled-banner" hidden></div>
           <div class="section-title">Cuerpo del avalúo</div>
 
           <div class="formal-section">
@@ -6558,6 +6684,7 @@
       }
 
       function updateRecordTitle(record) {
+        if (record?.estatus || !currentValuationId) setEstatus(currentValuationId ? record : null);
         if (!currentValuationId) {
           recordTitle.textContent = 'Avalúo nuevo';
           return;
@@ -6838,6 +6965,7 @@
           history.replaceState(null, '', `/?avaluo=${record.id}`);
           savedChangeCounter = counterAtSave;
           updateRecordTitle(record);
+          checkFolio();
           const profileError = await saveValuerProfile(record.datos);
           if (hasUnsavedChanges()) setRecordStatus('Cambios sin guardar', 'dirty');
           else if (profileError) setRecordStatus(`Avalúo guardado, pero no se actualizó el perfil del valuador: ${profileError}`, 'error');
@@ -6869,8 +6997,10 @@
           valuationsMessage.textContent = result.avaluos.length ? '' : (valuationsSearch.value.trim() ? 'Ningún avalúo coincide con la búsqueda.' : 'Aún no hay avalúos guardados.');
           valuationsList.replaceChildren(...result.avaluos.map(record => {
             const row = document.createElement('tr');
+            row.className = `is-${record.estatus || 'en_proceso'}`;
             const cells = [
               record.folio || `#${record.id}`,
+              estatusText(record),
               formatValuationDate(record.fecha_avaluo) || '—',
               [record.solicitante, record.propietario].filter(Boolean).join(' / ') || '—',
               [record.calle, record.colonia, record.municipio, record.estado].filter(Boolean).join(', ') || '—',
@@ -6894,6 +7024,10 @@
             remove.type = 'button';
             remove.className = 'secondary-button';
             remove.textContent = 'Eliminar';
+            if (record.estatus === 'concluido') {
+              remove.disabled = true;
+              remove.title = 'Un avalúo concluido no se elimina: cámbielo a Cancelado para conservar su folio.';
+            }
             remove.addEventListener('click', () => deleteValuation(record));
             actions.append(open, remove);
             row.appendChild(actions);
@@ -6904,12 +7038,137 @@
         }
       }
 
+      // --- Folio: se propone el siguiente consecutivo del año y se avisa si ya lo tiene otro avalúo ---
+      const folioField = form.elements.namedItem('folioExpediente');
+      const folioHint = document.getElementById('folioHint');
+      const FOLIO_HINT = folioHint.textContent;
+      const folioYear = () => (form.elements.namedItem('fechaAvaluo').value || '').slice(0, 4) || String(new Date().getFullYear());
+
+      async function suggestFolio() {
+        if (currentValuationId || folioField.value.trim()) return;
+        try {
+          const response = await fetch(`/api/avaluos/folio?${new URLSearchParams({ anio: folioYear() })}`);
+          const result = await response.json();
+          if (!response.ok || currentValuationId || folioField.value.trim()) return;
+          // Se propone sin marcarlo como cambio: un avalúo nuevo sin capturar no pide confirmación al salir.
+          restoringValuation = true;
+          try {
+            folioField.value = result.siguiente;
+            folioField.dispatchEvent(new Event('input', { bubbles: true }));
+          } finally {
+            restoringValuation = false;
+          }
+          folioHint.textContent = `Folio sugerido: ${result.siguiente}, el siguiente consecutivo de ${folioYear()}. Puede cambiarlo; un folio no se repite ni se reutiliza, aunque el avalúo se cancele.`;
+          folioHint.classList.remove('is-error');
+        } catch {
+          // Sin servidor no se sugiere folio; se captura a mano.
+        }
+      }
+
+      async function checkFolio() {
+        if (/^av-\d{4}-\d+$/i.test(folioField.value.trim()) && folioField.value !== folioField.value.trim().toUpperCase()) {
+          folioField.value = folioField.value.trim().toUpperCase();
+        }
+        const folio = folioField.value.trim();
+        folioHint.classList.remove('is-error');
+        if (!folio) {
+          folioHint.textContent = FOLIO_HINT;
+          return;
+        }
+        try {
+          const response = await fetch(`/api/avaluos/folio?${new URLSearchParams({ folio, anio: folioYear(), excluir: currentValuationId || '' })}`);
+          const result = await response.json();
+          if (!response.ok || folioField.value.trim() !== folio) return;
+          if (result.enUso) {
+            folioHint.textContent = `Este folio ya lo tiene el avalúo #${result.enUso.id} (${ESTATUS_LABELS[result.enUso.estatus] || result.enUso.estatus}). Use otro, por ejemplo ${result.siguiente}.`;
+            folioHint.classList.add('is-error');
+          } else {
+            folioHint.textContent = FOLIO_HINT;
+          }
+        } catch {
+          // Se vuelve a revisar al guardar.
+        }
+      }
+      folioField.addEventListener('change', checkFolio);
+
+      // --- Estatus del avalúo: en proceso, concluido o cancelado (con motivo) ---
+      const ESTATUS_LABELS = { en_proceso: 'en proceso', concluido: 'concluido', cancelado: 'cancelado' };
+      const estatusDialog = document.getElementById('estatusDialog');
+      const estatusMotivo = document.getElementById('estatusMotivo');
+      const estatusMessage = document.getElementById('estatusMessage');
+      const changeEstatusButton = document.getElementById('changeEstatus');
+      let currentEstatus = { estatus: 'en_proceso', estatus_fecha: null, estatus_motivo: null };
+
+      function estatusText({ estatus, estatus_fecha: date }) {
+        const when = date ? ` el ${DateField.formatDateTime(date).slice(0, 10)}` : '';
+        return { en_proceso: 'En proceso', concluido: `Concluido${when}`, cancelado: `Cancelado${when}` }[estatus] || 'En proceso';
+      }
+
+      function setEstatus(record) {
+        currentEstatus = {
+          estatus: record?.estatus || 'en_proceso',
+          estatus_fecha: record?.estatus_fecha || null,
+          estatus_motivo: record?.estatus_motivo || null
+        };
+        const chip = document.getElementById('recordEstatus');
+        chip.textContent = estatusText(currentEstatus);
+        chip.className = `estatus-chip is-${currentEstatus.estatus}`;
+        changeEstatusButton.disabled = !currentValuationId;
+        changeEstatusButton.title = currentValuationId ? 'Marcar como en proceso, concluido o cancelado' : 'Guarde el avalúo para cambiar su estatus';
+        const cancelled = currentEstatus.estatus === 'cancelado';
+        document.body.classList.toggle('is-cancelled', cancelled);
+        const banner = document.getElementById('cancelledBanner');
+        banner.hidden = !cancelled;
+        banner.textContent = cancelled ? `AVALÚO CANCELADO${currentEstatus.estatus_fecha ? ` el ${DateField.formatDateTime(currentEstatus.estatus_fecha).slice(0, 10)}` : ''}. Motivo: ${currentEstatus.estatus_motivo || 'no indicado'}. El folio ${folioField.value.trim() || 'de este avalúo'} se conserva y no se reutiliza.` : '';
+      }
+
+      function renderEstatusDialog() {
+        const selected = estatusDialog.querySelector('input[name="estatusOption"]:checked')?.value;
+        document.getElementById('estatusMotivoLabel').hidden = selected !== 'cancelado';
+      }
+
+      changeEstatusButton.addEventListener('click', () => {
+        estatusDialog.querySelectorAll('input[name="estatusOption"]').forEach(option => { option.checked = option.value === currentEstatus.estatus; });
+        estatusMotivo.value = currentEstatus.estatus_motivo || '';
+        estatusMessage.textContent = '';
+        renderEstatusDialog();
+        estatusDialog.showModal();
+      });
+      estatusDialog.querySelectorAll('input[name="estatusOption"]').forEach(option => option.addEventListener('change', renderEstatusDialog));
+      document.getElementById('closeEstatusDialog').addEventListener('click', () => estatusDialog.close());
+      document.getElementById('saveEstatus').addEventListener('click', async () => {
+        const estatus = estatusDialog.querySelector('input[name="estatusOption"]:checked')?.value;
+        if (!estatus || !currentValuationId) return;
+        if (estatus === 'cancelado' && !estatusMotivo.value.trim()) {
+          estatusMessage.textContent = 'Indique el motivo de la cancelación.';
+          estatusMotivo.focus();
+          return;
+        }
+        try {
+          const response = await fetch(`/api/avaluos/${currentValuationId}/estatus`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estatus, motivo: estatusMotivo.value })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'No se pudo cambiar el estatus.');
+          setEstatus(result);
+          estatusDialog.close();
+        } catch (error) {
+          estatusMessage.textContent = error.message;
+        }
+      });
+
       async function deleteValuation(record) {
         const label = record.folio || `#${record.id}`;
-        if (!confirm(`¿Eliminar definitivamente el avalúo ${label} y sus fotografías? Esta acción no se puede deshacer.`)) return;
+        const warning = record.estatus === 'cancelado'
+          ? `¿Eliminar definitivamente el avalúo cancelado ${label}? Se pierde el registro de su folio y de su cancelación, junto con sus fotografías. No se puede deshacer.`
+          : `Si este avalúo no se va a concluir, use "Estatus…" → Cancelado para conservar su folio.\n\nEliminar borra el avalúo ${label}, sus fotografías y el registro de su folio, sin poder deshacerlo. ¿Eliminar de todos modos?`;
+        if (!confirm(warning)) return;
         const response = await fetch(`/api/avaluos/${record.id}`, { method: 'DELETE' });
         if (!response.ok) {
-          valuationsMessage.textContent = 'No se pudo eliminar el avalúo.';
+          const result = await response.json().catch(() => ({}));
+          valuationsMessage.textContent = result.error || 'No se pudo eliminar el avalúo.';
           return;
         }
         if (record.id === currentValuationId) {
@@ -6984,6 +7243,7 @@
         const id = Number(new URLSearchParams(location.search).get('avaluo'));
         if (!Number.isInteger(id) || id <= 0) {
           await loadValuerProfile();
+          await suggestFolio();
           return;
         }
         setRecordStatus('Abriendo avalúo…');
@@ -6996,6 +7256,7 @@
           currentValuationRevision = record.revision;
           savedChangeCounter = changeCounter;
           updateRecordTitle(record);
+          checkFolio();
           await generateReport();
         } catch (error) {
           history.replaceState(null, '', '/');

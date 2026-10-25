@@ -435,7 +435,8 @@
             const response = await fetch('/api/avaluos');
             const result = await response.json();
             if (response.ok) {
-              avaluos = result.avaluos.map(item => ({ id: item.id, label: [item.folio || `#${item.id}`, [item.calle, item.colonia].filter(Boolean).join(', ')].filter(Boolean).join(' · ') }));
+              // Los cancelados no reciben visitas.
+              avaluos = result.avaluos.filter(item => item.estatus !== 'cancelado').map(item => ({ id: item.id, label: [item.folio || `#${item.id}`, [item.calle, item.colonia].filter(Boolean).join(', ')].filter(Boolean).join(' · ') }));
               await db.put('catalogo', { key: 'avaluos', items: avaluos, updatedAt: Date.now() });
               return true;
             }

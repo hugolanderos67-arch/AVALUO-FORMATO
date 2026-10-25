@@ -220,3 +220,50 @@ test('rechaza capturas inválidas, tipos no admitidos y avalúos inexistentes si
   assert.throws(() => repository.save(999, { datos: {} }), error => error.statusCode === 404);
   assert.equal(repository.list().length, 0);
 });
+
+test('folios: únicos sin importar mayúsculas, el siguiente consecutivo del año y sin reutilizar los cancelados', t => {
+  const { repository } = createTempRepository(t);
+  const withFolio = folio => ({ fields: { folioExpediente: folio } });
+  const first = repository.save(null, { datos: withFolio('AV-2026-001') });
+  const seventh = repository.save(null, { datos: withFolio('AV-2026-007') });
+  repository.save(null, { datos: withFolio('AV-2025-010') });
+  repository.save(null, { datos: withFolio('Folio libre del cliente') });
+
+  assert.throws(() => repository.save(null, { datos: withFolio(' av-2026-001 ') }), error => error.statusCode === 422 && /avalúo #\d+ \(en proceso\)/.test(error.message));
+  assert.doesNotThrow(() => repository.save(first.id, { datos: withFolio('AV-2026-001') }), 'el mismo avalúo conserva su folio');
+  assert.equal(repository.folioInUse('av-2026-007').id, seventh.id);
+  assert.equal(repository.folioInUse('AV-2026-007', seventh.id), null);
+
+  repository.setStatus(seventh.id, { estatus: 'cancelado', motivo: 'El cliente desistió' });
+  assert.equal(repository.nextFolio(2026), 'AV-2026-008', 'el cancelado sigue contando');
+  assert.equal(repository.nextFolio(2025), 'AV-2025-011');
+  assert.equal(repository.nextFolio(2027), 'AV-2027-001');
+  assert.throws(() => repository.save(null, { datos: withFolio('AV-2026-007') }), error => error.statusCode === 422 && /cancelado/.test(error.message));
+
+  const visit = repository.applyVisit({ visitaId: 'visita-folio-repetido', folio: 'AV-2026-001', fields: { usoActual: 'Casa' } });
+  assert.ok(visit.id, 'una visita de campo no falla por un folio repetido');
+});
+
+test('estatus: cancelar con motivo, fuera de estadísticas, y un concluido no se elimina', t => {
+  const { repository } = createTempRepository(t);
+  const datos = { fields: { folioExpediente: 'AV-2026-001', fechaAvaluo: '2026-10-01', superficieConstruccion: '100' } };
+  const saved = repository.save(null, { datos, resumen: { valorConcluido: 1500000, enfoque: 'Comparativo de mercado' } });
+  assert.equal(repository.get(saved.id).estatus, 'en_proceso');
+
+  assert.throws(() => repository.setStatus(saved.id, { estatus: 'cancelado', motivo: ' ' }), error => error.statusCode === 400);
+  assert.throws(() => repository.setStatus(saved.id, { estatus: 'archivado' }), error => error.statusCode === 400);
+  const cancelled = repository.setStatus(saved.id, { estatus: 'cancelado', motivo: 'Inmueble con litigio' });
+  assert.equal(cancelled.estatus, 'cancelado');
+  assert.equal(cancelled.estatus_motivo, 'Inmueble con litigio');
+  assert.match(cancelled.estatus_fecha, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  assert.equal(repository.statistics().length, 0, 'un cancelado no cuenta en las estadísticas');
+  assert.equal(repository.list()[0].estatus, 'cancelado', 'sigue en la lista');
+
+  const concluded = repository.setStatus(saved.id, { estatus: 'concluido' });
+  assert.equal(concluded.estatus_motivo, null);
+  assert.equal(repository.statistics().length, 1);
+  assert.throws(() => repository.remove(saved.id), error => error.statusCode === 409);
+  repository.setStatus(saved.id, { estatus: 'en_proceso' });
+  assert.equal(repository.remove(saved.id), true);
+  assert.throws(() => repository.setStatus(saved.id, { estatus: 'concluido' }), error => error.statusCode === 404);
+});

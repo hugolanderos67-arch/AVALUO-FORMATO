@@ -71,6 +71,11 @@ Enfoque comparativo de mercado, cuadro "Análisis por homologación y ajustes" (
 - "Detener PERITIA" en el escritorio y en el menú Inicio (`scripts/detener-avaluo.ps1`) apaga el servidor.
 - Los íconos se crean con `instalar.bat` (revisa que Node.js 24+ esté instalado) o con `scripts/crear-accesos-directos.ps1`.
 
+## Folio y estatus del avalúo
+- Hay dos números. "Avalúo #N" es el número interno que la base asigna al guardar por primera vez: consecutivo y nunca reutilizado, aunque se elimine un avalúo. El **folio del expediente** es el número de control que aparece en el dictamen.
+- Folio sugerido: en un avalúo nuevo se propone el siguiente consecutivo del año, `AV-aaaa-nnn` (por ejemplo AV-2026-007), contando también los cancelados; se puede cambiar. El folio es único (sin importar mayúsculas): el formato avisa al escribir uno repetido y el servidor no guarda un avalúo con folio de otro (`GET /api/avaluos/folio?anio=&folio=&excluir=`). Las visitas de campo no se rechazan por folio repetido.
+- Estatus ("Estatus…" en la barra del formato; `PUT /api/avaluos/{id}/estatus`): en proceso, concluido o cancelado con motivo. Un cancelado conserva su folio, sigue en "Abrir…", no cuenta en las estadísticas, no aparece en la app móvil y su dictamen muestra el aviso y se imprime con la leyenda "CANCELADO" en cada hoja. Un concluido no se puede eliminar; para retirarlo se cancela. "Eliminar" queda para pruebas o errores de captura.
+
 ## Imprimir el dictamen
 - Botón "🖨️ Imprimir avalúo" de la barra del formato (o Ctrl+P): actualiza el dictamen, espera a que carguen logotipo, firma, mapas y fotos, y abre el diálogo de impresión del navegador. Ahí se elige la impresora o "Guardar como PDF"; en "Más opciones" conviene activar "Gráficos de fondo".
 - En hoja carta se imprime con el acomodo de escritorio: datos a dos columnas, tablas completas con encabezado repetido, fotos y croquis grandes, mapa de entorno (sección II) y de macrolocalización (Anexo II). Cada hoja lleva los datos del valuador, "Página X de Y" y el crédito "Elaborado con PERITIA · Created and developed by Hugo Landeros Rizo".

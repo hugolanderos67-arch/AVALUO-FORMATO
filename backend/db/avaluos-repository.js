@@ -47,6 +47,12 @@ function openDatabase(filePath) {
   // Migración: número de revisión para detectar cambios hechos desde otro dispositivo (app móvil u otra ventana).
   const columns = db.prepare('PRAGMA table_info(avaluos)').all().map(column => column.name);
   if (!columns.includes('revision')) db.exec('ALTER TABLE avaluos ADD COLUMN revision INTEGER NOT NULL DEFAULT 0');
+  // Migración: estatus del avalúo (en proceso, concluido o cancelado). La columna "estado" ya es el estado de la República.
+  if (!columns.includes('estatus')) {
+    db.exec(`ALTER TABLE avaluos ADD COLUMN estatus TEXT NOT NULL DEFAULT 'en_proceso';
+      ALTER TABLE avaluos ADD COLUMN estatus_fecha TEXT;
+      ALTER TABLE avaluos ADD COLUMN estatus_motivo TEXT;`);
+  }
   return db;
 }
 
@@ -171,8 +177,57 @@ function createAvaluosRepository({ databasePath, filesDir }) {
   }
 
   // `revision`: la que tenía el avalúo cuando se abrió; si cambió desde entonces se rechaza con 409 para no sobrescribir.
-  function save(id, { datos, resumen, revision } = {}) {
+  // --- Folios: número de control del avalúo (AV-aaaa-nnn), único y nunca reutilizado ---
+  const normalizeFolio = value => text(value).toUpperCase().replace(/\s+/g, ' ');
+  const FOLIO_PATTERN = /^AV-(\d{4})-(\d+)$/;
+
+  // Avalúo que ya usa ese folio (cualquier estatus, incluso cancelado), sin contar el avalúo `excludeId`.
+  function folioInUse(folio, excludeId = null) {
+    const wanted = normalizeFolio(folio);
+    if (!wanted) return null;
+    return db.prepare('SELECT id, folio, estatus FROM avaluos WHERE folio IS NOT NULL AND folio != \'\'').all()
+      .find(row => normalizeFolio(row.folio) === wanted && row.id !== Number(excludeId)) || null;
+  }
+
+  // Siguiente consecutivo del año: el mayor AV-aaaa-nnn registrado + 1, contando cancelados para no reutilizar folios.
+  function nextFolio(year = new Date().getFullYear()) {
+    const wantedYear = /^\d{4}$/.test(String(year)) ? String(year) : String(new Date().getFullYear());
+    const highest = db.prepare('SELECT folio FROM avaluos WHERE folio IS NOT NULL').all().reduce((max, row) => {
+      const match = FOLIO_PATTERN.exec(normalizeFolio(row.folio));
+      return match && match[1] === wantedYear ? Math.max(max, Number(match[2])) : max;
+    }, 0);
+    return `AV-${wantedYear}-${String(highest + 1).padStart(3, '0')}`;
+  }
+
+  const ESTATUS = ['en_proceso', 'concluido', 'cancelado'];
+
+  // Estatus del avalúo. Cancelar exige motivo; el avalúo y su folio se conservan.
+  function setStatus(id, { estatus, motivo } = {}) {
+    const avaluoId = Number(id);
+    if (!db.prepare('SELECT id FROM avaluos WHERE id = ?').get(avaluoId)) throw httpError(404, 'El avalúo no existe.');
+    if (!ESTATUS.includes(estatus)) throw httpError(400, 'Estatus no válido: use en proceso, concluido o cancelado.');
+    const reason = text(motivo);
+    if (estatus === 'cancelado' && !reason) throw httpError(400, 'Indique el motivo de la cancelación.');
+    db.prepare(`UPDATE avaluos SET estatus = ?, estatus_fecha = ?, estatus_motivo = ? WHERE id = ?`).run(
+      estatus,
+      estatus === 'en_proceso' ? null : new Date().toISOString().slice(0, 19).replace('T', ' '),
+      estatus === 'cancelado' ? reason : null,
+      avaluoId
+    );
+    const { datos, ...summary } = get(avaluoId);
+    return summary;
+  }
+
+  // `checkFolio: false` solo para las visitas de campo, que no deben fallar al sincronizar por un folio repetido.
+  function save(id, { datos, resumen, revision } = {}, { checkFolio = true } = {}) {
     if (!datos || typeof datos !== 'object' || Array.isArray(datos)) throw httpError(400, 'La captura del avalúo no es válida.');
+    if (checkFolio) {
+      const duplicate = folioInUse(datos.fields?.folioExpediente, id);
+      if (duplicate) {
+        const status = { en_proceso: 'en proceso', concluido: 'concluido', cancelado: 'cancelado' }[duplicate.estatus] || duplicate.estatus;
+        throw httpError(422, `El folio ${text(datos.fields.folioExpediente)} ya lo tiene el avalúo #${duplicate.id} (${status}). Use otro folio: los folios no se repiten ni se reutilizan, aunque el avalúo se haya cancelado.`);
+      }
+    }
     const writtenFiles = [];
     const movedFiles = [];
     let obsoleteFiles = [];
@@ -260,7 +315,7 @@ function createAvaluosRepository({ databasePath, filesDir }) {
     });
     datos.attachments.documents = datos.attachments.documents || [];
     datos.visitasAplicadas = [...(datos.visitasAplicadas || []), visitaId];
-    return save(avaluoId == null ? null : avaluoId, { datos, resumen });
+    return save(avaluoId == null ? null : avaluoId, { datos, resumen }, { checkFolio: false });
   }
 
   // --- Subidas directas de anexos: se escriben en disco al agregarlas y se ligan al avalúo al guardarlo ---
@@ -313,7 +368,7 @@ function createAvaluosRepository({ databasePath, filesDir }) {
   function list(query = '') {
     const search = `%${String(query).trim()}%`;
     return db.prepare(`SELECT id, folio, fecha_avaluo, tipo_inmueble, solicitante, propietario, calle, colonia, municipio, estado,
-        valor_concluido, enfoque_concluido, creado_en, actualizado_en
+        valor_concluido, enfoque_concluido, creado_en, actualizado_en, estatus, estatus_fecha, estatus_motivo
       FROM avaluos
       WHERE ? = '%%' OR folio LIKE ? OR solicitante LIKE ? OR propietario LIKE ? OR calle LIKE ? OR colonia LIKE ? OR municipio LIKE ?
       ORDER BY actualizado_en DESC, id DESC
@@ -333,7 +388,8 @@ function createAvaluosRepository({ databasePath, filesDir }) {
         json_extract(datos, '$.fields.usoAvaluo') AS uso_avaluo,
         json_extract(datos, '$.fields.latitud') AS latitud,
         json_extract(datos, '$.fields.longitud') AS longitud
-      FROM avaluos ORDER BY COALESCE(NULLIF(fecha_avaluo, ''), date(creado_en)) DESC, id DESC`).all().map(row => {
+      FROM avaluos WHERE estatus != 'cancelado'
+      ORDER BY COALESCE(NULLIF(fecha_avaluo, ''), date(creado_en)) DESC, id DESC`).all().map(row => {
       const value = number(row.valor_concluido);
       const construction = number(row.superficie_construccion);
       const land = number(row.superficie_terreno);
@@ -365,7 +421,10 @@ function createAvaluosRepository({ databasePath, filesDir }) {
 
   function remove(id) {
     const avaluoId = Number(id);
-    if (!db.prepare('SELECT id FROM avaluos WHERE id = ?').get(avaluoId)) return false;
+    const current = db.prepare('SELECT id, estatus FROM avaluos WHERE id = ?').get(avaluoId);
+    if (!current) return false;
+    // Un avalúo concluido ya tiene un folio entregado: se cancela, no se borra.
+    if (current.estatus === 'concluido') throw httpError(409, 'Un avalúo concluido no se elimina: cancélelo para conservar el registro de su folio.');
     // Primero el banco copia las fotos y evidencias de sus comparables; después se borran el avalúo y sus archivos.
     bank.detachAvaluo(avaluoId);
     db.prepare('DELETE FROM avaluos WHERE id = ?').run(avaluoId);
@@ -438,7 +497,7 @@ function createAvaluosRepository({ databasePath, filesDir }) {
   }
 
   return {
-    save, get, list, remove, getFile, saveProfile, getProfile, applyVisit, statistics, bank,
+    save, get, list, remove, getFile, saveProfile, getProfile, applyVisit, statistics, bank, folioInUse, nextFolio, setStatus,
     createUploadTarget, registerUpload, getUpload, resolveFileUrl, deleteStaleUploads,
     close: () => db.close()
   };
