@@ -1,5 +1,5 @@
 const { calculateIncomeApproach } = require('./income-approach');
-const { homologateComparables, LAND_FACTOR_KEYS, RENT_FACTOR_KEYS } = require('./market-comparables');
+const { homologateComparables, homologateConstructionComparables, CONSTRUCTION_FACTORS, LAND_FACTOR_KEYS, RENT_FACTOR_KEYS } = require('./market-comparables');
 
 const FINAL_APPROACH_LABELS = {
   market: 'Comparativo de mercado',
@@ -12,34 +12,18 @@ function roundCurrency(value) {
 }
 
 function calculateHomologation(input) {
-  const {
-    comparableSales = [],
-    subject = {},
-    weights = { zone: 0.3, location: 0.25, terrain: 0.15, age: 0.15, shape: 0.15 }
-  } = input;
+  const { comparableSales = [], subject = {} } = input;
 
-  const selectedComparables = Array.isArray(comparableSales) ? comparableSales : [];
-
-  const homologatedValues = selectedComparables.map(item => {
-    const zoneFactor = item.zoneFactor ?? 1;
-    const locationFactor = item.locationFactor ?? 1;
-    const terrainFactor = item.terrainFactor ?? 1;
-    const ageFactor = item.ageFactor ?? 1;
-    const shapeFactor = item.shapeFactor ?? 1;
-
-    const adjustedValue = item.salePrice * zoneFactor * locationFactor * terrainFactor * ageFactor * shapeFactor;
-    const comparableSurface = Number(item.surface);
-    return {
-      ...item,
-      adjustedValue,
-      unitValuePerM2: comparableSurface > 0 ? adjustedValue / comparableSurface : 0
-    };
-  });
-
-  const validComparables = homologatedValues.filter(item => Number(item.salePrice) > 0 && Number(item.surface) > 0);
-  const averageUnitValue = validComparables.length
-    ? validComparables.reduce((sum, item) => sum + item.unitValuePerM2, 0) / validComparables.length
-    : 0;
+  // Homologación de comparables de construcción: factores, factor resultante (FRe) y ponderación.
+  const construction = homologateConstructionComparables(comparableSales);
+  const homologatedValues = construction.rows;
+  const validComparables = homologatedValues.filter(item => item.valid);
+  const averageUnitValue = construction.weightedUnitValue;
+  const weightingNote = {
+    equal: ' Ponderación igual para cada comparable.',
+    captured: ' Ponderación capturada (suma 100 %).',
+    normalized: ` Las ponderaciones capturadas sumaban ${construction.weightsCapturedTotal} %; se ajustaron en proporción a 100 %.`
+  }[construction.weightingMode] || '';
   const terrainSurface = Number(subject.surface) || 0;
   const constructionSurface = Number(subject.constructionSurface) || 0;
   const terrainValue = roundCurrency(terrainSurface * (Number(subject.unitLandValue) || 0));
@@ -72,22 +56,33 @@ function calculateHomologation(input) {
         ? 'Sin comparables completos con precio y superficie positiva; no se emitió una conclusión cuantitativa de mercado.'
         : constructionSurface <= 0
           ? `${validComparables.length} comparable(s) válidos, pero falta superficie de construcción del inmueble sujeto; valor de mercado pendiente.`
-          : `${validComparables.length} comparable(s) con precio y superficie capturados; confirmar ubicación, fecha, fuente, características y homologación.`,
+          : `${validComparables.length} comparable(s) con precio y superficie capturados; confirmar ubicación, fecha, fuente, características y homologación.${weightingNote}`,
       physicalValuationStatus: terrainValue > 0 || constructionValue > 0 || accessoryValue > 0
         ? `El enfoque físico incluye solo los componentes capturados. ${terrainSurface > 0 && Number(subject.unitLandValue) <= 0 ? 'Falta valor unitario documentado de terreno. ' : ''}${constructionSurface > 0 && constructionValue <= 0 ? 'Falta costo nuevo de reposición y depreciación documentados para construcción. ' : ''}${accessoryValue <= 0 ? 'No se capturó valor depreciado de accesorios. ' : ''}Verificar fuentes, fecha, depreciación y alcance.`
         : 'Enfoque físico pendiente: capture superficies y valores unitarios documentados de terreno, construcción o accesorios; no se estimó costo de reposición.',
       incomeValuationStatus: incomeApproach.status,
-      weights
+      weightingMode: construction.weightingMode,
+      weightsCapturedTotal: construction.weightsCapturedTotal
     },
+    constructionFactors: CONSTRUCTION_FACTORS.map(({ key, code, label }) => ({ key, code, label })),
     incomeApproach,
     landComparables: homologateComparables(input.landComparables, LAND_FACTOR_KEYS),
     rentComparables: homologateComparables(input.rentComparables, RENT_FACTOR_KEYS),
+    // Cuadro "Análisis por homologación y ajustes": unitValue = precio / superficie; factorProduct = FRe;
+    // unitValuePerM2 = valor unitario ajustado (unitValue × FRe); weight en %; component = ajustado × ponderación.
     homologationTable: homologatedValues.map(item => ({
       id: item.id,
       address: item.address,
       salePrice: item.salePrice,
+      surface: item.surface,
+      unitValue: roundCurrency(item.unitValue),
+      factors: item.factors,
+      factorProduct: Number(item.factorProduct.toFixed(4)),
       adjustedValue: roundCurrency(item.adjustedValue),
-      unitValuePerM2: roundCurrency(item.unitValuePerM2),
+      unitValuePerM2: roundCurrency(item.adjustedUnitValue),
+      weight: item.weight === null ? null : Number(item.weight.toFixed(2)),
+      component: roundCurrency(item.component),
+      valid: item.valid,
       distanceKm: roundCurrency(item.distanceKm ?? 0)
     })),
     comparables: homologatedValues.map(item => ({
@@ -95,7 +90,7 @@ function calculateHomologation(input) {
       address: item.address,
       salePrice: item.salePrice,
       adjustedValue: roundCurrency(item.adjustedValue),
-      unitValuePerM2: roundCurrency(item.unitValuePerM2),
+      unitValuePerM2: roundCurrency(item.adjustedUnitValue),
       distanceKm: roundCurrency(item.distanceKm ?? 0)
     }))
   };

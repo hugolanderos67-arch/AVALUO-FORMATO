@@ -144,3 +144,57 @@ test('concluye con el enfoque seleccionado y usa mercado por omisión', () => {
   const unknown = calculateHomologation({ subject: { ...subject, finalApproach: 'otro' }, comparableSales });
   assert.equal(unknown.summary.finalApproach, 'market');
 });
+
+test('cuadro de homologación: factores de construcción, factor resultante y ponderación capturada', () => {
+  const result = calculateHomologation({
+    subject: { constructionSurface: 150 },
+    comparableSales: [
+      { id: 1, address: 'A', salePrice: 2000000, surface: 100, zoneFactor: 1.05, surfaceFactor: 0.98, conservationFactor: 1.02, negotiationFactor: 0.95, weight: 60 },
+      { id: 2, address: 'B', salePrice: 1800000, surface: 90, projectFactor: 1.1, otherFactor: 0.9, weight: 40 }
+    ]
+  });
+  const [a, b] = result.homologationTable;
+  assert.equal(a.unitValue, 20000);
+  assert.equal(a.factorProduct, 0.9971, 'FRe = 1.05 × 0.98 × 1.02 × 0.95');
+  assert.equal(a.unitValuePerM2, 19942.02);
+  assert.equal(a.weight, 60);
+  assert.equal(a.component, 11965.21);
+  assert.equal(b.factorProduct, 0.99);
+  assert.equal(b.component, 7920);
+  assert.equal(result.summary.averageUnitValuePerM2, 19885.21, 'valor unitario ajustado y ponderado');
+  assert.equal(result.summary.valorMercado, 2982781.8);
+  assert.equal(result.summary.weightingMode, 'captured');
+  assert.deepEqual(result.constructionFactors.map(factor => factor.code), ['FZo', 'FUb', 'FSu', 'FEd', 'FCo', 'FPr', 'FCn', 'FAc', 'FOt', 'FNeg']);
+});
+
+test('ponderación: igual sin captura, ajustada a 100 % si no suma y 0 para las vacías', () => {
+  const comparables = weights => [
+    { id: 1, address: 'A', salePrice: 1000000, surface: 100, weight: weights[0] },
+    { id: 2, address: 'B', salePrice: 1200000, surface: 100, weight: weights[1] },
+    { id: 3, address: 'Sin precio', salePrice: 0, surface: 100, weight: weights[2] }
+  ];
+  const equal = calculateHomologation({ subject: { constructionSurface: 100 }, comparableSales: comparables([null, null, null]) });
+  assert.equal(equal.summary.weightingMode, 'equal');
+  assert.equal(equal.summary.averageUnitValuePerM2, 11000);
+  assert.equal(equal.homologationTable[2].weight, null, 'el comparable sin precio no pondera');
+
+  const normalized = calculateHomologation({ subject: { constructionSurface: 100 }, comparableSales: comparables([30, 30, 40]) });
+  assert.equal(normalized.summary.weightingMode, 'normalized');
+  assert.equal(normalized.summary.weightsCapturedTotal, 60);
+  assert.deepEqual(normalized.homologationTable.slice(0, 2).map(row => row.weight), [50, 50]);
+  assert.match(normalized.summary.marketValuationStatus, /sumaban 60 %/);
+
+  const partial = calculateHomologation({ subject: { constructionSurface: 100 }, comparableSales: comparables([100, '', null]) });
+  assert.deepEqual(partial.homologationTable.slice(0, 2).map(row => row.weight), [100, 0]);
+  assert.equal(partial.summary.averageUnitValuePerM2, 10000);
+});
+
+test('los factores de construcción y acabados de avalúos anteriores se siguen aplicando', () => {
+  const result = calculateHomologation({
+    subject: { constructionSurface: 100 },
+    comparableSales: [{ id: 1, address: 'A', salePrice: 1000000, surface: 100, terrainFactor: 1.1, shapeFactor: 0.9 }]
+  });
+  assert.equal(result.homologationTable[0].factors.construction, 1.1);
+  assert.equal(result.homologationTable[0].factors.finish, 0.9);
+  assert.equal(result.summary.averageUnitValuePerM2, 9900);
+});

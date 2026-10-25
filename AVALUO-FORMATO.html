@@ -678,6 +678,84 @@
         margin-top: 8px;
       }
 
+      .construction-factors {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #dfeaf3;
+        border-radius: 10px;
+        background: #f7fbff;
+      }
+
+      .construction-factors-title {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #174f7d;
+      }
+
+      .construction-factor-grid label {
+        font-size: 0.72rem;
+      }
+
+      .construction-factor-grid abbr {
+        text-decoration: none;
+        font-weight: 800;
+        color: #0f4c81;
+      }
+
+      .construction-weight {
+        display: block;
+        margin-top: 8px;
+      }
+
+      .construction-factor-result {
+        margin: 8px 0 0;
+        font-size: 0.72rem;
+        color: #34516d;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .construction-factor-result:empty {
+        display: none;
+      }
+
+      .homologation-legend {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 2px 16px;
+        margin: 8px 0 0;
+        font-size: 0.72rem;
+        color: #33506b;
+      }
+
+      .homologation-summary {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px 16px;
+        margin: 8px 0;
+        font-size: 0.8rem;
+        color: #18293a;
+      }
+
+      .homologation-summary strong {
+        color: #0d355c;
+      }
+
+      .homologation-table th,
+      .homologation-table td {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .homologation-table th:first-child,
+      .homologation-table td:first-child {
+        text-align: center;
+      }
+
       .comparable-factors label + label {
         margin-top: 0;
       }
@@ -1787,6 +1865,17 @@
           min-height: 120px;
         }
 
+        .report .homologation-table th,
+        .report .homologation-table td {
+          white-space: normal;
+          padding: 3px;
+          font-size: 6.6pt;
+        }
+
+        .report .homologation-table td {
+          white-space: nowrap;
+        }
+
         .map-attribution {
           font-size: 7pt;
           color: #4b6680;
@@ -2894,11 +2983,6 @@
                 <h3>Comparable 1</h3>
                 <label>Dirección <input data-comparable="0" data-field="address" placeholder="Calle, número y colonia" /></label>
                 <label>Precio venta ($) <input data-comparable="0" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="0" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="0" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="0" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="0" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="0" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
                 <label>Superficie construida (m²) <input data-comparable="0" data-field="surface" type="number" min="0" step="0.01" /></label>
               </div>
 
@@ -2906,11 +2990,6 @@
                 <h3>Comparable 2</h3>
                 <label>Dirección <input data-comparable="1" data-field="address" placeholder="Calle, número y colonia" /></label>
                 <label>Precio venta ($) <input data-comparable="1" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="1" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="1" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="1" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="1" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="1" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
                 <label>Superficie construida (m²) <input data-comparable="1" data-field="surface" type="number" min="0" step="0.01" /></label>
               </div>
 
@@ -2918,11 +2997,6 @@
                 <h3>Comparable 3</h3>
                 <label>Dirección <input data-comparable="2" data-field="address" placeholder="Calle, número y colonia" /></label>
                 <label>Precio venta ($) <input data-comparable="2" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="2" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="2" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="2" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="2" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="2" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
                 <label>Superficie construida (m²) <input data-comparable="2" data-field="surface" type="number" min="0" step="0.01" /></label>
               </div>
 
@@ -2930,11 +3004,6 @@
                 <h3>Comparable 4</h3>
                 <label>Dirección <input data-comparable="3" data-field="address" placeholder="Calle, número y colonia" /></label>
                 <label>Precio venta ($) <input data-comparable="3" data-field="salePrice" type="number" min="0" step="0.01" /></label>
-                <label>Factor zona <input data-comparable="3" data-field="zoneFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor ubicación <input data-comparable="3" data-field="locationFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor construcción <input data-comparable="3" data-field="terrainFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor edad <input data-comparable="3" data-field="ageFactor" type="number" step="0.01" value="1" /></label>
-                <label>Factor acabado <input data-comparable="3" data-field="shapeFactor" type="number" step="0.01" value="1" /></label>
                 <label>Superficie construida (m²) <input data-comparable="3" data-field="surface" type="number" min="0" step="0.01" /></label>
               </div>
             </div>
@@ -2942,6 +3011,7 @@
               <div class="row">
                 <label>Ajuste de mercado <input name="marketAdjustment" type="number" step="0.01" value="1" /></label>
               </div>
+              <p id="constructionComparablesResult" class="technical-note" role="status">Capture precio y superficie de al menos un comparable para obtener el valor unitario ajustado y ponderado.</p>
             </div>
 
             <div class="section-title capture-target" id="capture-physical" tabindex="-1">VIII.- ENFOQUE FÍSICO O DIRECTO</div>
@@ -3228,9 +3298,9 @@
             <p id="reportMarketStatus" class="technical-note">Pendiente: capturar y verificar comparables locales.</p>
             <div class="formula-box">
               <strong>Condicionantes del enfoque comparativo</strong>
-              <p>Fv = Pv × Fz × Fl × Ft × Fe × Ff</p>
-              <p>Donde: Fz = zona, Fl = ubicación, Ft = construcción, Fe = edad, Ff = acabado.</p>
-              <p>Se ajusta el valor de venta de cada comparable para estimar el valor equivalente del inmueble sujeto.</p>
+              <p>FRe = FZo × FUb × FSu × FEd × FCo × FPr × FCn × FAc × FOt × FNeg</p>
+              <p>Valor ajustado = (valor de oferta o venta / superficie construida) × FRe; componente del valor = valor ajustado × ponderación.</p>
+              <p>Valor unitario ajustado y ponderado = suma de componentes; valor de mercado = valor unitario ajustado y ponderado × superficie del sujeto.</p>
             </div>
           </div>
 
@@ -3280,9 +3350,10 @@
 
           <div class="formula-box">
             <strong>Procedimiento de cálculo</strong>
-            <p>Vh = Pv × Fz × Fl × Ft × Fe × Ff</p>
-            <p>Vu = Vh / S</p>
-            <p>Vf = Vu × Sobjeto</p>
+            <p>VU = Pv / S</p>
+            <p>VA = VU × FRe</p>
+            <p>VUP = Σ (VA × Pond)</p>
+            <p>Vm = VUP × Ssujeto × ajuste de mercado</p>
             <p id="formulaDetail">Se calculará a partir de los datos capturados.</p>
           </div>
 
@@ -4493,32 +4564,56 @@
         });
       });
 
-      function getComparableRows() {
-        const rows = [];
-        for (let i = 0; i < 4; i += 1) {
-          const item = {};
-          document.querySelectorAll('[data-comparable="' + i + '"]').forEach((field) => {
-            const key = field.dataset.field;
-            const value = field.value;
-            item[key] = ['salePrice', 'surface'].includes(key) ? Number(value) : value;
-            if (['zoneFactor', 'locationFactor', 'terrainFactor', 'ageFactor', 'shapeFactor'].includes(key)) {
-              item[key] = Number(value);
-            }
-          });
+      // Factores del cuadro "Análisis por homologación y ajustes" (la misma lista que usa el servidor en
+      // backend/valuation/market-comparables.js). Construcción y Acabados conservan los campos terrainFactor y shapeFactor.
+      const CONSTRUCTION_FACTORS = [
+        ['zoneFactor', 'FZo', 'Zona'], ['locationFactor', 'FUb', 'Ubicación'], ['surfaceFactor', 'FSu', 'Superficie'],
+        ['ageFactor', 'FEd', 'Edad'], ['conservationFactor', 'FCo', 'Conservación'], ['projectFactor', 'FPr', 'Proyecto'],
+        ['terrainFactor', 'FCn', 'Construcción'], ['shapeFactor', 'FAc', 'Acabados'], ['otherFactor', 'FOt', 'Otro'],
+        ['negotiationFactor', 'FNeg', 'Negociación']
+      ];
 
-          rows.push({
+      function getComparableRows() {
+        return Array.from({ length: 4 }, (_, i) => {
+          const value = field => document.querySelector(`[data-comparable="${i}"][data-field="${field}"]`)?.value ?? '';
+          const row = {
             id: i + 1,
-            address: item.address || 'Comparable ' + (i + 1),
-            salePrice: Number(item.salePrice) || 0,
-            zoneFactor: Number(item.zoneFactor) || 1,
-            locationFactor: Number(item.locationFactor) || 1,
-            terrainFactor: Number(item.terrainFactor) || 1,
-            ageFactor: Number(item.ageFactor) || 1,
-            shapeFactor: Number(item.shapeFactor) || 1,
-            surface: Number(item.surface) || 0
-          });
-        }
-        return rows;
+            address: value('address').trim() || `Comparable ${i + 1}`,
+            salePrice: Number(value('salePrice')) || 0,
+            surface: Number(value('surface')) || 0,
+            weight: value('weight').trim() === '' ? null : Number(value('weight'))
+          };
+          CONSTRUCTION_FACTORS.forEach(([field]) => { row[field] = Number(value(field)) || 1; });
+          return row;
+        });
+      }
+
+      function createConstructionFactorFields(index) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'construction-factors';
+        const title = Object.assign(document.createElement('p'), { className: 'construction-factors-title', textContent: 'Factores de homologación' });
+        const grid = document.createElement('div');
+        grid.className = 'comparable-factors construction-factor-grid';
+        CONSTRUCTION_FACTORS.forEach(([field, code, label]) => {
+          const control = Object.assign(document.createElement('input'), { type: 'number', min: '0', step: '0.01', value: '1', title: `Factor de ${label}` });
+          control.dataset.comparable = String(index);
+          control.dataset.field = field;
+          const fieldLabel = document.createElement('label');
+          const caption = document.createElement('span');
+          caption.append(Object.assign(document.createElement('abbr'), { textContent: code, title: `Factor de ${label}` }), ` · ${label}`);
+          fieldLabel.append(caption, control);
+          grid.appendChild(fieldLabel);
+        });
+        const weight = Object.assign(document.createElement('input'), { type: 'number', min: '0', max: '100', step: '0.01', placeholder: 'Igual para todos' });
+        weight.dataset.comparable = String(index);
+        weight.dataset.field = 'weight';
+        const weightLabel = document.createElement('label');
+        weightLabel.className = 'construction-weight';
+        weightLabel.append('Ponderación (%) ', weight);
+        const result = Object.assign(document.createElement('p'), { className: 'construction-factor-result' });
+        result.dataset.constructionResult = String(index);
+        wrapper.append(title, grid, weightLabel, result);
+        return wrapper;
       }
 
       const MARKET_COMPARABLE_CONFIG = {
@@ -4656,6 +4751,7 @@
           terrainInput.dataset.field = 'superficieTerreno';
           terrain.append('Superficie de terreno (m²) · referencia, no se usa en el cálculo ', terrainInput);
           card.querySelector('[data-field="surface"]').closest('label').after(terrain);
+          terrain.after(createConstructionFactorFields(index));
           card.append(createBankDetails('construction', index), createComparablePhotoField('construction', index), createComparableEvidenceField('construction', index));
         });
       }
@@ -4863,7 +4959,7 @@
 
       function comparableFactorFields(group) {
         return group === 'construction'
-          ? ['zoneFactor', 'locationFactor', 'terrainFactor', 'ageFactor', 'shapeFactor']
+          ? CONSTRUCTION_FACTORS.map(([field]) => field)
           : MARKET_COMPARABLE_CONFIG[group].factors.map(([key]) => `factor:${key}`);
       }
 
@@ -4989,7 +5085,7 @@
       }
 
       function clearComparable(group, index) {
-        ['address', comparablePriceField(group), 'surface', 'superficieTerreno', 'bancoId', 'tipoDato', 'fechaDato', ...BANK_FIELDS[group].map(([field]) => field)]
+        ['address', comparablePriceField(group), 'surface', 'superficieTerreno', 'weight', 'bancoId', 'tipoDato', 'fechaDato', ...BANK_FIELDS[group].map(([field]) => field)]
           .forEach(field => setComparableControl(comparableControl(group, index, field), ''));
         renderDataDateLabel(group, index);
         comparableFactorFields(group).forEach(field => setComparableControl(comparableControl(group, index, field), '1'));
@@ -5354,6 +5450,76 @@
         return state ? state.label : code;
       }
 
+      // Comparables de construcción: datos de cada comparable y cuadro "Análisis por homologación y ajustes"
+      // (valor unitario, factores, FRe, valor ajustado, ponderación y componente), con el resultado en cada tarjeta.
+      function renderConstructionHomologation(data, payload) {
+        const factorDefinitions = data.constructionFactors || [];
+        const rows = (data.homologationTable || []).filter(item => item.valid);
+        const factor = value => Number(value ?? 1).toFixed(2);
+        const area = value => (Number(value) > 0 ? `${Number(value).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²` : '—');
+        const percent = value => `${Number(value).toLocaleString('es-MX', { maximumFractionDigits: 2 })}%`;
+        const subjectSurface = Number(payload.subject?.constructionSurface) || 0;
+        const weighted = data.summary.averageUnitValuePerM2;
+
+        (data.homologationTable || []).forEach(item => {
+          const result = form.querySelector(`[data-construction-result="${item.id - 1}"]`);
+          if (result) {
+            result.textContent = item.valid
+              ? `Valor unitario ${money(item.unitValue)}/m² × FRe ${Number(item.factorProduct).toFixed(4)} = ${money(item.unitValuePerM2)}/m² · ponderación ${percent(item.weight)} → componente ${money(item.component)}`
+              : '';
+          }
+        });
+        const captureResult = document.getElementById('constructionComparablesResult');
+        if (captureResult) {
+          captureResult.textContent = rows.length
+            ? `Valor unitario ajustado y ponderado: ${money(weighted)}/m² con ${rows.length} comparable(s).${{ equal: ' Ponderación igual para cada uno.', captured: ' Ponderación capturada (suma 100 %).', normalized: ` Las ponderaciones sumaban ${data.summary.weightsCapturedTotal} %; se ajustaron a 100 %.` }[data.summary.weightingMode] || ''}`
+            : 'Capture precio y superficie de al menos un comparable para obtener el valor unitario ajustado y ponderado.';
+        }
+
+        if (!rows.length) {
+          reportTable.innerHTML = '<p>Sin comparables completos; capture precio y superficie construida verificables.</p>';
+          return;
+        }
+        const dataRows = rows.map(item => {
+          const index = item.id - 1;
+          const type = comparableControl('construction', index, 'tipoDato')?.value || '—';
+          const date = formatValuationDate(comparableControl('construction', index, 'fechaDato')?.value) || '—';
+          return `<tr><td>${item.id}</td><td>${escapeHtml(item.address)}</td><td>${escapeHtml(type)} · ${date}</td><td>${area(item.surface)}</td><td>${comparableTerrainText(index)}</td><td>${comparableDistanceText(index)}</td></tr>`;
+        }).join('');
+        const analysisRows = rows.map(item => `<tr>
+            <td>${item.id}</td><td>${money(item.salePrice)}</td><td>${money(item.unitValue)}</td>
+            ${factorDefinitions.map(({ key }) => `<td>${factor(item.factors?.[key])}</td>`).join('')}
+            <td>${Number(item.factorProduct).toFixed(4)}</td><td>${money(item.unitValuePerM2)}</td><td>${percent(item.weight)}</td><td>${money(item.component)}</td>
+          </tr>`).join('');
+        const totalWeight = rows.reduce((sum, item) => sum + Number(item.weight || 0), 0);
+
+        reportTable.innerHTML = `
+          <h5>Comparables de construcción</h5>
+          <table>
+            <thead><tr><th>Ref.</th><th>Dirección</th><th>Tipo y fecha del dato</th><th>Sup. construida</th><th>Terreno*</th><th>Distancia</th></tr></thead>
+            <tbody>${dataRows}</tbody>
+          </table>
+          <p class="technical-note">* Superficie de terreno del comparable, solo de referencia: no interviene en la homologación.</p>
+          <h5>Análisis por homologación y ajustes</h5>
+          <div class="table-scroll"><table class="homologation-table">
+            <thead>
+              <tr><th>Ref.</th><th>Valor oferta o venta</th><th>Valor unitario ($/m²)</th>${factorDefinitions.map(({ code, label }) => `<th title="${escapeHtml(label)}">${code}</th>`).join('')}<th>FRe</th><th>Valor ajustado ($/m²)</th><th>Pond.</th><th>Componente del valor</th></tr>
+            </thead>
+            <tbody>${analysisRows}
+              <tr><td colspan="${factorDefinitions.length + 5}">Total</td><td>${percent(totalWeight)}</td><td>${money(weighted)}</td></tr>
+            </tbody>
+          </table></div>
+          <div class="homologation-summary">
+            <span><strong>Superficie del sujeto:</strong> ${subjectSurface > 0 ? area(subjectSurface) : 'pendiente'}</span>
+            <span><strong>Valor unitario ajustado y ponderado:</strong> ${money(weighted)}/m²</span>
+          </div>
+          <div class="homologation-legend">
+            ${factorDefinitions.map(({ code, label }) => `<span>${code} = ${escapeHtml(label)}</span>`).join('')}
+            <span>FRe = Factor Resultante</span>
+          </div>
+        `;
+      }
+
       function comparableTerrainText(index) {
         const value = Number(document.querySelector(`[data-comparable="${index}"][data-field="superficieTerreno"]`)?.value);
         return value > 0 ? `${value.toLocaleString('es-MX', { maximumFractionDigits: 2 })} m²` : '—';
@@ -5400,7 +5566,7 @@
         const rows = [
           ['Superficie de terreno capturada', area(surfaces.terrainSurface), '—', '—', 'Dato manual de terreno'],
           ['Terreno para cálculo físico', area(surfaces.landSurfaceUsed), unitValue(subject.unitLandValue), amount(data.summary.valorTerreno), `${surfaces.landSurfaceSource} × valor unitario de terreno capturado`],
-          ['Construcción para enfoque de mercado', area(surfaces.declaredConstructionSurface), unitValue(data.summary.averageUnitValuePerM2), amount(data.summary.valorMercado), 'Área capturada × promedio unitario de comparables válidos'],
+          ['Construcción para enfoque de mercado', area(surfaces.declaredConstructionSurface), unitValue(data.summary.averageUnitValuePerM2), amount(data.summary.valorMercado), 'Área capturada × valor unitario ajustado y ponderado de los comparables'],
           ['Conciliación del área de construcción', area(surfaces.constructionBreakdownSurface), '—', differenceText, `Captura general: ${area(surfaces.declaredConstructionSurface)}; fuente: ${surfaces.constructionSurfaceSource}`],
           ['Construcción para enfoque físico', area(surfaces.constructionBreakdownSurface), surfaces.replacementUnitValueApplied ? unitValue(surfaces.replacementUnitValue) : 'V.U. por partida', amount(data.summary.valorConstruccion), 'Suma de partidas con costo unitario y factor de depreciación capturados'],
           ['Accesorios y elementos', '—', '—', amount(data.summary.valorAccesorios), 'Solo elementos con cantidad, valor unitario y depreciación capturados'],
@@ -5696,45 +5862,13 @@
         document.getElementById('valorFinal').textContent = showCalculatedAmount(data.summary.finalValue);
 
         formulaDetail.textContent = [
-          'Promedio de valor unitario: ' + showCalculatedAmount(data.summary.averageUnitValuePerM2) + '/m²',
+          'Valor unitario ajustado y ponderado: ' + showCalculatedAmount(data.summary.averageUnitValuePerM2) + '/m²',
           'Valor final estimado: ' + showCalculatedAmount(data.summary.finalValue),
           'Valor físico: ' + showCalculatedAmount(data.summary.valorFisico),
           'Valor de mercado: ' + showCalculatedAmount(data.summary.valorMercado)
         ].join(' | ');
 
-        const rows = (data.homologationTable || data.comparables || []).filter(item => Number(item.salePrice) > 0 && Number(item.unitValuePerM2) > 0).map(item => {
-          const source = payload.comparableSales.find(comparable => comparable.id === item.id) || {};
-          const factors = [source.zoneFactor, source.locationFactor, source.terrainFactor, source.ageFactor, source.shapeFactor].map(factor => Number(factor ?? 1).toFixed(2)).join(' × ');
-          return `
-          <tr>
-            <td>${escapeHtml(item.address)}</td>
-            <td>${money(item.salePrice)}</td>
-            <td>${factors}</td>
-            <td>${money(item.adjustedValue)}</td>
-            <td>${money(item.unitValuePerM2)}</td>
-            <td>${comparableTerrainText(item.id - 1)}</td>
-            <td>${comparableDistanceText(item.id - 1)}</td>
-          </tr>
-        `;
-        }).join('');
-
-        reportTable.innerHTML = `
-          <table>
-            <thead>
-              <tr>
-                <th>Comparable</th>
-                <th>Venta</th>
-                <th>Factores aplicados</th>
-                <th>Valor ajustado</th>
-                <th>$/m²</th>
-                <th>Terreno (m²)*</th>
-                <th>Distancia</th>
-              </tr>
-            </thead>
-            <tbody>${rows || '<tr><td colspan="7">Sin comparables completos; capture precio y superficie construida verificables.</td></tr>'}</tbody>
-          </table>
-          <p class="technical-note">* Superficie de terreno del comparable, solo de referencia: no interviene en la homologación.</p>
-        `;
+        renderConstructionHomologation(data, payload);
         renderSubjectCalculationTable(data, payload);
         renderIncomeApproach(data.incomeApproach, captured);
         renderMarketComparablesReport('land', data.landComparables);
