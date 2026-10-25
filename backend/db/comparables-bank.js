@@ -56,6 +56,8 @@ function extractFromAvaluo(avaluoId, datos) {
   const records = [];
   Object.entries(cards).forEach(([group, byIndex]) => {
     Object.entries(byIndex).forEach(([index, card]) => {
+      // Tarjeta traída del banco: ese comparable ya está en el banco y no se vuelve a agregar.
+      if (Number.isInteger(Number(card.bancoId)) && Number(card.bancoId) > 0) return;
       const price = positive(group === 'construction' ? card.salePrice : card.price);
       const surface = positive(card.surface);
       if (!price || !surface) return;

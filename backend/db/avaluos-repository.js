@@ -27,6 +27,7 @@ const VALUER_PROFILE_FIELDS = [
 const DATA_URL = /^data:([a-z0-9.+-]+\/[a-z0-9.+-]+);base64,([a-z0-9+/=\s]*)$/i;
 const FILE_URL = /^\/api\/archivos\/(\d+)$/;
 const UPLOAD_URL = /^\/api\/cargas\/(\d+)$/;
+const BANK_FILE_URL = /^\/api\/banco-archivos\/(\d+)$/;
 
 function httpError(statusCode, message) {
   const error = new Error(message);
@@ -73,12 +74,14 @@ function createAvaluosRepository({ databasePath, filesDir }) {
   }
 
   // Sustituye cada archivo de la captura por un archivo en disco del avalúo: data URL (imágenes pequeñas),
-  // subidas directas (/api/cargas) y archivos de otro avalúo. Conserva las referencias ya guardadas.
+  // subidas directas (/api/cargas), archivos de otro avalúo y fotos o evidencias traídas del banco de comparables.
+  // Conserva las referencias ya guardadas.
   function storeImages(avaluoId, datos, writtenFiles, movedFiles) {
     const referenced = new Set();
     const insertFile = db.prepare('INSERT INTO archivos (avaluo_id, tipo_mime, ruta, bytes) VALUES (?, ?, ?, ?)');
     const findFile = db.prepare('SELECT id, avaluo_id, tipo_mime, ruta, bytes FROM archivos WHERE id = ?');
     const findUpload = db.prepare('SELECT id, tipo_mime, ruta, bytes FROM cargas WHERE id = ?');
+    const findBankFile = db.prepare('SELECT tipo_mime, ruta, bytes FROM banco_archivos WHERE id = ?');
     const deleteUpload = db.prepare('DELETE FROM cargas WHERE id = ?');
 
     const newFilePath = mimeType => {
@@ -143,6 +146,14 @@ function createAvaluosRepository({ databasePath, filesDir }) {
           return value;
         }
         // Archivo de otro avalúo: se copia para que ambos sean independientes.
+        return copyFile(file.tipo_mime, path.join(filesDir, file.ruta), file.bytes);
+      }
+
+      const bankFileUrl = value.match(BANK_FILE_URL);
+      if (bankFileUrl) {
+        // Foto o evidencia de un comparable del banco: el avalúo guarda su propia copia, que no depende del banco.
+        const file = findBankFile.get(Number(bankFileUrl[1]));
+        if (!file || !FILE_EXTENSIONS[file.tipo_mime]) return '';
         return copyFile(file.tipo_mime, path.join(filesDir, file.ruta), file.bytes);
       }
       return value;

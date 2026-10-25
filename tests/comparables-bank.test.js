@@ -106,6 +106,42 @@ test('lo editado o quitado en el banco se respeta en los siguientes guardados', 
   assert.equal(bank.list({ categoria: 'renta' }).length, 0, 'el quitado no regresa');
 });
 
+test('un comparable traído del banco no se duplica y el avalúo guarda copia propia de sus archivos', t => {
+  const context = createTempRepository(t);
+  const { bank } = context.repository;
+  const target = context.repository.createUploadTarget('image/png');
+  fs.writeFileSync(target.absolutePath, 'png');
+  const upload = { name: 'anuncio.png', type: 'image/png', size: 3, url: context.repository.registerUpload('image/png', target.relativePath, 3) };
+  const stored = bank.create({ categoria: 'construccion', precio: 3000000, superficie: 150, direccion: 'Calle 9 Sur 300', evidencias: [upload] });
+  const bankUrl = stored.evidencias[0].url;
+
+  const saved = context.repository.save(null, {
+    datos: {
+      fields: { tipoInmueble: 'Casa habitación' },
+      constructionComparables: [
+        { index: '0', field: 'address', value: 'Calle 9 Sur 300' },
+        { index: '0', field: 'salePrice', value: '3000000' },
+        { index: '0', field: 'surface', value: '150' },
+        { index: '0', field: 'bancoId', value: String(stored.id) }
+      ],
+      comparablePhotos: { construction: [[{ name: 'Foto del banco', preview: bankUrl }]] },
+      comparableEvidence: { construction: [[{ ...stored.evidencias[0] }]] }
+    }
+  });
+  assert.equal(bank.list().length, 1, 'el comparable del banco no se agrega otra vez');
+
+  const datos = context.repository.get(saved.id).datos;
+  const photoUrl = datos.comparablePhotos.construction[0][0].preview;
+  const evidenceUrl = datos.comparableEvidence.construction[0][0].url;
+  assert.match(photoUrl, /^\/api\/archivos\/\d+$/);
+  assert.match(evidenceUrl, /^\/api\/archivos\/\d+$/);
+
+  bank.remove(stored.id);
+  assert.ok(fs.existsSync(context.repository.getFile(evidenceUrl.split('/').pop()).path), 'la copia del avalúo no depende del banco');
+  context.repository.save(saved.id, { datos });
+  assert.equal(context.repository.get(saved.id).datos.comparablePhotos.construction[0][0].preview, photoUrl, 'guardar de nuevo no vuelve a copiar');
+});
+
 test('al eliminar el avalúo sus comparables se conservan con copia de fotos y evidencias', t => {
   const context = createTempRepository(t);
   const datos = avaluoWithComparables();

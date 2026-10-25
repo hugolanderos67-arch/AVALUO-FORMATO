@@ -407,6 +407,90 @@
         white-space: nowrap;
       }
 
+      /* Selección de comparables desde el banco */
+      .bank-picker-dialog {
+        width: min(1180px, calc(100vw - 32px));
+      }
+
+      .bank-picker-filters {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .bank-picker-filters label {
+        display: grid;
+        gap: 3px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #34516d;
+      }
+
+      .bank-picker-dialog tr.is-used td {
+        color: #7a8ea3;
+      }
+
+      .bank-picker-dialog tr.is-selected td {
+        background: #eaf4ff;
+      }
+
+      .bank-picker-dialog .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .bank-picker-footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .bank-pick-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 6px 0 10px;
+      }
+
+      .bank-pick-row .technical-note:empty {
+        display: none;
+      }
+
+      .bank-origin {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .bank-origin .secondary-button {
+        padding: 5px 9px;
+        font-size: 0.7rem;
+      }
+
+      .bank-origin-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #1f6a3f;
+        background: #e6f4ec;
+        border: 1px solid #bfe0cc;
+        border-radius: 999px;
+        padding: 3px 9px;
+      }
+
+      @media (max-width: 760px) {
+        .bank-picker-filters {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
       .capture-target {
         display: flex;
         justify-content: space-between;
@@ -1728,6 +1812,36 @@
               </table>
             </div>
           </dialog>
+          <dialog id="bankPickerDialog" class="valuations-dialog bank-picker-dialog" aria-labelledby="bankPickerTitle">
+            <div class="valuations-dialog-header">
+              <h2 id="bankPickerTitle">Banco de comparables</h2>
+              <button type="button" class="secondary-button" id="closeBankPicker">Cerrar</button>
+            </div>
+            <div class="bank-picker-filters">
+              <label>Tipo de inmueble <select id="bankPickerType"></select></label>
+              <label>Municipio <select id="bankPickerMunicipality"></select></label>
+              <label>Antigüedad del dato
+                <select id="bankPickerAge">
+                  <option value="6">Últimos 6 meses</option>
+                  <option value="12" selected>Últimos 12 meses</option>
+                  <option value="24">Últimos 24 meses</option>
+                  <option value="">Todos</option>
+                </select>
+              </label>
+              <label>Buscar <input id="bankPickerSearch" type="search" placeholder="Dirección, colonia, fuente o notas" /></label>
+            </div>
+            <p id="bankPickerMessage" class="technical-note" role="status"></p>
+            <div class="table-scroll">
+              <table class="capture-table">
+                <thead><tr><th></th><th>Fecha</th><th>Dirección y zona</th><th>Tipo · dato</th><th class="num">Precio</th><th class="num">Superficie</th><th class="num">Valor unitario</th><th class="num">Distancia</th><th>Respaldo</th></tr></thead>
+                <tbody id="bankPickerList"></tbody>
+              </table>
+            </div>
+            <div class="bank-picker-footer">
+              <a href="/comparables" target="_blank" rel="noopener">Abrir el banco completo en otra pestaña</a>
+              <button type="button" id="bankPickerApply" disabled>Agregar a la homologación</button>
+            </div>
+          </dialog>
           <form id="valuationForm">
             <div class="section-title capture-index-title" id="capture-index" tabindex="-1">Índice del formato</div>
             <div class="formal-tabs" aria-label="Navegación de captura">
@@ -2729,7 +2843,11 @@
 
             <div class="section-title capture-target" id="capture-comparables" tabindex="-1">VII.- ENFOQUE COMPARATIVO DE MERCADO</div>
             <h3 class="capture-subtitle">Comparables de construcción</h3>
-            <p class="technical-note">Al guardar el avalúo, los comparables con precio y superficie (de construcción, terreno y renta) se agregan al banco de comparables. Complete "Datos para el banco de comparables" en cada uno para poder localizarlos y depurarlos en avalúos futuros.</p>
+            <p class="technical-note">Al guardar el avalúo, los comparables con precio y superficie (de construcción, terreno y renta) se agregan al banco de comparables. Complete "Datos para el banco de comparables" en cada uno para poder localizarlos y depurarlos en avalúos futuros. Los que se traen del banco no se duplican.</p>
+            <div class="bank-pick-row">
+              <button type="button" class="secondary-button" data-bank-pick="construction">🏘️ Elegir comparables del banco</button>
+              <p class="technical-note" data-bank-pick-status="construction" role="status"></p>
+            </div>
             <div class="comparable-grid" id="constructionComparables">
               <div class="comparable-card">
                 <h3>Comparable 1</h3>
@@ -2789,6 +2907,10 @@
             <div class="section-title" id="capture-land-comparables">Comparables de terreno</div>
             <div class="fieldset">
               <p class="technical-note">Valor unitario homologado = (precio / superficie) × factores. Deje en 1 los factores que no apliquen.</p>
+              <div class="bank-pick-row">
+                <button type="button" class="secondary-button" data-bank-pick="land">🏘️ Elegir comparables del banco</button>
+                <p class="technical-note" data-bank-pick-status="land" role="status"></p>
+              </div>
               <div class="comparable-grid" data-market-comparables="land"></div>
               <div class="market-comparable-result">
                 <p id="landComparablesResult" class="technical-note">Capture precio y superficie de al menos un comparable para obtener el valor unitario homologado.</p>
@@ -2831,6 +2953,10 @@
             <div class="fieldset">
               <h3>Comparables de renta</h3>
               <p class="technical-note">Renta unitaria homologada = (renta mensual / superficie rentable) × factores. Deje en 1 los factores que no apliquen.</p>
+              <div class="bank-pick-row">
+                <button type="button" class="secondary-button" data-bank-pick="rent">🏘️ Elegir comparables del banco</button>
+                <p class="technical-note" data-bank-pick-status="rent" role="status"></p>
+              </div>
               <div class="comparable-grid" data-market-comparables="rent"></div>
               <div class="market-comparable-result">
                 <p id="rentComparablesResult" class="technical-note">Capture renta y superficie de al menos un comparable para obtener la renta unitaria homologada.</p>
@@ -4465,6 +4591,7 @@
             });
             card.append(
               title,
+              createBankOrigin(group, index),
               createField('Dirección', 'address', { placeholder: 'Calle, número y colonia' }),
               createField(config.priceLabel, 'price', { type: 'number', min: '0', step: '0.01' }),
               createField(config.surfaceLabel, 'surface', { type: 'number', min: '0', step: '0.01' }),
@@ -4477,6 +4604,7 @@
           }
         });
         document.querySelectorAll('#constructionComparables .comparable-card').forEach((card, index) => {
+          card.querySelector('h3').after(createBankOrigin('construction', index));
           card.append(createBankDetails('construction', index), createComparablePhotoField('construction', index), createComparableEvidenceField('construction', index));
         });
       }
@@ -4615,6 +4743,344 @@
         return details;
       }
 
+      // --- Comparables traídos del banco a las tarjetas de homologación (mercado, físico e ingresos) ---
+      // La tarjeta guarda el número del comparable en el banco (campo oculto "bancoId"), para que al guardar
+      // el avalúo no se agregue de nuevo al banco. Precio, superficie, datos, fotos y evidencias se copian a la
+      // tarjeta; los factores de homologación quedan en 1 para que el valuador los ajuste.
+      const BANK_CATEGORY = { construction: 'construccion', land: 'terreno', rent: 'renta' };
+      const BANK_GROUP_NAME = { construction: 'construcción', land: 'terreno', rent: 'renta' };
+      const bankPickerDialog = document.getElementById('bankPickerDialog');
+      const bankPickerElements = {
+        title: document.getElementById('bankPickerTitle'),
+        type: document.getElementById('bankPickerType'),
+        municipality: document.getElementById('bankPickerMunicipality'),
+        age: document.getElementById('bankPickerAge'),
+        search: document.getElementById('bankPickerSearch'),
+        message: document.getElementById('bankPickerMessage'),
+        list: document.getElementById('bankPickerList'),
+        apply: document.getElementById('bankPickerApply')
+      };
+      const bankPicker = { group: null, target: null, records: [], selected: [] };
+
+      const comparablePriceField = group => (group === 'construction' ? 'salePrice' : 'price');
+      const comparableCount = group => (group === 'construction' ? 4 : MARKET_COMPARABLE_CONFIG[group].count);
+
+      function comparableControl(group, index, field) {
+        return group === 'construction'
+          ? form.querySelector(`[data-comparable="${index}"][data-field="${field}"]`)
+          : marketComparableField(group, index, field);
+      }
+
+      function comparableFactorFields(group) {
+        return group === 'construction'
+          ? ['zoneFactor', 'locationFactor', 'terrainFactor', 'ageFactor', 'shapeFactor']
+          : MARKET_COMPARABLE_CONFIG[group].factors.map(([key]) => `factor:${key}`);
+      }
+
+      // Un valor del banco (por ejemplo un tipo de dato importado de Excel) puede no estar en la lista: se agrega.
+      function setComparableControl(element, value) {
+        if (!element) return;
+        const text = value === null || value === undefined ? '' : String(value);
+        if (element instanceof HTMLSelectElement && text && !Array.from(element.options).some(option => option.value === text)) {
+          element.add(new Option(text, text));
+        }
+        element.value = text;
+      }
+
+      function isComparableEmpty(group, index) {
+        const value = field => comparableControl(group, index, field)?.value.trim() || '';
+        return !Number(value(comparablePriceField(group))) && !Number(value('surface')) && !value('address');
+      }
+
+      function createBankOrigin(group, index) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bank-origin';
+        wrapper.dataset.bankOrigin = `${group}:${index}`;
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        if (group === 'construction') hidden.dataset.comparable = String(index);
+        else {
+          hidden.dataset.marketGroup = group;
+          hidden.dataset.index = String(index);
+        }
+        hidden.dataset.field = 'bancoId';
+        const pick = Object.assign(document.createElement('button'), { type: 'button', className: 'secondary-button', textContent: '🏘️ Traer del banco' });
+        pick.addEventListener('click', () => openBankPicker(group, index));
+        const badge = Object.assign(document.createElement('span'), { className: 'bank-origin-badge', hidden: true });
+        const clear = Object.assign(document.createElement('button'), { type: 'button', className: 'secondary-button', textContent: 'Vaciar tarjeta', hidden: true });
+        clear.addEventListener('click', () => {
+          clearComparable(group, index);
+          notifyComparableChange(group, index);
+        });
+        wrapper.append(hidden, pick, badge, clear);
+        return wrapper;
+      }
+
+      function renderBankOrigin(group, index) {
+        const wrapper = form.querySelector(`[data-bank-origin="${group}:${index}"]`);
+        if (!wrapper) return;
+        const [, pick, badge, clear] = wrapper.children;
+        const bankId = comparableControl(group, index, 'bancoId')?.value || '';
+        badge.hidden = !bankId;
+        clear.hidden = !bankId;
+        badge.textContent = bankId ? `Del banco de comparables · #${bankId}` : '';
+        pick.textContent = bankId ? '🏘️ Cambiar por otro del banco' : '🏘️ Traer del banco';
+      }
+
+      function renderAllBankOrigins() {
+        Object.keys(BANK_CATEGORY).forEach(group => {
+          for (let index = 0; index < comparableCount(group); index += 1) renderBankOrigin(group, index);
+        });
+      }
+
+      function clearComparable(group, index) {
+        ['address', comparablePriceField(group), 'surface', 'bancoId', ...BANK_FIELDS[group].map(([field]) => field)]
+          .forEach(field => setComparableControl(comparableControl(group, index, field), ''));
+        comparableFactorFields(group).forEach(field => setComparableControl(comparableControl(group, index, field), '1'));
+        comparablePhotos[group][index].splice(0);
+        comparableEvidence[group][index].splice(0);
+        comparablePhotoRenderers[group][index]?.();
+        comparableEvidenceRenderers[group][index]?.();
+        renderBankOrigin(group, index);
+      }
+
+      function fillComparableFromBank(group, index, record) {
+        clearComparable(group, index);
+        const set = (field, value) => setComparableControl(comparableControl(group, index, field), value);
+        set('address', record.direccion || `Comparable del banco #${record.id}`);
+        set(comparablePriceField(group), record.precio);
+        set('surface', record.superficie);
+        set('tipoDato', record.tipo_dato);
+        set('fechaDato', record.fecha_dato);
+        set('fuente', record.fuente);
+        // Una ubicación aproximada (la zona del avalúo de origen) no se copia como coordenada propia.
+        if (!record.ubicacion_aproximada && record.latitud != null && record.longitud != null) {
+          set('latitud', record.latitud);
+          set('longitud', record.longitud);
+        }
+        if (group === 'construction') {
+          set('edad', record.edad ?? '');
+          set('superficieTerreno', record.superficie_terreno ?? '');
+        }
+        set('bancoId', record.id);
+        comparablePhotos[group][index].push(...(record.fotos || []).map((url, photoIndex) => ({ name: `Foto ${photoIndex + 1} del banco`, preview: url })));
+        comparableEvidence[group][index].push(...(record.evidencias || []).map(item => ({ name: item.name, type: item.type, size: item.size, url: item.url })));
+        comparablePhotoRenderers[group][index]?.();
+        comparableEvidenceRenderers[group][index]?.();
+        renderBankOrigin(group, index);
+      }
+
+      // Avisa al formato del cambio: marca el avalúo como modificado y recalcula la homologación.
+      function notifyComparableChange(group, index) {
+        comparableControl(group, index, 'surface')?.dispatchEvent(new Event('input', { bubbles: true }));
+        renderComparablePhotoGalleries();
+      }
+
+      function haversineKm(latitudeA, longitudeA, latitudeB, longitudeB) {
+        const radians = degrees => degrees * Math.PI / 180;
+        const a = Math.sin(radians(latitudeB - latitudeA) / 2) ** 2 +
+          Math.cos(radians(latitudeA)) * Math.cos(radians(latitudeB)) * Math.sin(radians(longitudeB - longitudeA) / 2) ** 2;
+        return 12742 * Math.asin(Math.sqrt(a));
+      }
+
+      function bankRecordDistance(record) {
+        const subject = currentCoordinates();
+        if (!subject || subject.invalid || record.latitud == null || record.longitud == null) return null;
+        return haversineKm(subject.latitude, subject.longitude, Number(record.latitud), Number(record.longitud));
+      }
+
+      function bankRecordAgeMonths(record) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(record.fecha_dato || '')) return null;
+        const valuationDate = form.elements.namedItem('fechaAvaluo')?.value;
+        const reference = /^\d{4}-\d{2}-\d{2}$/.test(valuationDate || '') ? new Date(`${valuationDate}T12:00:00`) : new Date();
+        return (reference - new Date(`${record.fecha_dato}T12:00:00`)) / (1000 * 60 * 60 * 24 * 30.44);
+      }
+
+      const formatBankDate = value => (/^\d{4}-\d{2}-\d{2}$/.test(value || '') ? value.split('-').reverse().join('/') : '—');
+
+      function usedBankIds(group) {
+        const used = new Map();
+        for (let index = 0; index < comparableCount(group); index += 1) {
+          const bankId = Number(comparableControl(group, index, 'bancoId')?.value);
+          if (bankId) used.set(bankId, index);
+        }
+        return used;
+      }
+
+      function freeComparableSlots(group) {
+        return Array.from({ length: comparableCount(group) }, (_, index) => index).filter(index => isComparableEmpty(group, index));
+      }
+
+      function fillSelect(select, values, selected) {
+        select.replaceChildren(new Option('Todos', ''), ...values.map(value => new Option(value, value)));
+        select.value = values.includes(selected) ? selected : '';
+      }
+
+      async function openBankPicker(group, target = null) {
+        Object.assign(bankPicker, { group, target, records: [], selected: [] });
+        const { title, message, list, apply, search } = bankPickerElements;
+        title.textContent = target === null
+          ? `Banco de comparables de ${BANK_GROUP_NAME[group]}`
+          : `Banco de comparables de ${BANK_GROUP_NAME[group]} · para la tarjeta ${target + 1}`;
+        apply.hidden = target !== null;
+        const headers = bankPickerDialog.querySelectorAll('thead th');
+        headers[4].textContent = group === 'rent' ? 'Renta mensual' : 'Precio';
+        headers[6].textContent = group === 'rent' ? 'Renta unitaria' : 'Valor unitario';
+        search.value = '';
+        list.replaceChildren();
+        message.textContent = 'Cargando comparables del banco…';
+        if (!bankPickerDialog.open) bankPickerDialog.showModal();
+        try {
+          const response = await fetch(`/api/comparables?categoria=${BANK_CATEGORY[group]}`);
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'No se pudo consultar el banco.');
+          if (bankPicker.group !== group || bankPicker.target !== target) return;
+          bankPicker.records = data.comparables || [];
+        } catch (error) {
+          message.textContent = `No se pudo consultar el banco de comparables: ${error.message}`;
+          return;
+        }
+        const unique = key => Array.from(new Set(bankPicker.records.map(record => record[key]).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'es'));
+        const subjectType = form.elements.namedItem('tipoInmueble')?.value || '';
+        fillSelect(bankPickerElements.type, unique('tipo_inmueble'), group === 'land' ? '' : subjectType);
+        fillSelect(bankPickerElements.municipality, unique('municipio'), '');
+        renderBankPicker();
+      }
+
+      function renderBankPicker() {
+        const { group, target, records, selected } = bankPicker;
+        const { type, municipality, age, search, message, list, apply } = bankPickerElements;
+        const used = usedBankIds(group);
+        const free = freeComparableSlots(group);
+        const query = search.value.trim().toLowerCase();
+        const maxAge = Number(age.value) || null;
+        const hasSubject = (() => { const subject = currentCoordinates(); return Boolean(subject && !subject.invalid); })();
+        const rows = records
+          .filter(record => !type.value || record.tipo_inmueble === type.value)
+          .filter(record => !municipality.value || record.municipio === municipality.value)
+          .filter(record => {
+            if (!maxAge) return true;
+            const months = bankRecordAgeMonths(record);
+            return months === null || months <= maxAge;
+          })
+          .filter(record => !query || [record.direccion, record.colonia, record.municipio, record.fuente, record.notas].some(value => String(value || '').toLowerCase().includes(query)))
+          .map(record => ({ record, distance: bankRecordDistance(record) }))
+          .sort((a, b) => {
+            if (hasSubject && (a.distance !== null || b.distance !== null)) {
+              if (a.distance === null) return 1;
+              if (b.distance === null) return -1;
+              if (a.distance !== b.distance) return a.distance - b.distance;
+            }
+            return String(b.record.fecha_dato || '').localeCompare(String(a.record.fecha_dato || ''));
+          });
+
+        const unitSuffix = group === 'rent' ? '/m² mensual' : '/m²';
+        list.replaceChildren(...rows.map(({ record, distance }) => {
+          const row = document.createElement('tr');
+          const usedIn = used.get(record.id);
+          const isSelected = selected.includes(record.id);
+          if (usedIn !== undefined) row.classList.add('is-used');
+          if (isSelected) row.classList.add('is-selected');
+          const cell = (content, className = '') => {
+            const td = document.createElement('td');
+            if (className) td.className = className;
+            td.append(...[].concat(content));
+            return td;
+          };
+
+          let action;
+          if (usedIn !== undefined && usedIn !== target) {
+            action = `En tarjeta ${usedIn + 1}`;
+          } else if (target !== null) {
+            const use = Object.assign(document.createElement('button'), { type: 'button', className: 'secondary-button', textContent: usedIn === target ? 'Ya está aquí' : `Usar en tarjeta ${target + 1}` });
+            use.disabled = usedIn === target;
+            use.addEventListener('click', () => applyBankRecords([record]));
+            action = use;
+          } else {
+            const checkbox = Object.assign(document.createElement('input'), { type: 'checkbox', checked: isSelected });
+            checkbox.setAttribute('aria-label', `Elegir ${record.direccion || `comparable #${record.id}`}`);
+            checkbox.disabled = !isSelected && selected.length >= free.length;
+            checkbox.addEventListener('change', () => {
+              if (checkbox.checked) selected.push(record.id);
+              else selected.splice(selected.indexOf(record.id), 1);
+              renderBankPicker();
+            });
+            action = checkbox;
+          }
+
+          const place = document.createElement('div');
+          place.append(Object.assign(document.createElement('strong'), { textContent: record.direccion || `Comparable #${record.id}` }));
+          const zone = [record.colonia, record.municipio].filter(Boolean).join(', ');
+          if (zone || record.ubicacion_aproximada) {
+            place.append(document.createElement('br'), `${zone}${record.ubicacion_aproximada ? ' · ubicación aproximada' : ''}`);
+          }
+          const support = [`${(record.fotos || []).length} foto(s)`, `${(record.evidencias || []).length} evidencia(s)`].join(' · ');
+          const supportCell = [support];
+          if (/^https?:\/\//i.test(record.fuente || '')) {
+            supportCell.push(document.createElement('br'), Object.assign(document.createElement('a'), { href: record.fuente, target: '_blank', rel: 'noopener', textContent: 'Ver fuente' }));
+          } else if (record.fuente) {
+            supportCell.push(document.createElement('br'), record.fuente);
+          }
+
+          row.append(
+            cell(action),
+            cell(formatBankDate(record.fecha_dato)),
+            cell(place),
+            cell([record.tipo_inmueble, record.tipo_dato].filter(Boolean).join(' · ') || '—'),
+            cell(money(record.precio), 'num'),
+            cell(`${Number(record.superficie).toLocaleString('es-MX', { maximumFractionDigits: 2 })} m²`, 'num'),
+            cell(`${money(record.valor_unitario)}${unitSuffix}`, 'num'),
+            cell(distance === null ? '—' : `${record.ubicacion_aproximada ? '≈ ' : ''}${distance.toFixed(2)} km`, 'num'),
+            cell(supportCell)
+          );
+          return row;
+        }));
+
+        const order = hasSubject ? 'ordenados del más cercano al más lejano' : 'ordenados por fecha (capture las coordenadas del inmueble para ordenarlos por distancia)';
+        let note = `${rows.length} de ${records.length} comparables de ${BANK_GROUP_NAME[group]}, ${order}.`;
+        if (!records.length) note = `El banco aún no tiene comparables de ${BANK_GROUP_NAME[group]}. Se agregan al guardar avalúos o desde la pantalla del banco.`;
+        else if (!rows.length) note += ' Ninguno cumple los filtros: amplíe la antigüedad o quite filtros.';
+        if (target === null) {
+          note += free.length
+            ? ` Tarjetas libres: ${free.length}. Elija hasta ${free.length}.`
+            : ' Las tarjetas ya tienen comparable: use "Traer del banco" en una tarjeta para reemplazarlo, o vacíela primero.';
+        }
+        message.textContent = note;
+        apply.disabled = !selected.length;
+        apply.textContent = selected.length ? `Agregar ${selected.length} a la homologación` : 'Agregar a la homologación';
+      }
+
+      function applyBankRecords(records) {
+        const { group, target } = bankPicker;
+        let slots;
+        if (target !== null) {
+          const current = Number(comparableControl(group, target, 'bancoId')?.value);
+          if (!isComparableEmpty(group, target) && current !== records[0].id &&
+              !confirm(`La tarjeta ${target + 1} ya tiene datos. ¿Reemplazarlos por este comparable del banco?`)) return;
+          slots = [target];
+        } else {
+          slots = freeComparableSlots(group).slice(0, records.length);
+        }
+        records.slice(0, slots.length).forEach((record, position) => fillComparableFromBank(group, slots[position], record));
+        slots.forEach(index => notifyComparableChange(group, index));
+        bankPickerDialog.close();
+        const cards = slots.map(index => index + 1).join(', ');
+        const status = form.querySelector(`[data-bank-pick-status="${group}"]`);
+        if (status) {
+          status.textContent = `${slots.length === 1 ? 'Se trajo 1 comparable' : `Se trajeron ${slots.length} comparables`} del banco (tarjeta${slots.length === 1 ? '' : 's'} ${cards}). Ajuste sus factores de homologación.`;
+        }
+        comparableControl(group, slots[0], 'address')?.closest('.comparable-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      form.querySelectorAll('[data-bank-pick]').forEach(button => button.addEventListener('click', () => openBankPicker(button.dataset.bankPick)));
+      ['type', 'municipality', 'age'].forEach(key => bankPickerElements[key].addEventListener('change', renderBankPicker));
+      bankPickerElements.search.addEventListener('input', renderBankPicker);
+      bankPickerElements.apply.addEventListener('click', () => {
+        const byId = new Map(bankPicker.records.map(record => [record.id, record]));
+        applyBankRecords(bankPicker.selected.map(id => byId.get(id)).filter(Boolean));
+      });
+      document.getElementById('closeBankPicker').addEventListener('click', () => bankPickerDialog.close());
+
       function getMarketComparableRows(group) {
         const config = MARKET_COMPARABLE_CONFIG[group];
         return Array.from({ length: config.count }, (_, index) => {
@@ -4736,11 +5202,8 @@
         const read = field => document.querySelector(`[data-comparable="${index}"][data-field="${field}"]`)?.value.trim() || '';
         const latitude = Number(read('latitud'));
         const longitude = Number(read('longitud'));
-        if (!subject || !read('latitud') || !read('longitud') || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return '—';
-        const radians = degrees => degrees * Math.PI / 180;
-        const a = Math.sin(radians(latitude - subject.latitude) / 2) ** 2 +
-          Math.cos(radians(subject.latitude)) * Math.cos(radians(latitude)) * Math.sin(radians(longitude - subject.longitude) / 2) ** 2;
-        return `${(12742 * Math.asin(Math.sqrt(a))).toFixed(2)} km`;
+        if (!subject || subject.invalid || !read('latitud') || !read('longitud') || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return '—';
+        return `${haversineKm(subject.latitude, subject.longitude, latitude, longitude).toFixed(2)} km`;
       }
 
       function renderReportData(containerId, entries) {
@@ -5898,13 +6361,13 @@
           constructionSurfaceSource = datos.constructionSurfaceSource || 'captura manual';
 
           (datos.constructionComparables || []).forEach(({ index, field, value }) => {
-            const element = form.querySelector(`[data-comparable="${index}"][data-field="${field}"]`);
-            if (element) element.value = value;
+            setComparableControl(form.querySelector(`[data-comparable="${index}"][data-field="${field}"]`), value);
           });
           (datos.marketComparables || []).forEach(({ group, index, field, value }) => {
-            const element = marketComparableField(group, index, field);
-            if (element) element.value = value;
+            setComparableControl(marketComparableField(group, index, field), value);
           });
+          renderAllBankOrigins();
+          form.querySelectorAll('[data-bank-pick-status]').forEach(status => { status.textContent = ''; });
 
           specialInstallationItems.splice(0, specialInstallationItems.length, ...(datos.specialInstallations || []));
           renderSpecialInstallationItems();
