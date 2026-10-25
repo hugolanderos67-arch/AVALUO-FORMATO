@@ -27,7 +27,7 @@ La extracción de datos de PDF con IA es opcional y necesita la variable `ANTHRO
 ## Módulos
 | Módulo | Dónde está |
 |---|---|
-| Formato de captura y dictamen | `AVALUO-FORMATO.html`, `frontend/technical-descriptions.js`, `frontend/finishes-catalog.js` |
+| Formato de captura y dictamen | `AVALUO-FORMATO.html`, `frontend/technical-descriptions.js`, `frontend/finishes-catalog.js`, `frontend/date-field.js` (fechas siempre en dd/mm/aaaa) |
 | Motor de valuación (enfoques físico, de mercado y de ingresos) | `backend/valuation/` |
 | Ubicación, equipamiento urbano y documentos de planeación | `backend/valuation/urban-*.js` |
 | Extracción de datos con IA (Claude, de Anthropic) | `backend/valuation/document-extraction.js` |

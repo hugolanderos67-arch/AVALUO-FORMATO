@@ -17,6 +17,7 @@ const STATIC_FILES = {
   '/frontend/technical-descriptions.js': { file: 'frontend/technical-descriptions.js', type: 'text/javascript; charset=utf-8' },
   '/frontend/finishes-catalog.js': { file: 'frontend/finishes-catalog.js', type: 'text/javascript; charset=utf-8' },
   '/frontend/mapa-resumen.js': { file: 'frontend/mapa-resumen.js', type: 'text/javascript; charset=utf-8' },
+  '/frontend/date-field.js': { file: 'frontend/date-field.js', type: 'text/javascript; charset=utf-8' },
   '/vendor/leaflet/leaflet.js': { file: 'node_modules/leaflet/dist/leaflet.js', type: 'text/javascript; charset=utf-8' },
   '/vendor/leaflet/leaflet.css': { file: 'node_modules/leaflet/dist/leaflet.css', type: 'text/css; charset=utf-8' },
   '/estadisticas': { file: 'frontend/estadisticas.html', type: 'text/html; charset=utf-8' },

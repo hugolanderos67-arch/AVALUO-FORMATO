@@ -3318,6 +3318,7 @@
 
     <script src="/frontend/technical-descriptions.js"></script>
     <script src="/frontend/finishes-catalog.js"></script>
+    <script src="/frontend/date-field.js"></script>
     <script>
       const form = document.getElementById('valuationForm');
       const technicalDescriptions = window.TechnicalDescriptions;
@@ -6290,8 +6291,7 @@
       }
 
       function formatStoredDate(value) {
-        const date = new Date(`${String(value).replace(' ', 'T')}Z`);
-        return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+        return DateField.formatDateTime(value);
       }
 
       function markChanged() {

@@ -308,6 +308,7 @@
 
     <script src="/vendor/leaflet/leaflet.js"></script>
     <script src="/frontend/mapa-resumen.js"></script>
+    <script src="/frontend/date-field.js"></script>
     <script>
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -700,7 +701,7 @@
           const text = value === null || value === undefined ? '' : String(value);
           return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
         };
-        const lines = filteredRows().map(row => [row.folio || `#${row.id}`, row.fecha, row.tipo, row.solicitante, row.ubicacion, row.colonia, row.municipio, row.estado, row.usoAvaluo, row.superficieConstruccion, row.superficieTerreno, row.valor, row.valorUnitario, row.baseUnitaria, row.enfoque].map(quote).join(','));
+        const lines = filteredRows().map(row => [row.folio || `#${row.id}`, DateField.isoToDisplay(row.fecha) || row.fecha, row.tipo, row.solicitante, row.ubicacion, row.colonia, row.municipio, row.estado, row.usoAvaluo, row.superficieConstruccion, row.superficieTerreno, row.valor, row.valorUnitario, row.baseUnitaria, row.enfoque].map(quote).join(','));
         const blob = new Blob(['﻿' + [headers.join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -730,7 +731,7 @@
           const result = await response.json();
           if (!response.ok) throw new Error(result.error);
           allRows = result.avaluos;
-          document.getElementById('updatedAt').textContent = `Datos al ${new Date().toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })} · ${integer(allRows.length)} avalúo(s) guardado(s)`;
+          document.getElementById('updatedAt').textContent = `Datos al ${DateField.formatDateTime(new Date().toISOString())} · ${integer(allRows.length)} avalúo(s) guardado(s)`;
           setupFilters();
           render();
         } catch (error) {
