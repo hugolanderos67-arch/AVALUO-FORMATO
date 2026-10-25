@@ -164,7 +164,7 @@ test('cuadro de homologación: factores de construcción, factor resultante y po
   assert.equal(result.summary.averageUnitValuePerM2, 19885.21, 'valor unitario ajustado y ponderado');
   assert.equal(result.summary.valorMercado, 2982781.8);
   assert.equal(result.summary.weightingMode, 'captured');
-  assert.deepEqual(result.constructionFactors.map(factor => factor.code), ['FZo', 'FUb', 'FSu', 'FEd', 'FCo', 'FPr', 'FCn', 'FAc', 'FOt', 'FNeg']);
+  assert.deepEqual(result.constructionFactors.map(factor => factor.code), ['FZo', 'FUb', 'FSu', 'FEd', 'FCo', 'FPr', 'FOt', 'FNeg']);
 });
 
 test('ponderación: igual sin captura, ajustada a 100 % si no suma y 0 para las vacías', () => {
@@ -189,12 +189,12 @@ test('ponderación: igual sin captura, ajustada a 100 % si no suma y 0 para las 
   assert.equal(partial.summary.averageUnitValuePerM2, 10000);
 });
 
-test('los factores de construcción y acabados de avalúos anteriores se siguen aplicando', () => {
+test('los factores de construcción y acabados (FCn y FAc) ya no intervienen en el cálculo', () => {
   const result = calculateHomologation({
     subject: { constructionSurface: 100 },
     comparableSales: [{ id: 1, address: 'A', salePrice: 1000000, surface: 100, terrainFactor: 1.1, shapeFactor: 0.9 }]
   });
-  assert.equal(result.homologationTable[0].factors.construction, 1.1);
-  assert.equal(result.homologationTable[0].factors.finish, 0.9);
-  assert.equal(result.summary.averageUnitValuePerM2, 9900);
+  assert.equal('construction' in result.homologationTable[0].factors, false);
+  assert.equal('finish' in result.homologationTable[0].factors, false);
+  assert.equal(result.summary.averageUnitValuePerM2, 10000);
 });

@@ -10,7 +10,8 @@ function positive(value) {
   return Number.isFinite(number) && number > 0 ? number : 0;
 }
 
-// Homologa comparables por valor unitario: (precio / superficie) × producto de factores. Un factor vacío o no positivo vale 1.
+// Homologa comparables de terreno o renta por valor unitario: (precio / superficie) × producto de factores (un factor
+// vacío o no positivo vale 1). El resultado pondera cada valor homologado con su ponderación (%), como en construcción.
 function homologateComparables(rows, factorKeys) {
   const table = (Array.isArray(rows) ? rows : [])
     .map((row, index) => {
@@ -28,22 +29,33 @@ function homologateComparables(rows, factorKeys) {
         factorProduct: round(factorProduct, 4),
         unitValue: round(unitValue),
         homologatedUnitValue: round(unitValue * factorProduct),
+        weightInput: row.weight,
         valid: unitValue > 0
       };
     })
     .filter(row => row.price > 0 || row.surface > 0);
 
   const valid = table.filter(row => row.valid);
+  const { weights, mode, capturedTotal } = resolveWeights(valid);
+  table.forEach(row => {
+    const position = valid.indexOf(row);
+    row.weight = position >= 0 ? round(weights[position]) : null;
+    row.component = position >= 0 ? round(row.homologatedUnitValue * (weights[position] / 100)) : 0;
+    delete row.weightInput;
+  });
+  const weighted = valid.reduce((sum, row, position) => sum + row.homologatedUnitValue * (weights[position] / 100), 0);
   return {
     rows: table,
     validCount: valid.length,
-    averageUnitValue: valid.length ? round(valid.reduce((sum, row) => sum + row.homologatedUnitValue, 0) / valid.length) : 0
+    // Valor unitario homologado y ponderado (sin ponderación capturada es el promedio simple).
+    averageUnitValue: valid.length ? round(weighted) : 0,
+    weightingMode: mode,
+    weightsCapturedTotal: capturedTotal
   };
 }
 
 // Factores de homologación de comparables de construcción (enfoque comparativo de mercado), en el orden del cuadro
-// "Análisis por homologación y ajustes". Construcción y Acabados conservan los nombres de campo con que se guardaban
-// (terrainFactor y shapeFactor), para que los avalúos anteriores se abran con sus factores.
+// "Análisis por homologación y ajustes".
 const CONSTRUCTION_FACTORS = [
   { key: 'zone', field: 'zoneFactor', code: 'FZo', label: 'Factor de Zona' },
   { key: 'location', field: 'locationFactor', code: 'FUb', label: 'Factor de Ubicación' },
@@ -51,8 +63,6 @@ const CONSTRUCTION_FACTORS = [
   { key: 'age', field: 'ageFactor', code: 'FEd', label: 'Factor de Edad' },
   { key: 'conservation', field: 'conservationFactor', code: 'FCo', label: 'Factor de Conservación' },
   { key: 'project', field: 'projectFactor', code: 'FPr', label: 'Factor por Proyecto' },
-  { key: 'construction', field: 'terrainFactor', code: 'FCn', label: 'Factor de Construcción' },
-  { key: 'finish', field: 'shapeFactor', code: 'FAc', label: 'Factor de Acabados' },
   { key: 'other', field: 'otherFactor', code: 'FOt', label: 'Factor Otro' },
   { key: 'negotiation', field: 'negotiationFactor', code: 'FNeg', label: 'Factor de Negociación' }
 ];

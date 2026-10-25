@@ -60,10 +60,11 @@ La extracción de datos de PDF con IA es opcional y necesita la variable `ANTHRO
 ### Fórmulas
 Enfoque comparativo de mercado, cuadro "Análisis por homologación y ajustes" (`backend/valuation/market-comparables.js`):
 - Valor unitario de cada comparable: $VU = P_v / S$
-- Factor resultante: $FRe = FZo \times FUb \times FSu \times FEd \times FCo \times FPr \times FCn \times FAc \times FOt \times FNeg$ (zona, ubicación, superficie, edad, conservación, proyecto, construcción, acabados, otro y negociación; un factor vacío vale 1)
+- Factor resultante: $FRe = FZo \times FUb \times FSu \times FEd \times FCo \times FPr \times FOt \times FNeg$ (zona, ubicación, superficie, edad, conservación, proyecto, otro y negociación; un factor vacío vale 1)
 - Valor ajustado: $VA = VU \times FRe$; componente del valor: $VA \times Pond$
 - Valor unitario ajustado y ponderado: $VUP = \sum (VA \times Pond)$. Sin ponderación capturada, todos los comparables pesan igual; si las capturadas no suman 100 %, se ajustan en proporción y el dictamen lo indica.
 - Valor de mercado: $V_m = VUP \times S_{sujeto} \times$ ajuste de mercado
+- Comparables de terreno (enfoque físico) y de renta (enfoque de ingresos): valor homologado = valor unitario × los factores propios de cada grupo, con la misma ponderación por comparable; el resultado es la suma de componentes.
 
 ## Abrir el sistema como aplicación
 - Ícono "PERITIA" en el escritorio y en el menú Inicio (`scripts/iniciar-avaluo.ps1`): enciende el servidor en segundo plano si no está encendido (registros en `data/servidor.log` y `data/servidor-errores.log`) y abre el formato en una ventana propia de Chrome o Edge.

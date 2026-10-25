@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { homologateComparables, LAND_FACTOR_KEYS } = require('../backend/valuation/market-comparables');
+const { homologateComparables, LAND_FACTOR_KEYS, RENT_FACTOR_KEYS } = require('../backend/valuation/market-comparables');
 const { calculateHomologation } = require('../backend/valuation/homologation');
 
 test('homologa valor unitario con el producto de factores capturados', () => {
@@ -41,4 +41,28 @@ test('integra comparables de terreno y renta en el resultado', () => {
   assert.equal(result.landComparables.averageUnitValue, 5000);
   assert.equal(result.rentComparables.averageUnitValue, 135);
   assert.equal(result.homologationTable.length, 0);
+});
+
+test('terreno y renta: ponderación igual sin captura, capturada o ajustada a 100 %', () => {
+  const rows = weights => [
+    { id: 1, address: 'Lote A', price: 1000000, surface: 200, weight: weights[0] },
+    { id: 2, address: 'Lote B', price: 1200000, surface: 200, weight: weights[1] },
+    { id: 3, address: 'Incompleto', price: 500000, surface: 0, weight: weights[2] }
+  ];
+  const equal = homologateComparables(rows([null, null, null]), LAND_FACTOR_KEYS);
+  assert.equal(equal.weightingMode, 'equal');
+  assert.equal(equal.averageUnitValue, 5500);
+  assert.deepEqual(equal.rows.map(row => row.weight), [50, 50, null]);
+
+  const captured = homologateComparables(rows([70, 30, 100]), LAND_FACTOR_KEYS);
+  assert.equal(captured.weightingMode, 'captured', 'el incompleto no cuenta para la suma');
+  assert.equal(captured.rows[0].component, 3500);
+  assert.equal(captured.rows[1].component, 1800);
+  assert.equal(captured.averageUnitValue, 5300);
+
+  const normalized = homologateComparables(rows([1, 3, null]), RENT_FACTOR_KEYS);
+  assert.equal(normalized.weightingMode, 'normalized');
+  assert.equal(normalized.weightsCapturedTotal, 4);
+  assert.deepEqual(normalized.rows.slice(0, 2).map(row => row.weight), [25, 75]);
+  assert.equal(normalized.averageUnitValue, 5750);
 });

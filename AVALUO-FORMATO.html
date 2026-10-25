@@ -3298,7 +3298,7 @@
             <p id="reportMarketStatus" class="technical-note">Pendiente: capturar y verificar comparables locales.</p>
             <div class="formula-box">
               <strong>Condicionantes del enfoque comparativo</strong>
-              <p>FRe = FZo × FUb × FSu × FEd × FCo × FPr × FCn × FAc × FOt × FNeg</p>
+              <p>FRe = FZo × FUb × FSu × FEd × FCo × FPr × FOt × FNeg</p>
               <p>Valor ajustado = (valor de oferta o venta / superficie construida) × FRe; componente del valor = valor ajustado × ponderación.</p>
               <p>Valor unitario ajustado y ponderado = suma de componentes; valor de mercado = valor unitario ajustado y ponderado × superficie del sujeto.</p>
             </div>
@@ -4565,11 +4565,11 @@
       });
 
       // Factores del cuadro "Análisis por homologación y ajustes" (la misma lista que usa el servidor en
-      // backend/valuation/market-comparables.js). Construcción y Acabados conservan los campos terrainFactor y shapeFactor.
+      // backend/valuation/market-comparables.js).
       const CONSTRUCTION_FACTORS = [
         ['zoneFactor', 'FZo', 'Zona'], ['locationFactor', 'FUb', 'Ubicación'], ['surfaceFactor', 'FSu', 'Superficie'],
         ['ageFactor', 'FEd', 'Edad'], ['conservationFactor', 'FCo', 'Conservación'], ['projectFactor', 'FPr', 'Proyecto'],
-        ['terrainFactor', 'FCn', 'Construcción'], ['shapeFactor', 'FAc', 'Acabados'], ['otherFactor', 'FOt', 'Otro'],
+        ['otherFactor', 'FOt', 'Otro'],
         ['negotiationFactor', 'FNeg', 'Negociación']
       ];
 
@@ -4726,6 +4726,9 @@
             config.factors.forEach(([key, label, abbreviation]) => {
               factors.appendChild(createField(`${label} (${abbreviation})`, `factor:${key}`, { type: 'number', min: '0', step: '0.01', value: '1' }));
             });
+            factors.appendChild(createField('Ponderación (%)', 'weight', { type: 'number', min: '0', max: '100', step: '0.01', placeholder: 'Igual para todos' }));
+            const cardResult = Object.assign(document.createElement('p'), { className: 'construction-factor-result' });
+            cardResult.dataset.marketResult = `${group}:${index}`;
             card.append(
               title,
               createBankOrigin(group, index),
@@ -4734,6 +4737,7 @@
               createField(config.priceLabel, 'price', { type: 'number', min: '0', step: '0.01' }),
               createField(config.surfaceLabel, 'surface', { type: 'number', min: '0', step: '0.01' }),
               factors,
+              cardResult,
               createBankDetails(group, index),
               createComparablePhotoField(group, index),
               createComparableEvidenceField(group, index)
@@ -5343,6 +5347,7 @@
             address: value('address').trim() || `Comparable ${index + 1}`,
             price: Number(value('price')) || 0,
             surface: Number(value('surface')) || 0,
+            weight: value('weight').trim() === '' ? null : Number(value('weight')),
             factors: Object.fromEntries(config.factors.map(([key]) => [key, Number(value(`factor:${key}`)) || 1]))
           };
         });
@@ -5412,10 +5417,20 @@
           container.replaceChildren();
           return;
         }
-        const headers = ['Comparable', config.priceLabel, config.surfaceLabel, config.unitLabel, ...config.factors.map(([, , abbreviation]) => abbreviation), 'F. resultante', 'Valor homologado'];
-        const rows = result.rows.map(row => `<tr><td>${escapeHtml(row.address)}</td><td>${row.price > 0 ? money(row.price) : '—'}</td><td>${row.surface > 0 ? row.surface.toFixed(2) : '—'}</td><td>${row.valid ? money(row.unitValue) : 'Incompleto'}</td>${config.factors.map(([key]) => `<td>${Number(row.factors[key]).toFixed(2)}</td>`).join('')}<td>${row.factorProduct.toFixed(4)}</td><td>${row.valid ? money(row.homologatedUnitValue) : '—'}</td></tr>`).join('');
-        const averageRow = `<tr><td colspan="${headers.length - 1}"><strong>Promedio homologado (${result.validCount} comparable(s) válido(s))</strong></td><td><strong>${result.averageUnitValue > 0 ? money(result.averageUnitValue) : 'Pendiente'}</strong></td></tr>`;
-        container.innerHTML = `<h5>${config.title}</h5><div class="table-scroll"><table class="capture-table"><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}${averageRow}</tbody></table></div><p class="technical-note">${config.factors.map(([, label, abbreviation]) => `${abbreviation} = ${label}`).join(', ')}. Valor homologado = valor unitario × F. resultante.</p>`;
+        const percent = value => (value === null || value === undefined ? '—' : `${Number(value).toLocaleString('es-MX', { maximumFractionDigits: 2 })}%`);
+        const headers = ['Comparable', config.priceLabel, config.surfaceLabel, config.unitLabel, ...config.factors.map(([, , abbreviation]) => abbreviation), 'F. resultante', 'Valor homologado', 'Pond.', 'Componente del valor'];
+        const rows = result.rows.map(row => `<tr><td>${escapeHtml(row.address)}</td><td>${row.price > 0 ? money(row.price) : '—'}</td><td>${row.surface > 0 ? row.surface.toFixed(2) : '—'}</td><td>${row.valid ? money(row.unitValue) : 'Incompleto'}</td>${config.factors.map(([key]) => `<td>${Number(row.factors[key]).toFixed(2)}</td>`).join('')}<td>${row.factorProduct.toFixed(4)}</td><td>${row.valid ? money(row.homologatedUnitValue) : '—'}</td><td>${percent(row.weight)}</td><td>${row.valid ? money(row.component) : '—'}</td></tr>`).join('');
+        const totalWeight = result.rows.reduce((sum, row) => sum + (Number(row.weight) || 0), 0);
+        const averageRow = `<tr><td colspan="${headers.length - 2}"><strong>Valor homologado y ponderado (${result.validCount} comparable(s) válido(s))</strong></td><td><strong>${percent(totalWeight)}</strong></td><td><strong>${result.averageUnitValue > 0 ? money(result.averageUnitValue) : 'Pendiente'}</strong></td></tr>`;
+        container.innerHTML = `<h5>${config.title}</h5><div class="table-scroll"><table class="capture-table"><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}${averageRow}</tbody></table></div><p class="technical-note">${config.factors.map(([, label, abbreviation]) => `${abbreviation} = ${label}`).join(', ')}. Valor homologado = valor unitario × F. resultante; componente = valor homologado × ponderación; el resultado es la suma de componentes.${marketWeightingNote(result)}</p>`;
+      }
+
+      function marketWeightingNote(result) {
+        return {
+          equal: ' Ponderación igual para cada comparable.',
+          captured: ' Ponderación capturada (suma 100 %).',
+          normalized: ` Las ponderaciones capturadas sumaban ${result?.weightsCapturedTotal} %; se ajustaron en proporción a 100 %.`
+        }[result?.weightingMode] || '';
       }
 
       function updateMarketComparableResult(group, result) {
@@ -5426,8 +5441,18 @@
         button.disabled = average <= 0;
         button.dataset.value = average > 0 ? String(average) : '';
         message.textContent = average > 0
-          ? `${isLand ? 'Valor unitario homologado de terreno' : 'Renta unitaria mensual homologada'}: ${money(average)}/m² (${result.validCount} comparable(s) válido(s)).`
+          ? `${isLand ? 'Valor unitario de terreno homologado y ponderado' : 'Renta unitaria mensual homologada y ponderada'}: ${money(average)}/m² (${result.validCount} comparable(s) válido(s)).${marketWeightingNote(result)}`
           : `Capture ${isLand ? 'precio' : 'renta'} y superficie de al menos un comparable para obtener el valor homologado.`;
+        // Cálculo de cada tarjeta.
+        for (let index = 0; index < MARKET_COMPARABLE_CONFIG[group].count; index += 1) {
+          const target = form.querySelector(`[data-market-result="${group}:${index}"]`);
+          const row = (result?.rows || []).find(item => item.id === index + 1);
+          if (target) {
+            target.textContent = row?.valid
+              ? `Valor unitario ${money(row.unitValue)}/m² × F. resultante ${Number(row.factorProduct).toFixed(4)} = ${money(row.homologatedUnitValue)}/m² · ponderación ${Number(row.weight).toLocaleString('es-MX', { maximumFractionDigits: 2 })}% → componente ${money(row.component)}`
+              : '';
+          }
+        }
       }
 
       [['applyLandComparableValue', 'valorUnitarioTerreno'], ['applyRentComparableValue', 'rentaUnitariaMensual']].forEach(([buttonId, fieldName]) => {
