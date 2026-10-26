@@ -545,6 +545,11 @@
         margin: 6px 0 10px;
       }
 
+      .bank-capture-link {
+        display: inline-block;
+        text-decoration: none;
+      }
+
       .bank-pick-row .technical-note:empty {
         display: none;
       }
@@ -756,6 +761,16 @@
         color: #0f4c81;
         font-size: 0.75rem;
         font-weight: 700;
+      }
+
+      .comparable-extra textarea {
+        font: inherit;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .comparable-factors .wide {
+        grid-column: 1 / -1;
       }
 
       .comparable-factors {
@@ -3101,6 +3116,7 @@
             <p class="technical-note">Al guardar el avalúo, los comparables con precio y superficie (de construcción, terreno y renta) se agregan al banco de comparables. Complete "Datos para el banco de comparables" en cada uno para poder localizarlos y depurarlos en avalúos futuros. Los que se traen del banco no se duplican. Capture en cada uno la fecha de publicación del anuncio (o de la operación): mide la antigüedad del dato y, si queda vacía, se toma la fecha del avalúo.</p>
             <div class="bank-pick-row">
               <button type="button" class="secondary-button" data-bank-pick="construction">🏘️ Elegir comparables del banco</button>
+                <a class="secondary-button bank-capture-link" href="/comparables?nuevo=construccion" target="_blank" rel="noopener" title="Abre el banco en otra pestaña con el formulario listo; después use Elegir comparables del banco">➕ Capturar en el banco</a>
               <p class="technical-note" data-bank-pick-status="construction" role="status"></p>
             </div>
             <div class="comparable-grid" id="constructionComparables">
@@ -3145,6 +3161,7 @@
               <p class="technical-note">Valor unitario homologado = (precio / superficie) × factores. Deje en 1 los factores que no apliquen.</p>
               <div class="bank-pick-row">
                 <button type="button" class="secondary-button" data-bank-pick="land">🏘️ Elegir comparables del banco</button>
+                <a class="secondary-button bank-capture-link" href="/comparables?nuevo=terreno" target="_blank" rel="noopener" title="Abre el banco en otra pestaña con el formulario listo; después use Elegir comparables del banco">➕ Capturar en el banco</a>
                 <p class="technical-note" data-bank-pick-status="land" role="status"></p>
               </div>
               <div class="comparable-grid" data-market-comparables="land"></div>
@@ -3191,6 +3208,7 @@
               <p class="technical-note">Renta unitaria homologada = (renta mensual / superficie rentable) × factores. Deje en 1 los factores que no apliquen.</p>
               <div class="bank-pick-row">
                 <button type="button" class="secondary-button" data-bank-pick="rent">🏘️ Elegir comparables del banco</button>
+                <a class="secondary-button bank-capture-link" href="/comparables?nuevo=renta" target="_blank" rel="noopener" title="Abre el banco en otra pestaña con el formulario listo; después use Elegir comparables del banco">➕ Capturar en el banco</a>
                 <p class="technical-note" data-bank-pick-status="rent" role="status"></p>
               </div>
               <div class="comparable-grid" data-market-comparables="rent"></div>
@@ -5000,21 +5018,47 @@
       }
 
       // Datos que el banco de comparables necesita para buscar y depurar comparables en avalúos futuros.
+      // Los mismos datos que pide el banco de comparables. Tipo de inmueble y zona vacíos toman los del inmueble valuado.
+      const BANK_ZONE_FIELDS = [['colonia', 'Colonia', 'text'], ['municipio', 'Municipio', 'text'], ['estado', 'Estado', 'text']];
       const BANK_FIELDS = {
         construction: [
+          ['tipoInmueble', 'Tipo de inmueble', 'text'], ...BANK_ZONE_FIELDS,
           ['fuente', 'Fuente o enlace', 'text'],
           ['edad', 'Edad (años)', 'number'],
-          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
+          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number'],
+          ['notas', 'Notas', 'textarea']
         ],
         land: [
+          ...BANK_ZONE_FIELDS,
           ['fuente', 'Fuente o enlace', 'text'],
-          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
+          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number'],
+          ['notas', 'Notas', 'textarea']
         ],
         rent: [
+          ['tipoInmueble', 'Tipo de inmueble', 'text'], ...BANK_ZONE_FIELDS,
           ['fuente', 'Fuente o enlace', 'text'],
-          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number']
+          ['latitud', 'Latitud', 'number'], ['longitud', 'Longitud', 'number'],
+          ['notas', 'Notas', 'textarea']
         ]
       };
+      // Campo de la tarjeta → campo del inmueble valuado que se usa si la tarjeta queda vacía.
+      const SUBJECT_DEFAULTS = { tipoInmueble: 'tipoInmueble', colonia: 'colonia', municipio: 'municipio', estado: 'estado' };
+
+      function updateBankPlaceholders() {
+        Object.entries(SUBJECT_DEFAULTS).forEach(([cardField, subjectField]) => {
+          const subjectValue = form.elements.namedItem(subjectField)?.value.trim() || '';
+          form.querySelectorAll(`.comparable-extra [data-field="${cardField}"]`).forEach(control => {
+            control.placeholder = subjectValue ? `Igual que el inmueble: ${subjectValue}` : 'Igual que el inmueble valuado';
+            control.title = `Si queda vacío se usa el dato del inmueble valuado${subjectValue ? ` (${subjectValue})` : ''}.`;
+          });
+        });
+      }
+      form.addEventListener('input', event => {
+        if (Object.values(SUBJECT_DEFAULTS).includes(event.target.name)) updateBankPlaceholders();
+      });
+      form.addEventListener('change', event => {
+        if (Object.values(SUBJECT_DEFAULTS).includes(event.target.name)) updateBankPlaceholders();
+      });
 
       // Tipo de dato y fecha de publicación del anuncio van a la vista en cada tarjeta, junto a la dirección:
       // la fecha mide la antigüedad del comparable. En una venta o una renta contratada es la fecha de la operación.
@@ -5064,9 +5108,13 @@
         grid.className = 'comparable-factors';
         BANK_FIELDS[group].forEach(([field, labelText, kind]) => {
           const label = document.createElement('label');
-          const control = Array.isArray(kind) ? document.createElement('select') : document.createElement('input');
+          const control = Array.isArray(kind) ? document.createElement('select') : document.createElement(kind === 'textarea' ? 'textarea' : 'input');
           if (Array.isArray(kind)) {
             control.append(new Option('Seleccione', ''), ...kind.map(option => new Option(option, option)));
+          } else if (kind === 'textarea') {
+            control.rows = 2;
+            control.placeholder = 'Por ejemplo: precio negociable, inmueble remodelado, datos del contacto';
+            label.className = 'wide';
           } else {
             control.type = kind;
             if (kind === 'number') control.step = 'any';
@@ -5083,7 +5131,7 @@
         });
         const note = document.createElement('p');
         note.className = 'technical-note';
-        note.textContent = 'Sin coordenadas propias, el banco ubica el comparable en la zona del inmueble sujeto (ubicación aproximada).';
+        note.textContent = 'Lo que quede vacío en tipo de inmueble, colonia, municipio y estado toma el dato del inmueble valuado. Sin coordenadas propias, el banco ubica el comparable en la zona del inmueble (ubicación aproximada).';
         details.append(summary, grid, note);
         return details;
       }
@@ -5203,6 +5251,9 @@
         const set = (field, value) => setComparableControl(comparableControl(target, slot, field), value);
         set('address', read('address'));
         set('surface', read('surface'));
+        // Mismo inmueble: misma zona y tipo (el tipo no aplica a terreno).
+        ['colonia', 'municipio', 'estado'].forEach(field => set(field, read(field)));
+        if (target !== 'land' && group !== 'land') set('tipoInmueble', read('tipoInmueble'));
         set('latitud', read('latitud'));
         set('longitud', read('longitud'));
         if (group === 'construction' && target === 'construction') {
@@ -5264,6 +5315,11 @@
         set('tipoDato', record.tipo_dato);
         set('fechaDato', record.fecha_dato);
         set('fuente', record.fuente);
+        if (group !== 'land') set('tipoInmueble', record.tipo_inmueble);
+        set('colonia', record.colonia);
+        set('municipio', record.municipio);
+        set('estado', record.estado);
+        set('notas', record.notas);
         // Una ubicación aproximada (la zona del avalúo de origen) no se copia como coordenada propia.
         if (!record.ubicacion_aproximada && record.latitud != null && record.longitud != null) {
           set('latitud', record.latitud);
@@ -5620,6 +5676,7 @@
       });
 
       buildMarketComparableCards();
+      updateBankPlaceholders();
 
       function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
@@ -6847,6 +6904,7 @@
             setComparableControl(marketComparableField(group, index, field), value);
           });
           renderAllBankOrigins();
+          updateBankPlaceholders();
           form.querySelectorAll('[data-bank-pick-status]').forEach(status => { status.textContent = ''; });
 
           specialInstallationItems.splice(0, specialInstallationItems.length, ...(datos.specialInstallations || []));

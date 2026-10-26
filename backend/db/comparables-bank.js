@@ -68,12 +68,14 @@ function extractFromAvaluo(avaluoId, datos) {
       records.push({
         origen_clave: `${avaluoId}:${group}:${index}`,
         categoria: CATEGORIES[group],
-        tipo_inmueble: group === 'land' ? 'Terreno' : text(fields.tipoInmueble) || null,
+        // Tipo de inmueble y zona propios del comparable; si la tarjeta los deja vacíos, los del inmueble valuado.
+        tipo_inmueble: group === 'land' ? 'Terreno' : text(card.tipoInmueble) || text(fields.tipoInmueble) || null,
         tipo_dato: text(card.tipoDato) || null,
         direccion: text(card.address) || null,
-        colonia: text(fields.colonia) || null,
-        municipio: text(fields.municipio) || null,
-        estado: text(fields.estado) || null,
+        colonia: text(card.colonia) || text(fields.colonia) || null,
+        municipio: text(card.municipio) || text(fields.municipio) || null,
+        estado: text(card.estado) || text(fields.estado) || null,
+        notas: text(card.notas) || null,
         latitud: ownLocation ? latitude : (subjectLocated ? subjectLatitude : null),
         longitud: ownLocation ? longitude : (subjectLocated ? subjectLongitude : null),
         ubicacion_aproximada: !ownLocation && subjectLocated ? 1 : 0,
@@ -93,7 +95,7 @@ function extractFromAvaluo(avaluoId, datos) {
 }
 
 const COLUMNS = ['categoria', 'tipo_inmueble', 'tipo_dato', 'direccion', 'colonia', 'municipio', 'estado', 'latitud', 'longitud',
-  'ubicacion_aproximada', 'precio', 'superficie', 'superficie_terreno', 'edad', 'valor_unitario', 'fecha_dato', 'fuente', 'fotos', 'evidencias'];
+  'ubicacion_aproximada', 'precio', 'superficie', 'superficie_terreno', 'edad', 'valor_unitario', 'fecha_dato', 'fuente', 'notas', 'fotos', 'evidencias'];
 
 function createComparablesBank(db, { filesDir }) {
   // Migración: columna de evidencias para bancos creados antes de esta función.

@@ -840,7 +840,16 @@
         }
       });
 
-      load().catch(showLoadError);
+      // Desde el formato del avalúo ("Capturar en el banco"): abre la pestaña del tipo indicado con el formulario listo.
+      const requestedNew = new URLSearchParams(location.search).get('nuevo');
+      if (['construccion', 'terreno', 'renta'].includes(requestedNew)) {
+        category = requestedNew;
+        document.querySelectorAll('[data-category]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.category === requestedNew)));
+        history.replaceState(null, '', location.pathname);
+        load().catch(showLoadError).finally(() => openDialog());
+      } else {
+        load().catch(showLoadError);
+      }
     </script>
   </body>
 </html>

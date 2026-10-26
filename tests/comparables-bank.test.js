@@ -106,6 +106,28 @@ test('lo editado o quitado en el banco se respeta en los siguientes guardados', 
   assert.equal(bank.list({ categoria: 'renta' }).length, 0, 'el quitado no regresa');
 });
 
+test('la tarjeta lleva tipo de inmueble, zona y notas propios; vacíos toman los del inmueble valuado', t => {
+  const context = createTempRepository(t);
+  const datos = avaluoWithComparables();
+  datos.constructionComparables.push(
+    { index: '0', field: 'tipoInmueble', value: 'Departamento' },
+    { index: '0', field: 'colonia', value: 'Huexotitla' },
+    { index: '0', field: 'municipio', value: 'Puebla' },
+    { index: '0', field: 'estado', value: 'Puebla' },
+    { index: '0', field: 'notas', value: 'Precio negociable según el anunciante' }
+  );
+  context.repository.save(null, { datos });
+  const bank = context.repository.bank.list();
+  const construction = bank.find(item => item.categoria === 'construccion');
+  assert.equal(construction.tipo_inmueble, 'Departamento');
+  assert.equal(construction.colonia, 'Huexotitla');
+  assert.equal(construction.notas, 'Precio negociable según el anunciante');
+  const rent = bank.find(item => item.categoria === 'renta');
+  assert.equal(rent.colonia, 'La Paz', 'sin colonia propia toma la del inmueble valuado');
+  assert.equal(rent.tipo_inmueble, 'Casa habitación');
+  assert.equal(rent.notas, null);
+});
+
 test('un comparable traído del banco no se duplica y el avalúo guarda copia propia de sus archivos', t => {
   const context = createTempRepository(t);
   const { bank } = context.repository;
