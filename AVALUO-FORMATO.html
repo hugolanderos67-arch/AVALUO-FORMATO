@@ -1783,6 +1783,19 @@
         color: #7a1d18;
       }
 
+      .justification-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+        margin-top: 8px;
+      }
+
+      .justification-actions .technical-note {
+        margin: 0;
+        flex: 1 1 260px;
+      }
+
       .explain-box {
         border-left: 4px solid #0f4c81;
         background: #f6f9fc;
@@ -3353,7 +3366,11 @@
                     <option value="income">Ingresos (capitalización de rentas)</option>
                   </select>
                 </label>
-                <label>Justificación del enfoque seleccionado <textarea name="justificacionValorFinal" rows="4" placeholder="Explique por qué este enfoque refleja mejor el valor: tipo de inmueble, propósito del avalúo, calidad y cantidad de información de mercado, rentas o costos disponibles."></textarea></label>
+                <label>Justificación del enfoque seleccionado <textarea name="justificacionValorFinal" rows="6" placeholder="Explique por qué este enfoque refleja mejor el valor: tipo de inmueble, propósito del avalúo, calidad y cantidad de información de mercado, rentas o costos disponibles."></textarea></label>
+              </div>
+              <div class="justification-actions">
+                <button type="button" class="secondary-button" id="insertJustification">Insertar leyenda del enfoque seleccionado</button>
+                <span class="technical-note">Al cambiar de enfoque, la leyenda se cambia sola mientras no la haya modificado. Puede editarla para el caso.</span>
               </div>
             </div>
 
@@ -5744,6 +5761,28 @@
           }
         }
       }
+
+      // Leyendas de justificación para cada enfoque del valor concluido.
+      const JUSTIFICATION_TEMPLATES = {
+        market: 'Se concluye con el valor obtenido por el enfoque comparativo de mercado, por ser el que mejor refleja el valor del inmueble, dado que se basa en ofertas y operaciones de inmuebles similares en la zona y representa el comportamiento del mercado activo, es decir, el precio que compradores y vendedores informados estarían dispuestos a pactar a la fecha del avalúo. Los enfoques físico y de capitalización de rentas se presentan únicamente como referencia.',
+        physical: 'Se concluye con el valor obtenido por el enfoque físico o directo, por ser el que mejor refleja el valor del inmueble, dado que no existe un mercado activo suficiente de inmuebles comparables en la zona o se trata de un inmueble de uso especializado, cuyo valor se representa mejor por el valor del terreno más el costo de reposición de sus construcciones e instalaciones, depreciado por edad y estado de conservación. Los enfoques comparativo de mercado y de capitalización de rentas se presentan únicamente como referencia.',
+        income: 'Se concluye con el valor obtenido por el enfoque de capitalización de rentas, por ser el que mejor refleja el valor del inmueble, dado que se trata de un inmueble destinado o susceptible de destinarse al arrendamiento, cuyo valor para un inversionista depende principalmente de la renta neta que es capaz de producir, capitalizada a una tasa acorde con el riesgo y las condiciones del mercado. Los enfoques comparativo de mercado y físico se presentan únicamente como referencia.'
+      };
+
+      function applyJustificationTemplate({ force = false } = {}) {
+        const field = form.elements.namedItem('justificacionValorFinal');
+        const template = JUSTIFICATION_TEMPLATES[form.elements.namedItem('enfoqueValorFinal').value];
+        if (!field || !template) return;
+        const current = field.value.trim();
+        const untouched = !current || Object.values(JUSTIFICATION_TEMPLATES).includes(current);
+        if (!untouched && !force) return;
+        if (!untouched && !confirm('La justificación ya tiene texto propio. ¿Reemplazarlo por la leyenda del enfoque seleccionado?')) return;
+        field.value = template;
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      form.elements.namedItem('enfoqueValorFinal').addEventListener('change', () => applyJustificationTemplate());
+      document.getElementById('insertJustification').addEventListener('click', () => applyJustificationTemplate({ force: true }));
 
       [['applyLandComparableValue', 'valorUnitarioTerreno'], ['applyRentComparableValue', 'rentaUnitariaMensual']].forEach(([buttonId, fieldName]) => {
         document.getElementById(buttonId).addEventListener('click', event => {
