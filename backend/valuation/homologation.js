@@ -26,7 +26,14 @@ function calculateHomologation(input) {
   }[construction.weightingMode] || '';
   const terrainSurface = Number(subject.surface) || 0;
   const constructionSurface = Number(subject.constructionSurface) || 0;
-  const terrainValue = roundCurrency(terrainSurface * (Number(subject.unitLandValue) || 0));
+  const landComparables = homologateComparables(input.landComparables, LAND_FACTOR_KEYS);
+  const rentComparables = homologateComparables(input.rentComparables, RENT_FACTOR_KEYS);
+  // Valor unitario de terreno: el capturado por el valuador o, si se dejó vacío, el homologado de los comparables de terreno.
+  const capturedLandValue = Number(subject.unitLandValue) || 0;
+  const homologatedLandValue = roundCurrency(Number(landComparables.averageUnitValue) || 0);
+  const unitLandValue = capturedLandValue > 0 ? capturedLandValue : homologatedLandValue;
+  const unitLandValueSource = capturedLandValue > 0 ? 'captured' : homologatedLandValue > 0 ? 'homologated' : 'none';
+  const terrainValue = roundCurrency(terrainSurface * unitLandValue);
   const hasMarketInputs = validComparables.length > 0 && constructionSurface > 0;
   const marketValueBeforeAdjustment = hasMarketInputs ? roundCurrency(averageUnitValue * constructionSurface) : 0;
   const marketAdjustment = Number(subject.marketAdjustment) > 0 ? Number(subject.marketAdjustment) : 1;
@@ -34,7 +41,15 @@ function calculateHomologation(input) {
   const constructionValue = roundCurrency(Number(subject.physicalConstructionValue) > 0 ? Number(subject.physicalConstructionValue) : 0);
   const accessoryValue = roundCurrency(Number(subject.physicalAccessoryValue) || 0);
   const valorFisico = roundCurrency(terrainValue + constructionValue + accessoryValue);
-  const incomeApproach = calculateIncomeApproach(subject);
+  // Renta unitaria: la capturada o, si se dejó vacía, la homologada de los comparables de renta.
+  const income = subject.income || {};
+  const homologatedRent = roundCurrency(Number(rentComparables.averageUnitValue) || 0);
+  const useHomologatedRent = !(Number(income.unitMonthlyRent) > 0) && !(Number(income.monthlyRent) > 0) && Number(income.rentableArea) > 0 && homologatedRent > 0;
+  const incomeApproach = {
+    ...calculateIncomeApproach(useHomologatedRent ? { ...subject, income: { ...income, unitMonthlyRent: homologatedRent } } : subject),
+    unitRentSource: useHomologatedRent ? 'homologated' : Number(income.unitMonthlyRent) > 0 ? 'captured' : 'none',
+    homologatedUnitRent: homologatedRent
+  };
   const valorCapitalizacion = incomeApproach.value;
   const approachValues = { market: valorMercado, physical: valorFisico, income: valorCapitalizacion };
   const finalApproach = Object.hasOwn(FINAL_APPROACH_LABELS, subject.finalApproach) ? subject.finalApproach : 'market';
@@ -47,6 +62,13 @@ function calculateHomologation(input) {
       finalApproach,
       finalApproachLabel: FINAL_APPROACH_LABELS[finalApproach],
       valorTerreno: terrainValue,
+      terrainSurface,
+      unitLandValue: roundCurrency(unitLandValue),
+      unitLandValueSource,
+      homologatedLandValue,
+      constructionSurface,
+      marketValueBeforeAdjustment,
+      marketAdjustment,
       valorConstruccion: constructionValue,
       valorFisico,
       valorMercado,
@@ -58,7 +80,7 @@ function calculateHomologation(input) {
           ? `${validComparables.length} comparable(s) válidos, pero falta superficie de construcción del inmueble sujeto; valor de mercado pendiente.`
           : `${validComparables.length} comparable(s) con precio y superficie capturados; confirmar ubicación, fecha, fuente, características y homologación.${weightingNote}`,
       physicalValuationStatus: terrainValue > 0 || constructionValue > 0 || accessoryValue > 0
-        ? `El enfoque físico incluye solo los componentes capturados. ${terrainSurface > 0 && Number(subject.unitLandValue) <= 0 ? 'Falta valor unitario documentado de terreno. ' : ''}${constructionSurface > 0 && constructionValue <= 0 ? 'Falta costo nuevo de reposición y depreciación documentados para construcción. ' : ''}${accessoryValue <= 0 ? 'No se capturó valor depreciado de accesorios. ' : ''}Verificar fuentes, fecha, depreciación y alcance.`
+        ? `El enfoque físico incluye solo los componentes capturados. ${terrainSurface > 0 && unitLandValue <= 0 ? 'Falta valor unitario documentado de terreno. ' : ''}${constructionSurface > 0 && constructionValue <= 0 ? 'Falta costo nuevo de reposición y depreciación documentados para construcción. ' : ''}${accessoryValue <= 0 ? 'No se capturó valor depreciado de accesorios. ' : ''}Verificar fuentes, fecha, depreciación y alcance.`
         : 'Enfoque físico pendiente: capture superficies y valores unitarios documentados de terreno, construcción o accesorios; no se estimó costo de reposición.',
       incomeValuationStatus: incomeApproach.status,
       weightingMode: construction.weightingMode,
@@ -66,8 +88,8 @@ function calculateHomologation(input) {
     },
     constructionFactors: CONSTRUCTION_FACTORS.map(({ key, code, label }) => ({ key, code, label })),
     incomeApproach,
-    landComparables: homologateComparables(input.landComparables, LAND_FACTOR_KEYS),
-    rentComparables: homologateComparables(input.rentComparables, RENT_FACTOR_KEYS),
+    landComparables,
+    rentComparables,
     // Cuadro "Análisis por homologación y ajustes": unitValue = precio / superficie; factorProduct = FRe;
     // unitValuePerM2 = valor unitario ajustado (unitValue × FRe); weight en %; component = ajustado × ponderación.
     homologationTable: homologatedValues.map(item => ({

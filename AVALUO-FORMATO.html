@@ -1724,6 +1724,49 @@
         color: #203649;
       }
 
+      .explain-box {
+        border-left: 4px solid #0f4c81;
+        background: #f6f9fc;
+        border-radius: 0 10px 10px 0;
+        padding: 10px 14px;
+        margin: 10px 0 12px;
+      }
+
+      .explain-box strong {
+        display: block;
+        color: #0f4c81;
+        margin-bottom: 4px;
+      }
+
+      .explain-box p {
+        margin: 4px 0;
+        font-size: 0.88rem;
+        color: #203649;
+      }
+
+      .calc-table td:nth-child(n+2) {
+        white-space: nowrap;
+      }
+
+      .calc-table .calc-total td {
+        font-weight: 700;
+        background: #eef5fc;
+        border-top: 2px solid #0f4c81;
+      }
+
+      .calc-table .calc-subtotal td {
+        font-weight: 600;
+        background: #f7f9fb;
+      }
+
+      .calc-table .calc-source {
+        display: block;
+        font-size: 0.74rem;
+        font-weight: 400;
+        color: #4d6378;
+        white-space: normal;
+      }
+
       .toggle-row {
         display: flex;
         flex-wrap: wrap;
@@ -1938,6 +1981,7 @@
         .mini-card,
         .meta-pill,
         .formula-box,
+        .explain-box,
         .signature-box,
         .official-stamp,
         .urban-map-panel,
@@ -3174,7 +3218,7 @@
             <div class="section-title" id="capture-values">Valor unitario de terreno y fuentes</div>
             <div class="fieldset">
               <div class="row">
-                <label>Valor unitario de terreno ($/m²) <input name="valorUnitarioTerreno" type="number" min="0" step="0.01" placeholder="Capturar con fuente de mercado" /></label>
+                <label>Valor unitario de terreno ($/m²) <input name="valorUnitarioTerreno" type="number" min="0" step="0.01" placeholder="Vacío = valor homologado de los comparables" /></label>
                 <label>Fuente / fecha de costos o valores unitarios <input name="fuenteValoresUnitarios" placeholder="Indique fuente, fecha y alcance" /></label>
                 <label>Valor catastral <input name="valorCatastral" type="number" min="0" step="0.01" /></label>
               </div>
@@ -3214,7 +3258,7 @@
                 </label>
                 <label>Fuente de la renta <input name="fuenteRenta" placeholder="Contrato, comparables de renta, fecha" /></label>
                 <label>Superficie rentable (m²) <input name="superficieRentable" type="number" min="0" step="0.01" /></label>
-                <label>Renta unitaria mensual ($/m²) <input name="rentaUnitariaMensual" type="number" min="0" step="0.01" /></label>
+                <label>Renta unitaria mensual ($/m²) <input name="rentaUnitariaMensual" type="number" min="0" step="0.01" placeholder="Vacío = renta homologada de los comparables" /></label>
                 <label>Renta bruta mensual total ($) <input name="rentaBrutaMensual" type="number" min="0" step="0.01" placeholder="Solo si no se captura por m²" /></label>
               </div>
               <h3>Deducciones anuales</h3>
@@ -3424,44 +3468,34 @@
 
           <div class="formal-section">
             <h4>VII.- ENFOQUE COMPARATIVO DE MERCADO</h4>
-            <p>La estimación se calculará con comparables de construcción verificables y pertinentes al mercado del inmueble sujeto. Capture precio, superficie construida, ubicación, fuente y factores de homologación; no se consideran referencias incompletas.</p>
-            <p id="reportMarketStatus" class="technical-note">Pendiente: capturar y verificar comparables locales.</p>
-            <div class="formula-box">
-              <strong>Condicionantes del enfoque comparativo</strong>
-              <p>FRe = FZo × FUb × FSu × FEd × FCo × FPr × FOt × FNeg</p>
-              <p>Valor ajustado = (valor de oferta o venta / superficie construida) × FRe; componente del valor = valor ajustado × ponderación.</p>
-              <p>Valor unitario ajustado y ponderado = suma de componentes; valor de mercado = valor unitario ajustado y ponderado × superficie del sujeto.</p>
+            <div class="explain-box">
+              <strong>¿Cómo se obtiene este valor?</strong>
+              <p>Se investigan inmuebles parecidos que están en venta o que se vendieron en la zona. Como ninguno es idéntico al inmueble valuado, el precio por metro cuadrado de cada uno se corrige con factores de homologación (zona, ubicación, superficie, edad, conservación, proyecto, otros y negociación).</p>
+              <p>Un factor mayor que 1 indica que el comparable es inferior al inmueble valuado y su precio se ajusta hacia arriba; un factor menor que 1 indica que es superior y se ajusta hacia abajo. Los precios ya corregidos se promedian según el peso (ponderación) de cada comparable, y ese valor por m² se multiplica por los metros de construcción del inmueble.</p>
             </div>
-          </div>
-
-          <div class="summary-box">
-            <div class="mini-card"><strong>Valor físico</strong><span id="valorFisico">$0.00</span></div>
-            <div class="mini-card"><strong>Valor mercado</strong><span id="valorMercado">$0.00</span></div>
-            <div class="mini-card"><strong>Valor capitalización</strong><span id="valorCapitalizacion">$0.00</span></div>
-            <div class="mini-card"><strong>Valor final</strong><span id="valorFinal">$0.00</span></div>
+            <p id="reportMarketStatus" class="technical-note">Pendiente: capturar y verificar comparables locales.</p>
+            <div id="reportTable"></div>
+            <div id="reportMarketCalculation"></div>
+            <div id="reportConstructionComparablePhotos"></div>
           </div>
 
           <div class="formal-section">
             <h4>VIII.- ENFOQUE FÍSICO O DIRECTO</h4>
-            <p>El enfoque físico considera el costo de reposición o reproducción del inmueble, ajustado por depreciación funcional y física, así como por las condiciones de uso, antigüedad y nivel constructivo del bien.</p>
-            <div class="formula-box">
-              <strong>Condicionantes del enfoque físico</strong>
-              <p>Valor estimado = costo nuevo − depreciación física − depreciación funcional</p>
-              <p>Se consideran materiales, mano de obra, obra nueva equivalente, antigüedad y mantenimiento.</p>
+            <div class="explain-box">
+              <strong>¿Cómo se obtiene este valor?</strong>
+              <p>Responde a la pregunta: ¿cuánto costaría hoy volver a construir el inmueble, descontando el desgaste que ya tiene, más el valor de su terreno?</p>
+              <p>1) El terreno se valúa con el precio por m² obtenido de terrenos comparables en la zona. 2) Cada construcción se valúa con su costo nuevo por m² (V.R.N.), multiplicado por un factor de depreciación (F.R.H.) que descuenta la edad y el estado de conservación. 3) Se suman terreno, construcciones e instalaciones o elementos accesorios.</p>
             </div>
             <div id="reportLandComparables"></div>
             <div id="reportLandComparablePhotos"></div>
+            <div id="reportPhysicalCalculation"></div>
           </div>
 
           <div class="formal-section">
             <h4>IX.- ENFOQUE DE INGRESOS O CAPITALIZACIÓN DE RENTAS</h4>
-            <p>El enfoque de ingresos considera el rendimiento esperado del inmueble, con base en la renta potencial anual y la tasa de capitalización aplicada, para reflejar la capacidad de generación de valor por concepto de uso o arrendamiento.</p>
-            <div class="formula-box">
-              <strong>Condicionantes del enfoque de ingresos</strong>
-              <p>Renta bruta anual = Renta bruta mensual × 12</p>
-              <p>Producto líquido anual = Renta bruta anual − Deducciones</p>
-              <p>Valor por capitalización = Producto líquido anual / Tasa de capitalización</p>
-              <p>Se analiza ingreso anual, estabilidad de ocupación, riesgo de mercado y condiciones de arrendamiento.</p>
+            <div class="explain-box">
+              <strong>¿Cómo se obtiene este valor?</strong>
+              <p>Responde a la pregunta: ¿cuánto vale el inmueble por la renta que puede producir? Se estima la renta mensual con rentas de inmuebles comparables, se pasa a renta anual, se restan los gastos del propietario (vacíos, mantenimiento, administración, predial, seguros, etc.) y la utilidad neta se divide entre la tasa de capitalización, que es el rendimiento anual que espera un inversionista.</p>
             </div>
             <div id="reportRentComparables"></div>
             <div id="reportRentComparablePhotos"></div>
@@ -3472,27 +3506,16 @@
 
           <div class="formal-section">
             <h4>X.- CONCLUSIÓN Y VALOR FINAL</h4>
+            <div class="summary-box">
+              <div class="mini-card"><strong>Valor de mercado</strong><span id="valorMercado">$0.00</span></div>
+              <div class="mini-card"><strong>Valor físico</strong><span id="valorFisico">$0.00</span></div>
+              <div class="mini-card"><strong>Valor por capitalización</strong><span id="valorCapitalizacion">$0.00</span></div>
+              <div class="mini-card"><strong>Valor concluido</strong><span id="valorFinal">$0.00</span></div>
+            </div>
             <div id="reportConclusion">
               <p>La conclusión se generará al procesar los tres enfoques con la información capturada. Los resultados son preliminares y requieren revisión profesional y respaldo documental.</p>
             </div>
             <div id="reportConclusionValuer" class="report-valuer"></div>
-          </div>
-
-          <div class="formula-box">
-            <strong>Procedimiento de cálculo</strong>
-            <p>VU = Pv / S</p>
-            <p>VA = VU × FRe</p>
-            <p>VUP = Σ (VA × Pond)</p>
-            <p>Vm = VUP × Ssujeto × ajuste de mercado</p>
-            <p id="formulaDetail">Se calculará a partir de los datos capturados.</p>
-          </div>
-
-          <div class="section-title">Tabla de comparables</div>
-          <div id="reportTable"></div>
-          <div id="reportConstructionComparablePhotos"></div>
-          <div class="section-title">Cuadro de cálculo del inmueble sujeto</div>
-          <div id="subjectCalculationTable" class="table-scroll">
-            <p>Se integrará al procesar las superficies capturadas.</p>
           </div>
 
           <div class="formal-section">
@@ -3566,7 +3589,6 @@
       const technicalDescriptions = window.TechnicalDescriptions;
       const result = document.getElementById('result');
       const reportTable = document.getElementById('reportTable');
-      const formulaDetail = document.getElementById('formulaDetail');
       const attachmentPreview = document.getElementById('attachmentPreview');
       const photosPreview = document.getElementById('photosPreview');
       const croquisPreview = document.getElementById('croquisPreview');
@@ -5617,9 +5639,10 @@
         const percent = value => (value === null || value === undefined ? '—' : `${Number(value).toLocaleString('es-MX', { maximumFractionDigits: 2 })}%`);
         const headers = ['Comparable', config.priceLabel, config.surfaceLabel, config.unitLabel, ...config.factors.map(([, , abbreviation]) => abbreviation), 'F. resultante', 'Valor homologado', 'Pond.', 'Componente del valor'];
         const rows = result.rows.map(row => `<tr><td>${escapeHtml(row.address)}</td><td>${row.price > 0 ? money(row.price) : '—'}</td><td>${row.surface > 0 ? row.surface.toFixed(2) : '—'}</td><td>${row.valid ? money(row.unitValue) : 'Incompleto'}</td>${config.factors.map(([key]) => `<td>${Number(row.factors[key]).toFixed(2)}</td>`).join('')}<td>${row.factorProduct.toFixed(4)}</td><td>${row.valid ? money(row.homologatedUnitValue) : '—'}</td><td>${percent(row.weight)}</td><td>${row.valid ? money(row.component) : '—'}</td></tr>`).join('');
-        const totalWeight = result.rows.reduce((sum, row) => sum + (Number(row.weight) || 0), 0);
+        const weightSum = result.rows.reduce((sum, row) => sum + (Number(row.weight) || 0), 0);
+        const totalWeight = Math.abs(weightSum - 100) < 0.05 ? 100 : weightSum;
         const averageRow = `<tr><td colspan="${headers.length - 2}"><strong>Valor homologado y ponderado (${result.validCount} comparable(s) válido(s))</strong></td><td><strong>${percent(totalWeight)}</strong></td><td><strong>${result.averageUnitValue > 0 ? money(result.averageUnitValue) : 'Pendiente'}</strong></td></tr>`;
-        container.innerHTML = `<h5>${config.title}</h5><div class="table-scroll"><table class="capture-table"><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}${averageRow}</tbody></table></div><p class="technical-note">${config.factors.map(([, label, abbreviation]) => `${abbreviation} = ${label}`).join(', ')}. Valor homologado = valor unitario × F. resultante; componente = valor homologado × ponderación; el resultado es la suma de componentes.${marketWeightingNote(result)}</p>`;
+        container.innerHTML = `<h5>Paso 1. ${config.title}</h5><div class="table-scroll"><table class="capture-table"><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}${averageRow}</tbody></table></div><p class="technical-note">${config.factors.map(([, label, abbreviation]) => `${abbreviation} = ${label}`).join(', ')}. Valor unitario = ${group === 'land' ? 'precio' : 'renta'} ÷ superficie. Valor homologado = valor unitario × F. resultante (producto de los factores). Componente = valor homologado × ponderación. La suma de los componentes es ${group === 'land' ? 'el valor por m² de terreno que se aplica en el cálculo del valor físico' : 'la renta mensual por m² que se aplica en el cálculo de la renta del inmueble'}.${marketWeightingNote(result)}</p>`;
       }
 
       function marketWeightingNote(result) {
@@ -5637,8 +5660,16 @@
         const average = Number(result?.averageUnitValue) || 0;
         button.disabled = average <= 0;
         button.dataset.value = average > 0 ? String(average) : '';
+        const field = form.elements.namedItem(isLand ? 'valorUnitarioTerreno' : 'rentaUnitariaMensual');
+        const fieldLabel = isLand ? 'Valor unitario de terreno' : 'Renta unitaria mensual';
+        const captured = Number(field?.value) || 0;
+        const usage = average <= 0 ? ''
+          : captured <= 0 ? ` Se aplica automáticamente en "${fieldLabel}" porque ese campo está vacío.`
+            : Math.abs(captured - average) > 0.01 ? ` Atención: en "${fieldLabel}" está capturado ${money(captured)}/m², y ese es el que se usa; bórrelo para aplicar el homologado.`
+              : ` Aplicado en "${fieldLabel}".`;
+        if (field) field.placeholder = average > 0 ? `Vacío = homologado ${money(average)}` : `Vacío = ${isLand ? 'valor homologado' : 'renta homologada'} de los comparables`;
         message.textContent = average > 0
-          ? `${isLand ? 'Valor unitario de terreno homologado y ponderado' : 'Renta unitaria mensual homologada y ponderada'}: ${money(average)}/m² (${result.validCount} comparable(s) válido(s)).${marketWeightingNote(result)}`
+          ? `${isLand ? 'Valor unitario de terreno homologado y ponderado' : 'Renta unitaria mensual homologada y ponderada'}: ${money(average)}/m² (${result.validCount} comparable(s) válido(s)).${marketWeightingNote(result)}${usage}`
           : `Capture ${isLand ? 'precio' : 'renta'} y superficie de al menos un comparable para obtener el valor homologado.`;
         // Cálculo de cada tarjeta.
         for (let index = 0; index < MARKET_COMPARABLE_CONFIG[group].count; index += 1) {
@@ -5695,7 +5726,7 @@
         const captureResult = document.getElementById('constructionComparablesResult');
         if (captureResult) {
           captureResult.textContent = rows.length
-            ? `Valor unitario ajustado y ponderado: ${money(weighted)}/m² con ${rows.length} comparable(s).${{ equal: ' Ponderación igual para cada uno.', captured: ' Ponderación capturada (suma 100 %).', normalized: ` Las ponderaciones sumaban ${data.summary.weightsCapturedTotal} %; se ajustaron a 100 %.` }[data.summary.weightingMode] || ''}`
+            ? `Valor unitario ajustado y ponderado: ${money(weighted)}/m² con ${rows.length} comparable(s).${data.summary.valorMercado > 0 ? ` Valor de mercado: ${money(weighted)}/m² × ${areaText(data.summary.constructionSurface)}${data.summary.marketAdjustment !== 1 ? ` × ajuste ${data.summary.marketAdjustment}` : ''} = ${money(data.summary.valorMercado)}.` : ' Capture la superficie de construcción del inmueble para obtener el valor de mercado.'}${{ equal: ' Ponderación igual para cada uno.', captured: ' Ponderación capturada (suma 100 %).', normalized: ` Las ponderaciones sumaban ${data.summary.weightsCapturedTotal} %; se ajustaron a 100 %.` }[data.summary.weightingMode] || ''}`
             : 'Capture precio y superficie de al menos un comparable para obtener el valor unitario ajustado y ponderado.';
         }
 
@@ -5714,16 +5745,17 @@
             ${factorDefinitions.map(({ key }) => `<td>${factor(item.factors?.[key])}</td>`).join('')}
             <td>${Number(item.factorProduct).toFixed(4)}</td><td>${money(item.unitValuePerM2)}</td><td>${percent(item.weight)}</td><td>${money(item.component)}</td>
           </tr>`).join('');
-        const totalWeight = rows.reduce((sum, item) => sum + Number(item.weight || 0), 0);
+        const weightSum = rows.reduce((sum, item) => sum + Number(item.weight || 0), 0);
+        const totalWeight = Math.abs(weightSum - 100) < 0.05 ? 100 : weightSum;
 
         reportTable.innerHTML = `
-          <h5>Comparables de construcción</h5>
+          <h5>Paso 1. Comparables de construcción investigados</h5>
           <table>
             <thead><tr><th>Ref.</th><th>Dirección</th><th>Tipo y fecha del dato</th><th>Sup. construida</th><th>Terreno*</th><th>Distancia</th></tr></thead>
             <tbody>${dataRows}</tbody>
           </table>
           <p class="technical-note">* Superficie de terreno del comparable, solo de referencia: no interviene en la homologación.</p>
-          <h5>Análisis por homologación y ajustes</h5>
+          <h5>Paso 2. Análisis por homologación y ajustes</h5>
           <div class="table-scroll"><table class="homologation-table">
             <thead>
               <tr><th>Ref.</th><th>Valor oferta o venta</th><th>Valor unitario ($/m²)</th>${factorDefinitions.map(({ code, label }) => `<th title="${escapeHtml(label)}">${code}</th>`).join('')}<th>FRe</th><th>Valor ajustado ($/m²)</th><th>Pond.</th><th>Componente del valor</th></tr>
@@ -5738,8 +5770,9 @@
           </div>
           <div class="homologation-legend">
             ${factorDefinitions.map(({ code, label }) => `<span>${code} = ${escapeHtml(label)}</span>`).join('')}
-            <span>FRe = Factor Resultante</span>
+            <span>FRe = Factor Resultante (producto de todos los factores)</span>
           </div>
+          <p class="technical-note">Valor unitario = precio ÷ superficie construida. Valor ajustado = valor unitario × FRe. Componente del valor = valor ajustado × ponderación. La suma de los componentes es el valor por m² de mercado que se aplica en el paso 3.</p>
         `;
       }
 
@@ -5775,50 +5808,68 @@
         if (!container.childElementCount) container.textContent = 'Sin información capturada; completar y verificar en expediente o visita.';
       }
 
-      function renderSubjectCalculationTable(data, payload) {
-        const container = document.getElementById('subjectCalculationTable');
-        const surfaces = payload.surfaceSummary;
-        const subject = payload.subject;
-        const area = value => Number(value) > 0 ? `${Number(value).toFixed(2)} m²` : 'Pendiente';
-        const unitValue = value => Number(value) > 0 ? `${money(value)}/m²` : 'Pendiente';
-        const amount = value => Number(value) > 0 ? money(value) : 'Pendiente';
-        const difference = surfaces.declaredConstructionSurface - surfaces.constructionBreakdownSurface;
-        const differenceText = Math.abs(difference) <= 0.01
-          ? 'Conciliada'
-          : `Diferencia ${difference > 0 ? '+' : ''}${difference.toFixed(2)} m²`;
-        const rows = [
-          ['Superficie de terreno capturada', area(surfaces.terrainSurface), '—', '—', 'Dato manual de terreno'],
-          ['Terreno para cálculo físico', area(surfaces.landSurfaceUsed), unitValue(subject.unitLandValue), amount(data.summary.valorTerreno), `${surfaces.landSurfaceSource} × valor unitario de terreno capturado`],
-          ['Construcción para enfoque de mercado', area(surfaces.declaredConstructionSurface), unitValue(data.summary.averageUnitValuePerM2), amount(data.summary.valorMercado), 'Área capturada × valor unitario ajustado y ponderado de los comparables'],
-          ['Conciliación del área de construcción', area(surfaces.constructionBreakdownSurface), '—', differenceText, `Captura general: ${area(surfaces.declaredConstructionSurface)}; fuente: ${surfaces.constructionSurfaceSource}`],
-          ['Construcción para enfoque físico', area(surfaces.constructionBreakdownSurface), surfaces.replacementUnitValueApplied ? unitValue(surfaces.replacementUnitValue) : 'V.U. por partida', amount(data.summary.valorConstruccion), 'Suma de partidas con costo unitario y factor de depreciación capturados'],
-          ['Accesorios y elementos', '—', '—', amount(data.summary.valorAccesorios), 'Solo elementos con cantidad, valor unitario y depreciación capturados'],
-          ['Valor físico', '—', '—', amount(data.summary.valorFisico), 'Suma de componentes físicos calculados'],
-          ['Valor por capitalización', '—', '—', amount(data.summary.valorCapitalizacion), 'Producto líquido anual / tasa de capitalización (desarrollo en sección IX)']
-        ];
+      // Cuadro de cálculo; cada celda es texto o { text, source } y las filas pueden marcarse como subtotal o total.
+      function calculationTableHtml(title, headers, rows, note) {
+        const cell = value => (value && typeof value === 'object'
+          ? `${escapeHtml(value.text)}${value.source ? `<span class="calc-source">${escapeHtml(value.source)}</span>` : ''}`
+          : escapeHtml(value ?? '—'));
+        const body = rows.map(row => `<tr${row.kind ? ` class="calc-${row.kind}"` : ''}>${row.cells.map(value => `<td>${cell(value)}</td>`).join('')}</tr>`).join('');
+        return `<h5>${escapeHtml(title)}</h5><div class="table-scroll"><table class="capture-table calc-table"><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>${note ? `<p class="technical-note">${escapeHtml(note)}</p>` : ''}`;
+      }
 
-        const table = document.createElement('table');
-        table.className = 'capture-table';
-        const head = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        ['Concepto', 'Superficie', 'Valor unitario', 'Importe', 'Base de cálculo'].forEach(label => {
-          const cell = document.createElement('th');
-          cell.textContent = label;
-          headerRow.appendChild(cell);
+      const areaText = value => (Number(value) > 0 ? `${Number(value).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²` : 'Pendiente');
+      const amountText = value => (Number(value) > 0 ? money(value) : 'Pendiente');
+
+      // Enfoque de mercado: del valor unitario homologado y ponderado al valor de mercado del inmueble.
+      function renderMarketCalculation(data) {
+        const container = document.getElementById('reportMarketCalculation');
+        const summary = data.summary;
+        const validCount = (data.homologationTable || []).filter(item => item.valid).length;
+        if (!validCount) {
+          container.replaceChildren();
+          return;
+        }
+        const unit = summary.averageUnitValuePerM2;
+        const adjusted = summary.marketAdjustment !== 1;
+        const rows = [
+          { cells: [{ text: 'Valor por m² de mercado', source: `Promedio ponderado de ${validCount} comparable(s) homologado(s): total de la columna "Componente del valor" del cuadro anterior` }, '—', `${money(unit)}/m²`] },
+          { cells: ['Superficie de construcción del inmueble valuado', '—', areaText(summary.constructionSurface)] },
+          { cells: [adjusted ? 'Valor antes de ajuste' : 'Valor comparativo de mercado', `${money(unit)}/m² × ${areaText(summary.constructionSurface)}`, amountText(summary.marketValueBeforeAdjustment)], kind: adjusted ? 'subtotal' : 'total' }
+        ];
+        if (adjusted) {
+          rows.push({ cells: ['Valor comparativo de mercado', `${amountText(summary.marketValueBeforeAdjustment)} × ajuste de mercado ${summary.marketAdjustment}`, amountText(summary.valorMercado)], kind: 'total' });
+        }
+        container.innerHTML = calculationTableHtml('Paso 3. Aplicación del valor homologado al inmueble valuado', ['Concepto', 'Cálculo', 'Resultado'], rows);
+      }
+
+      // Enfoque físico: terreno (valor homologado o capturado) + construcciones depreciadas + accesorios.
+      function renderPhysicalCalculation(data, payload) {
+        const container = document.getElementById('reportPhysicalCalculation');
+        const summary = data.summary;
+        const unitLand = summary.unitLandValue;
+        const landSource = {
+          homologated: `Valor homologado y ponderado de ${data.landComparables?.validCount || 0} comparable(s) de terreno (cuadro anterior)`,
+          captured: `Capturado por el valuador${payload.capture.fuenteValoresUnitarios ? `; fuente: ${payload.capture.fuenteValoresUnitarios}` : ''}${summary.homologatedLandValue > 0 && Math.abs(summary.homologatedLandValue - unitLand) > 0.01 ? `. La homologación de comparables indica ${money(summary.homologatedLandValue)}/m²` : ''}`,
+          none: 'Falta valor unitario: capture comparables de terreno o el valor unitario de terreno'
+        }[summary.unitLandValueSource];
+        const factorText = value => (typeof value === 'number' ? value.toFixed(4) : 'Pendiente');
+        const unitText = (value, suffix) => (Number(value) > 0 ? `${money(value)}${suffix}` : 'Pendiente');
+        const rows = [
+          { cells: [{ text: 'Terreno', source: landSource }, areaText(summary.terrainSurface), unitText(unitLand, '/m²'), '1.0000', unitText(unitLand, '/m²'), amountText(summary.valorTerreno)] }
+        ];
+        payload.buildingItems.forEach(row => {
+          const net = typeof row.frh === 'number' && Number(row.unitValue) > 0 ? Number(row.unitValue) * row.frh : 0;
+          const details = [row.quality, row.conservation ? heideckeLabel(row.conservation) : '', row.age != null && row.age !== '' ? `${row.age} años` : ''].filter(Boolean).join(' · ');
+          rows.push({ cells: [{ text: `Construcción: ${row.type || 'sin especificar'}`, source: details }, areaText(row.surface), unitText(row.unitValue, '/m²'), factorText(row.frh), unitText(net, '/m²'), amountText(net * (Number(row.surface) || 0))] });
         });
-        head.appendChild(headerRow);
-        const body = document.createElement('tbody');
-        rows.forEach(values => {
-          const row = document.createElement('tr');
-          values.forEach(value => {
-            const cell = document.createElement('td');
-            cell.textContent = String(value);
-            row.appendChild(cell);
-          });
-          body.appendChild(row);
+        payload.accessoryItems.forEach(row => {
+          const net = typeof row.frh === 'number' && Number(row.unitValue) > 0 ? Number(row.unitValue) * row.frh : 0;
+          const indiviso = row.indiviso == null ? 1 : Number(row.indiviso) / 100;
+          rows.push({ cells: [{ text: `Accesorio: ${row.description || 'sin descripción'}`, source: row.indiviso == null ? '' : `Indiviso ${row.indiviso} %` }, `${row.quantity ?? '—'} ${row.unit || ''}`.trim(), unitText(row.unitValue, ''), factorText(row.frh), unitText(net, ''), amountText(net * (Number(row.quantity) || 0) * indiviso)] });
         });
-        table.append(head, body);
-        container.replaceChildren(table);
+        rows.push({ cells: ['Valor físico o directo (suma)', '', '', '', '', amountText(summary.valorFisico)], kind: 'total' });
+        container.innerHTML = calculationTableHtml('Cálculo del valor físico', ['Concepto', 'Superficie o cantidad', 'Valor unitario nuevo', 'Factor de depreciación (F.R.H.)', 'Valor unitario neto', 'Importe'], rows,
+          'Valor unitario neto = valor unitario nuevo × F.R.H.; importe = superficie o cantidad × valor unitario neto. El terreno no se deprecia (factor 1).');
       }
 
       function renderIncomeApproach(income, captured) {
@@ -5873,7 +5924,7 @@
             { values: ['Tipo de renta', captured.tipoRenta || 'Sin especificar', '—'] },
             { values: ['Fuente de la renta', captured.fuenteRenta || 'Sin especificar', '—'] },
             ...(income.rentableArea > 0 && income.unitMonthlyRent > 0
-              ? [{ values: ['Superficie rentable × renta unitaria mensual', `${income.rentableArea.toFixed(2)} m² × ${money(income.unitMonthlyRent)}/m²`, money(income.grossMonthlyRent)] }]
+              ? [{ values: [income.unitRentSource === 'homologated' ? 'Superficie rentable × renta mensual por m² homologada de los comparables de renta' : 'Superficie rentable × renta unitaria mensual', `${income.rentableArea.toFixed(2)} m² × ${money(income.unitMonthlyRent)}/m²`, money(income.grossMonthlyRent)] }]
               : [{ values: ['Renta bruta mensual total capturada', '—', money(income.grossMonthlyRent)] }]),
             { values: ['Renta bruta anual', `${money(income.grossMonthlyRent)} × 12 meses`, money(income.grossAnnualRent)], strong: true }
           ]);
@@ -5906,30 +5957,33 @@
         container.replaceChildren(fragment);
       }
 
-      function renderConclusion(summary, captured) {
+      function renderConclusion(summary, captured, data) {
         const container = document.getElementById('reportConclusion');
         const showAmount = value => Number(value) > 0 ? money(value) : 'Pendiente';
         const approaches = [
-          ['market', 'Comparativo de mercado', summary.valorMercado, summary.marketValuationStatus],
-          ['physical', 'Físico o directo', summary.valorFisico, summary.physicalValuationStatus],
-          ['income', 'Ingresos (capitalización de rentas)', summary.valorCapitalizacion, summary.incomeValuationStatus]
+          ['market', 'Comparativo de mercado', summary.valorMercado, summary.marketValuationStatus,
+            summary.valorMercado > 0 ? `${money(summary.averageUnitValuePerM2)}/m² de mercado × ${areaText(summary.constructionSurface)} de construcción${summary.marketAdjustment !== 1 ? ` × ajuste ${summary.marketAdjustment}` : ''}` : 'Precio de inmuebles parecidos, corregido y aplicado a los m² del inmueble'],
+          ['physical', 'Físico o directo', summary.valorFisico, summary.physicalValuationStatus,
+            summary.valorFisico > 0 ? `Terreno ${money(summary.valorTerreno)} + construcciones ${money(summary.valorConstruccion)} + accesorios ${money(summary.valorAccesorios)}` : 'Terreno + costo de construir de nuevo, menos el desgaste'],
+          ['income', 'Ingresos (capitalización de rentas)', summary.valorCapitalizacion, summary.incomeValuationStatus,
+            summary.valorCapitalizacion > 0 && data?.incomeApproach ? `Renta neta anual ${money(data.incomeApproach.netAnnualIncome)} ÷ tasa ${(data.incomeApproach.capRate * 100).toFixed(2)} %` : 'Renta neta anual ÷ tasa de capitalización']
         ];
 
         const table = document.createElement('table');
         table.className = 'capture-table';
         const head = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        ['Enfoque', 'Valor resultante', 'Selección'].forEach(label => {
+        ['Enfoque', 'Cómo se obtuvo', 'Valor resultante', 'Selección'].forEach(label => {
           const cell = document.createElement('th');
           cell.textContent = label;
           headerRow.appendChild(cell);
         });
         head.appendChild(headerRow);
         const body = document.createElement('tbody');
-        approaches.forEach(([key, label, value]) => {
+        approaches.forEach(([key, label, value, , how]) => {
           const row = document.createElement('tr');
           const isSelected = key === summary.finalApproach;
-          [label, showAmount(value), isSelected ? 'Enfoque concluido' : '—'].forEach(text => {
+          [label, how, showAmount(value), isSelected ? 'Enfoque concluido' : '—'].forEach(text => {
             const cell = document.createElement('td');
             if (isSelected) {
               const strong = document.createElement('strong');
@@ -6084,15 +6138,9 @@
         document.getElementById('valorCapitalizacion').textContent = showCalculatedAmount(data.summary.valorCapitalizacion);
         document.getElementById('valorFinal').textContent = showCalculatedAmount(data.summary.finalValue);
 
-        formulaDetail.textContent = [
-          'Valor unitario ajustado y ponderado: ' + showCalculatedAmount(data.summary.averageUnitValuePerM2) + '/m²',
-          'Valor final estimado: ' + showCalculatedAmount(data.summary.finalValue),
-          'Valor físico: ' + showCalculatedAmount(data.summary.valorFisico),
-          'Valor de mercado: ' + showCalculatedAmount(data.summary.valorMercado)
-        ].join(' | ');
-
         renderConstructionHomologation(data, payload);
-        renderSubjectCalculationTable(data, payload);
+        renderMarketCalculation(data);
+        renderPhysicalCalculation(data, payload);
         renderIncomeApproach(data.incomeApproach, captured);
         renderMarketComparablesReport('land', data.landComparables);
         renderMarketComparablesReport('rent', data.rentComparables);
@@ -6100,7 +6148,7 @@
         updateMarketComparableResult('rent', data.rentComparables);
         renderComparablePhotoGalleries();
 
-        renderConclusion(data.summary, captured);
+        renderConclusion(data.summary, captured, data);
         document.getElementById('reportProcedure').textContent = data.summary.finalApproachLabel;
         document.getElementById('reportObservations').textContent = captured.observaciones || '';
         document.getElementById('reportMarketStatus').textContent = data.summary.marketValuationStatus;

@@ -198,3 +198,23 @@ test('los factores de construcción y acabados (FCn y FAc) ya no intervienen en 
   assert.equal('finish' in result.homologationTable[0].factors, false);
   assert.equal(result.summary.averageUnitValuePerM2, 10000);
 });
+
+test('aplica el valor homologado de terreno y la renta homologada cuando los campos quedan vacíos', () => {
+  const landComparables = [{ id: 1, price: 1000000, surface: 200 }, { id: 2, price: 1200000, surface: 200 }];
+  const rentComparables = [{ id: 1, price: 20000, surface: 100 }];
+  const subject = { surface: 150, constructionSurface: 100, capRate: 0.08, income: { rentableArea: 100 } };
+
+  const automatic = calculateHomologation({ subject, landComparables, rentComparables });
+  assert.equal(automatic.summary.unitLandValueSource, 'homologated');
+  assert.equal(automatic.summary.unitLandValue, 5500);
+  assert.equal(automatic.summary.valorTerreno, 825000);
+  assert.equal(automatic.incomeApproach.unitRentSource, 'homologated');
+  assert.equal(automatic.incomeApproach.grossMonthlyRent, 20000);
+
+  const captured = calculateHomologation({ subject: { ...subject, unitLandValue: 6000, income: { rentableArea: 100, unitMonthlyRent: 150 } }, landComparables, rentComparables });
+  assert.equal(captured.summary.unitLandValueSource, 'captured');
+  assert.equal(captured.summary.homologatedLandValue, 5500);
+  assert.equal(captured.summary.valorTerreno, 900000);
+  assert.equal(captured.incomeApproach.unitRentSource, 'captured');
+  assert.equal(captured.incomeApproach.grossMonthlyRent, 15000);
+});
