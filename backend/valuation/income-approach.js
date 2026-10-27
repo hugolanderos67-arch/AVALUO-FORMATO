@@ -75,7 +75,8 @@ function calculateIncomeApproach(subject = {}) {
   if (grossAnnualRent <= 0) {
     status = 'Capitalización pendiente: capture superficie rentable y renta unitaria mensual, o la renta bruta mensual total, con soporte documental; no se estimó renta.';
   } else if (netAnnualIncome <= 0) {
-    status = 'Capitalización no aplicable: las deducciones capturadas igualan o superan la renta bruta anual; revise los importes.';
+    const overLimit = deductions.filter(item => PERCENT_DEDUCTIONS.some(({ key }) => key === item.key) && item.percent > 100);
+    status = `Capitalización no aplicable: las deducciones (${totalDeductions.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}) igualan o superan la renta bruta anual (${grossAnnualRent.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}).${overLimit.length ? ` ${overLimit.map(item => `${item.label}: ${item.percent} %`).join(', ')} supera el 100 % de la renta.` : ''} Revise los importes.`;
   } else if (capRate <= 0) {
     status = 'Capitalización pendiente: capture la tasa de capitalización aplicable y su justificación; no se estimó tasa.';
   } else {

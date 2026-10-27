@@ -1724,6 +1724,12 @@
         color: #203649;
       }
 
+      #incomeApproachResult.income-warning {
+        border-left-color: #b4232a;
+        background: #fff4f2;
+        color: #7a1d18;
+      }
+
       .explain-box {
         border-left: 4px solid #0f4c81;
         background: #f6f9fc;
@@ -3278,6 +3284,7 @@
                 <label>Tasa de capitalización (%) <input name="capRate" type="number" min="0" step="0.01" placeholder="Ejemplo: 8 para capturar 8%" /></label>
                 <label>Justificación de la tasa <textarea name="justificacionTasa" placeholder="Método (mercado, sumatoria de riesgos, banda de inversión), fuentes y fecha"></textarea></label>
               </div>
+              <p id="incomeApproachResult" class="technical-note" role="status">Capture la renta, las deducciones y la tasa para obtener el valor por capitalización.</p>
             </div>
 
             <div class="section-title capture-target" id="capture-conclusion" tabindex="-1">X.- CONCLUSIÓN Y VALOR FINAL</div>
@@ -5872,6 +5879,26 @@
           'Valor unitario neto = valor unitario nuevo × F.R.H.; importe = superficie o cantidad × valor unitario neto. El terreno no se deprecia (factor 1).');
       }
 
+      // Resultado del enfoque de ingresos en la captura, con avisos de datos que impiden el cálculo.
+      function updateIncomeApproachResult(income) {
+        const message = document.getElementById('incomeApproachResult');
+        if (!message || !income) return;
+        const warnings = [];
+        [['deduccionVacios', 'Vacíos'], ['deduccionMantenimiento', 'Conservación y mantenimiento'], ['deduccionAdministracion', 'Administración']].forEach(([name, label]) => {
+          const value = Number(form.elements.namedItem(name)?.value) || 0;
+          if (value > 100) warnings.push(`"${label}" tiene ${value} %, más del 100 % de la renta (un mes de vacíos al año es 8.33 %).`);
+        });
+        const smallAmounts = [['deduccionPredial', 'Impuesto predial'], ['deduccionAgua', 'Servicio de agua'], ['deduccionEnergia', 'Energía eléctrica'], ['deduccionSeguros', 'Seguros'], ['deduccionOtros', 'Otros gastos'], ['deduccionIsr', 'I.S.R.']]
+          .filter(([name]) => { const value = Number(form.elements.namedItem(name)?.value) || 0; return value > 0 && value < 100; })
+          .map(([, label]) => label);
+        if (smallAmounts.length) warnings.push(`${smallAmounts.join(', ')}: estos campos son importes en pesos al año, no porcentajes; revise si capturó un porcentaje.`);
+        const result = income.value > 0
+          ? `Valor por capitalización: renta neta anual ${money(income.netAnnualIncome)} ÷ tasa ${(income.capRate * 100).toFixed(2)} % = ${money(income.value)}.`
+          : income.status;
+        message.textContent = [result, ...warnings.map(text => `⚠ ${text}`)].join(' ');
+        message.classList.toggle('income-warning', warnings.length > 0 || !(income.value > 0));
+      }
+
       function renderIncomeApproach(income, captured) {
         const container = document.getElementById('reportIncomeApproach');
         const amount = value => Number(value) > 0 ? money(value) : '—';
@@ -6142,6 +6169,7 @@
         renderMarketCalculation(data);
         renderPhysicalCalculation(data, payload);
         renderIncomeApproach(data.incomeApproach, captured);
+        updateIncomeApproachResult(data.incomeApproach);
         renderMarketComparablesReport('land', data.landComparables);
         renderMarketComparablesReport('rent', data.rentComparables);
         updateMarketComparableResult('land', data.landComparables);
