@@ -1059,6 +1059,59 @@
         color: #102c4d;
       }
 
+      /* Recuadro del valor concluido: el dato principal del dictamen. */
+      .final-value-box {
+        margin: 18px 0;
+        padding: 18px 20px;
+        border: 3px double #0f4c81;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #f3f8fe 0%, #ffffff 100%);
+        text-align: center;
+        break-inside: avoid;
+      }
+
+      .final-value-box .final-value-label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #0f4c81;
+      }
+
+      .final-value-box .final-value-amount {
+        display: block;
+        margin: 6px 0 4px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 2.3rem;
+        font-weight: 700;
+        color: #0b2f55;
+        line-height: 1.15;
+      }
+
+      .final-value-box .final-value-words {
+        display: block;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #203649;
+      }
+
+      .final-value-box .final-value-meta {
+        display: block;
+        margin-top: 8px;
+        font-size: 0.8rem;
+        color: #4d6378;
+      }
+
+      .final-value-box.pending .final-value-amount {
+        font-size: 1.4rem;
+        color: #8a5a00;
+      }
+
+      .conclusion-selected td {
+        background: #eaf3fd;
+      }
+
       .formal-section {
         background: #fff;
         border: 1px solid #dceaf7;
@@ -1928,9 +1981,12 @@
           grid-template-columns: 1.3fr 0.7fr;
         }
 
-        .official-meta-bar,
-        .summary-box {
+        .official-meta-bar {
           grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .summary-box {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         /* Dos columnas con flex: Chrome no parte una cuadrícula de dos columnas entre hojas y la mueve completa. */
@@ -3517,7 +3573,6 @@
               <div class="mini-card"><strong>Valor de mercado</strong><span id="valorMercado">$0.00</span></div>
               <div class="mini-card"><strong>Valor físico</strong><span id="valorFisico">$0.00</span></div>
               <div class="mini-card"><strong>Valor por capitalización</strong><span id="valorCapitalizacion">$0.00</span></div>
-              <div class="mini-card"><strong>Valor concluido</strong><span id="valorFinal">$0.00</span></div>
             </div>
             <div id="reportConclusion">
               <p>La conclusión se generará al procesar los tres enfoques con la información capturada. Los resultados son preliminares y requieren revisión profesional y respaldo documental.</p>
@@ -5984,6 +6039,27 @@
         container.replaceChildren(fragment);
       }
 
+      // Importe con letra al estilo de los dictámenes: "TRES MILLONES ... PESOS 70/100 M.N.".
+      function amountInWords(amount) {
+        const units = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+        const teens = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISÉIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE',
+          'VEINTE', 'VEINTIÚN', 'VEINTIDÓS', 'VEINTITRÉS', 'VEINTICUATRO', 'VEINTICINCO', 'VEINTISÉIS', 'VEINTISIETE', 'VEINTIOCHO', 'VEINTINUEVE'];
+        const tens = ['', '', '', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+        const hundreds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+        const belowHundred = n => (n < 10 ? units[n] : n < 30 ? teens[n - 10] : `${tens[Math.floor(n / 10)]}${n % 10 ? ` Y ${units[n % 10]}` : ''}`);
+        const belowThousand = n => (n === 100 ? 'CIEN' : [hundreds[Math.floor(n / 100)], belowHundred(n % 100)].filter(Boolean).join(' '));
+        const belowMillion = n => {
+          const thousands = Math.floor(n / 1000);
+          return [thousands === 0 ? '' : thousands === 1 ? 'MIL' : `${belowThousand(thousands)} MIL`, belowThousand(n % 1000)].filter(Boolean).join(' ');
+        };
+        const cents = Math.round(Number(amount) * 100);
+        const pesos = Math.floor(cents / 100);
+        const millions = Math.floor(pesos / 1000000);
+        const rest = pesos % 1000000;
+        const words = pesos === 0 ? 'CERO' : [millions === 0 ? '' : millions === 1 ? 'UN MILLÓN' : `${belowMillion(millions)} MILLONES`, belowMillion(rest)].filter(Boolean).join(' ');
+        return `${words}${millions > 0 && rest === 0 ? ' DE' : ''} ${pesos === 1 ? 'PESO' : 'PESOS'} ${String(cents % 100).padStart(2, '0')}/100 M.N.`;
+      }
+
       function renderConclusion(summary, captured, data) {
         const container = document.getElementById('reportConclusion');
         const showAmount = value => Number(value) > 0 ? money(value) : 'Pendiente';
@@ -6010,6 +6086,7 @@
         approaches.forEach(([key, label, value, , how]) => {
           const row = document.createElement('tr');
           const isSelected = key === summary.finalApproach;
+          if (isSelected) row.className = 'conclusion-selected';
           [label, how, showAmount(value), isSelected ? 'Enfoque concluido' : '—'].forEach(text => {
             const cell = document.createElement('td');
             if (isSelected) {
@@ -6028,13 +6105,21 @@
         tableWrapper.className = 'table-scroll';
         tableWrapper.appendChild(table);
 
-        const finalStatement = document.createElement('p');
-        const finalLabel = document.createElement('strong');
-        finalLabel.textContent = 'Valor concluido: ';
-        finalStatement.appendChild(finalLabel);
-        finalStatement.append(Number(summary.finalValue) > 0
-          ? `${money(summary.finalValue)}, determinado por el enfoque ${summary.finalApproachLabel.toLowerCase()}.`
-          : `Pendiente. El enfoque seleccionado (${summary.finalApproachLabel.toLowerCase()}) no tiene un valor calculado con la información capturada.`);
+        const hasFinalValue = Number(summary.finalValue) > 0;
+        const finalStatement = document.createElement('div');
+        finalStatement.className = `final-value-box${hasFinalValue ? '' : ' pending'}`;
+        const valuationDate = formatValuationDate(captured.fechaAvaluo);
+        [
+          ['final-value-label', 'Valor concluido'],
+          ['final-value-amount', hasFinalValue ? money(summary.finalValue) : 'Pendiente'],
+          ['final-value-words', hasFinalValue ? `(${amountInWords(summary.finalValue)})` : `El enfoque seleccionado (${summary.finalApproachLabel.toLowerCase()}) no tiene un valor calculado con la información capturada.`],
+          ['final-value-meta', `Determinado por el enfoque ${summary.finalApproachLabel.toLowerCase()}${valuationDate ? ` · Fecha del avalúo: ${valuationDate}` : ''}`]
+        ].forEach(([className, text]) => {
+          const line = document.createElement('span');
+          line.className = className;
+          line.textContent = text;
+          finalStatement.appendChild(line);
+        });
 
         const justificationTitle = document.createElement('h5');
         justificationTitle.textContent = 'Justificación del enfoque seleccionado';
@@ -6163,7 +6248,6 @@
         document.getElementById('valorFisico').textContent = showCalculatedAmount(data.summary.valorFisico);
         document.getElementById('valorMercado').textContent = showCalculatedAmount(data.summary.valorMercado);
         document.getElementById('valorCapitalizacion').textContent = showCalculatedAmount(data.summary.valorCapitalizacion);
-        document.getElementById('valorFinal').textContent = showCalculatedAmount(data.summary.finalValue);
 
         renderConstructionHomologation(data, payload);
         renderMarketCalculation(data);
