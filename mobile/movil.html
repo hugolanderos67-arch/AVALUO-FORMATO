@@ -134,6 +134,7 @@
       .visit-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
 
       .visit-item {
+        width: 100%;
         display: grid;
         gap: 4px;
         background: #fff;
@@ -185,6 +186,28 @@
       .bottom-bar .note { margin: 0; text-align: center; }
       .bottom-bar .buttons { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
+      .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; background: #e3ebf4; padding: 4px; border-radius: 12px; }
+      .tabs button { border: none; background: none; padding: 10px; color: var(--muted); }
+      .tabs button[aria-selected="true"] { background: #fff; color: var(--blue); box-shadow: 0 1px 4px rgba(15, 76, 129, 0.15); }
+      .badge.estatus-en_proceso { background: #e3f0fc; color: var(--blue); }
+      .badge.estatus-concluido { background: #e3f4e8; color: var(--ok); }
+      .badge.estatus-cancelado { background: #fbe4e4; color: var(--danger); }
+      .result-value { font-weight: 800; color: var(--blue-dark); }
+      .detail-head h2 { margin: 0 0 4px; font-size: 1.15rem; color: var(--blue); }
+      .detail-head p { margin: 2px 0; }
+      .final-box { text-align: center; border: 3px double var(--blue); border-radius: 12px; padding: 14px 10px; background: linear-gradient(180deg, #f3f8fe, #fff); margin-bottom: 12px; }
+      .final-box small { display: block; font-weight: 800; letter-spacing: 0.12em; color: var(--blue); font-size: 0.75rem; }
+      .final-box strong { display: block; font-family: Georgia, "Times New Roman", serif; font-size: 1.9rem; color: var(--blue-dark); margin: 4px 0; }
+      .final-box span { font-size: 0.82rem; color: var(--muted); }
+      .data-list { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 0.92rem; }
+      .data-list dt { color: var(--muted); }
+      .data-list dd { margin: 0; font-weight: 600; text-align: right; }
+      .approach-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+      .approach-row:last-child { border-bottom: none; }
+      .approach-row.selected { font-weight: 800; color: var(--blue); }
+      .detail-actions { display: grid; gap: 10px; margin-bottom: 12px; }
+      .thumbs a { display: block; aspect-ratio: 1; }
+      .thumbs a img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
       [hidden] { display: none !important; }
     </style>
   </head>
@@ -198,6 +221,22 @@
     </header>
 
     <main>
+      <nav class="tabs" id="tabs" role="tablist">
+        <button type="button" role="tab" id="tabVisits" aria-selected="true">📋 Visitas</button>
+        <button type="button" role="tab" id="tabSearch" aria-selected="false">🔎 Consultar avalúos</button>
+      </nav>
+
+      <section id="searchView" hidden>
+        <input type="search" id="searchInput" placeholder="Folio, solicitante, propietario, calle, colonia o municipio" aria-label="Buscar avalúos" />
+        <p id="searchStatus" class="note" role="status" aria-live="polite"></p>
+        <ul id="searchResults" class="visit-list"></ul>
+      </section>
+
+      <section id="detailView" hidden>
+        <p id="detailStatus" class="note" role="status" aria-live="polite"></p>
+        <div id="detailContent"></div>
+      </section>
+
       <section id="listView">
         <div class="actions">
           <button type="button" class="primary" id="newVisit">+ Nueva visita</button>
@@ -485,11 +524,22 @@
         else if (!listStatus.textContent) setStatus(listStatus, `${pending} visita(s) pendiente(s) de sincronizar.`);
       }
 
+      let currentView = 'list';
       function showView(name) {
+        currentView = name;
         views.list.hidden = name !== 'list';
         views.visit.hidden = name !== 'visit';
+        document.getElementById('searchView').hidden = name !== 'search';
+        document.getElementById('detailView').hidden = name !== 'detail';
+        document.getElementById('tabs').hidden = name === 'visit' || name === 'detail';
+        if (name === 'list' || name === 'search') {
+          document.getElementById('tabVisits').setAttribute('aria-selected', String(name === 'list'));
+          document.getElementById('tabSearch').setAttribute('aria-selected', String(name === 'search'));
+        }
         visitBar.hidden = name !== 'visit';
-        document.getElementById('backToList').hidden = name !== 'visit';
+        const back = document.getElementById('backToList');
+        back.hidden = name !== 'visit' && name !== 'detail';
+        back.textContent = name === 'detail' ? '← Resultados' : '← Visitas';
         window.scrollTo(0, 0);
       }
 
@@ -739,11 +789,13 @@
           : 'Guardado en el celular', synced ? 'ok' : '');
       }
 
-      async function newVisit() {
+      async function newVisit(avaluo = null) {
+        const linked = avaluo && Number.isInteger(avaluo.id) ? avaluo : null;
+        if (linked && !avaluos.some(item => item.id === linked.id)) avaluos.push(linked);
         const visit = {
           id: crypto.randomUUID(),
-          avaluoId: null,
-          avaluoLabel: '',
+          avaluoId: linked ? linked.id : null,
+          avaluoLabel: linked ? linked.label : '',
           folio: '',
           fields: {},
           photos: [],
@@ -847,8 +899,159 @@
         await renderList();
       }
 
+      // --- Consulta de avalúos guardados en la oficina (solo lectura; requiere conexión) ---
+      const searchStatus = document.getElementById('searchStatus');
+      const detailStatus = document.getElementById('detailStatus');
+      const ESTATUS_TEXT = { en_proceso: 'En proceso', concluido: 'Concluido', cancelado: 'Cancelado' };
+      let searchTimer;
+      let searchRequest = 0;
+      const pesos = value => (Number(value) > 0 ? Number(value).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : 'Pendiente');
+      // aaaa-mm-dd → dd/mm/aaaa
+      const isoDate = value => (/^\d{4}-\d{2}-\d{2}/.test(value || '') ? value.slice(0, 10).split('-').reverse().join('/') : '');
+      const element = (tag, className, text) => Object.assign(document.createElement(tag), className ? { className } : {}, text != null ? { textContent: text } : {});
+
+      async function searchAvaluos() {
+        const request = ++searchRequest;
+        const query = document.getElementById('searchInput').value.trim();
+        const list = document.getElementById('searchResults');
+        setStatus(searchStatus, 'Buscando…');
+        try {
+          const response = await fetch(`/api/avaluos?${new URLSearchParams({ q: query })}`, { cache: 'no-store' });
+          const result = await response.json();
+          if (request !== searchRequest) return;
+          if (!response.ok) throw new Error(result.error || 'No se pudo consultar.');
+          list.replaceChildren(...result.avaluos.map(record => {
+            const item = document.createElement('li');
+            const button = element('button', 'visit-item');
+            button.type = 'button';
+            const estatus = record.estatus || 'en_proceso';
+            button.append(
+              element('strong', '', `${record.folio || `#${record.id}`}${record.tipo_inmueble ? ` · ${record.tipo_inmueble}` : ''}`),
+              element('span', '', [record.calle, record.colonia, record.municipio].filter(Boolean).join(', ') || 'Sin dirección'),
+              element('span', 'note', [isoDate(record.fecha_avaluo), record.solicitante].filter(Boolean).join(' · ') || 'Sin fecha ni solicitante'),
+              element('span', 'result-value', `Valor concluido: ${pesos(record.valor_concluido)}`),
+              element('span', `badge estatus-${estatus}`, ESTATUS_TEXT[estatus] || estatus)
+            );
+            button.addEventListener('click', () => openAvaluoDetail(record.id));
+            item.appendChild(button);
+            return item;
+          }));
+          setStatus(searchStatus, result.avaluos.length
+            ? `${result.avaluos.length} avalúo(s)${query ? ' encontrados' : ', del más reciente al más antiguo'}.`
+            : (query ? 'Ningún avalúo coincide con la búsqueda.' : 'Aún no hay avalúos guardados.'));
+        } catch {
+          if (request !== searchRequest) return;
+          list.replaceChildren();
+          setStatus(searchStatus, 'Sin conexión con la oficina: la consulta necesita que la computadora esté encendida con PERITIA abierto.', 'error');
+        }
+      }
+
+      function dataList(entries) {
+        const list = element('dl', 'data-list');
+        entries.filter(([, value]) => String(value ?? '').trim()).forEach(([label, value]) => list.append(element('dt', '', label), element('dd', '', value)));
+        return list;
+      }
+
+      function card(title, ...children) {
+        const box = element('div', 'card');
+        if (title) box.appendChild(element('h3', '', title));
+        box.append(...children);
+        return box;
+      }
+
+      async function openAvaluoDetail(id) {
+        const content = document.getElementById('detailContent');
+        content.replaceChildren();
+        showView('detail');
+        setStatus(detailStatus, 'Cargando avalúo…');
+        let record;
+        try {
+          const response = await fetch(`/api/avaluos/${id}`, { cache: 'no-store' });
+          record = await response.json();
+          if (!response.ok) throw new Error(record.error || 'No se pudo abrir el avalúo.');
+        } catch (error) {
+          setStatus(detailStatus, navigator.onLine ? `No se pudo abrir el avalúo: ${error.message}` : 'Sin conexión con la oficina.', 'error');
+          return;
+        }
+        setStatus(detailStatus, '');
+        const f = record.datos?.fields || {};
+        const values = record.datos?.resumenValores || {};
+        const estatus = record.estatus || 'en_proceso';
+        const area = value => (Number(value) > 0 ? `${Number(value).toLocaleString('es-MX', { maximumFractionDigits: 2 })} m²` : '');
+
+        const head = card(null,
+          element('h2', '', `${record.folio || `#${record.id}`}${f.tipoInmueble ? ` · ${f.tipoInmueble}` : ''}`),
+          element('p', '', [f.calle, f.colonia, f.municipio, f.estado].filter(Boolean).join(', ') || 'Sin dirección'),
+          element('span', `badge estatus-${estatus}`, `${ESTATUS_TEXT[estatus] || estatus}${record.estatus_motivo ? ` · ${record.estatus_motivo}` : ''}`));
+        head.classList.add('detail-head');
+
+        const finalBox = element('div', 'final-box');
+        finalBox.append(element('small', '', 'VALOR CONCLUIDO'), element('strong', '', pesos(record.valor_concluido)),
+          element('span', '', record.enfoque_concluido ? `Enfoque ${record.enfoque_concluido.toLowerCase()}` : ''));
+
+        const actions = element('div', 'detail-actions');
+        const report = element('button', 'primary', '📄 Ver dictamen completo');
+        report.type = 'button';
+        report.addEventListener('click', () => location.assign(`/?avaluo=${record.id}&vista=dictamen`));
+        const visit = element('button', '', '🏠 Nueva visita a este avalúo');
+        visit.type = 'button';
+        visit.disabled = estatus === 'cancelado';
+        visit.addEventListener('click', () => newVisit({ id: record.id, label: [record.folio || `#${record.id}`, [f.calle, f.colonia].filter(Boolean).join(', ')].filter(Boolean).join(' · ') }));
+        actions.append(report, visit);
+        if (estatus === 'cancelado') actions.appendChild(element('p', 'note', 'El avalúo está cancelado: no recibe visitas.'));
+
+        const approaches = [['market', 'Comparativo de mercado', values.valorMercado], ['physical', 'Físico o directo', values.valorFisico], ['income', 'Capitalización de rentas', values.valorCapitalizacion]];
+        const approachBox = values.enfoqueClave || values.valorMercado != null
+          ? card('Valores por enfoque', ...approaches.map(([key, label, value]) => {
+            const row = element('div', `approach-row${key === values.enfoqueClave ? ' selected' : ''}`);
+            row.append(element('span', '', `${label}${key === values.enfoqueClave ? ' ✓' : ''}`), element('span', '', pesos(value)));
+            return row;
+          }))
+          : card('Valores por enfoque', element('p', 'note', 'Este avalúo se guardó antes de esta función: ábralo y guárdelo de nuevo en la oficina para ver aquí los tres valores. El dictamen completo sí los muestra.'));
+
+        const general = card('Datos generales', dataList([
+          ['Fecha del avalúo', isoDate(f.fechaAvaluo)], ['Solicitante', f.solicitante], ['Propietario', f.propietario],
+          ['Objeto', f.objetoAvaluo], ['Uso del avalúo', f.usoAvaluo], ['Uso actual', f.usoActual],
+          ['Terreno', area(f.superficieTerreno)], ['Construcción', area(f.superficieConstruccion)],
+          ['Niveles', f.niveles], ['Edad', f.edadInmueble ? `${f.edadInmueble} años` : ''], ['Cuenta predial', f.cuentaPredial]
+        ]));
+
+        const photos = (record.datos?.attachments?.photos || []).map(photo => photo.preview).filter(url => typeof url === 'string' && /^(\/|data:image\/)/.test(url));
+        const blocks = [head, finalBox, actions, approachBox, general];
+        if (photos.length) {
+          const thumbs = element('div', 'thumbs');
+          photos.slice(0, 12).forEach(url => {
+            const link = element('a');
+            link.href = url;
+            link.target = '_blank';
+            const image = element('img');
+            image.src = url;
+            image.alt = 'Foto del inmueble';
+            image.loading = 'lazy';
+            link.appendChild(image);
+            thumbs.appendChild(link);
+          });
+          blocks.push(card(`Fotos (${photos.length})`, thumbs));
+        }
+        content.replaceChildren(...blocks);
+      }
+
+      function selectTab(name) {
+        document.getElementById('tabVisits').setAttribute('aria-selected', String(name === 'list'));
+        document.getElementById('tabSearch').setAttribute('aria-selected', String(name === 'search'));
+        showView(name);
+        if (name === 'search' && !document.getElementById('searchResults').childElementCount) searchAvaluos();
+      }
+
+      document.getElementById('tabVisits').addEventListener('click', () => selectTab('list'));
+      document.getElementById('tabSearch').addEventListener('click', () => selectTab('search'));
+      document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(searchAvaluos, 350);
+      });
+
       // --- Eventos ---
-      document.getElementById('newVisit').addEventListener('click', newVisit);
+      document.getElementById('newVisit').addEventListener('click', () => newVisit());
       document.getElementById('syncAll').addEventListener('click', syncAllPending);
       document.getElementById('syncVisit').addEventListener('click', syncCurrentVisit);
       document.getElementById('continueVisit').addEventListener('click', continueVisit);
@@ -860,7 +1063,7 @@
         await renderList();
         showView('list');
       };
-      document.getElementById('backToList').addEventListener('click', backToList);
+      document.getElementById('backToList').addEventListener('click', () => (currentView === 'detail' ? selectTab('search') : backToList()));
       document.getElementById('closeVisit').addEventListener('click', backToList);
       document.getElementById('deleteVisit').addEventListener('click', async () => {
         const pending = currentVisit.estado !== 'sincronizada';

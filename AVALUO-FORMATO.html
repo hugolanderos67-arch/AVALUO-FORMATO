@@ -1951,6 +1951,50 @@
         }
       }
 
+      body.report-view .back-to-index,
+      body.report-view .floating-index-button,
+      body.report-view .valuations-dialog,
+      body.report-view .capture,
+      body.report-view .report-footer,
+      body.report-view #result,
+      body.report-view #resultTitle {
+        display: none !important;
+      }
+
+      body.report-view .main-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+
+      .report-view-bar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #0f4c81;
+        color: #fff;
+      }
+
+      .report-view-bar button {
+        font: inherit;
+        font-weight: 700;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+      }
+
+      @media print {
+        .report-view-bar {
+          display: none !important;
+        }
+      }
+
       @media (max-width: 980px) {
         .main-grid,
         .two-col,
@@ -6178,7 +6222,14 @@
 
       function renderReportFromData(data, payload) {
         const captured = payload.capture;
-        lastValuationSummary = { valorConcluido: data.summary?.finalValue || 0, enfoque: data.summary?.finalApproachLabel || '' };
+        lastValuationSummary = {
+          valorConcluido: data.summary?.finalValue || 0,
+          enfoque: data.summary?.finalApproachLabel || '',
+          enfoqueClave: data.summary?.finalApproach || '',
+          valorMercado: data.summary?.valorMercado || 0,
+          valorFisico: data.summary?.valorFisico || 0,
+          valorCapitalizacion: data.summary?.valorCapitalizacion || 0
+        };
         const antecedentes = [
           ['Fecha del avalúo', formatValuationDate(captured.fechaAvaluo)], ['Tipo de inmueble', captured.tipoInmueble], ['Solicitante', captured.solicitante], ['Propietario', captured.propietario],
           ['Cuenta predial', captured.cuentaPredial], ['Calle y número', captured.calle], ['Colonia', captured.colonia],
@@ -7217,6 +7268,7 @@
         try {
           await generateReport();
           const datos = serializeValuation();
+          datos.resumenValores = lastValuationSummary;
           const response = await fetch(currentValuationId ? `/api/avaluos/${currentValuationId}` : '/api/avaluos', {
             method: currentValuationId ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -7512,6 +7564,24 @@
         }
       });
 
+      // Solo el dictamen, de lectura, con botones para volver y para guardar en PDF o compartir.
+      function showReportView(record) {
+        leavingPage = true;
+        document.body.classList.add('report-view');
+        const bar = document.createElement('div');
+        bar.className = 'report-view-bar';
+        const title = document.createElement('strong');
+        title.textContent = `Dictamen ${record.folio || `#${record.id}`}`;
+        const back = Object.assign(document.createElement('button'), { type: 'button', textContent: '← Volver' });
+        back.addEventListener('click', () => (history.length > 1 ? history.back() : location.assign('/movil')));
+        const pdf = Object.assign(document.createElement('button'), { type: 'button', textContent: '📄 Guardar PDF / compartir' });
+        pdf.addEventListener('click', () => window.print());
+        bar.append(back, title, pdf);
+        document.body.prepend(bar);
+        form.querySelectorAll('input, select, textarea, button').forEach(element => { element.disabled = true; });
+        window.scrollTo(0, 0);
+      }
+
       async function openValuationFromUrl() {
         const id = Number(new URLSearchParams(location.search).get('avaluo'));
         if (!Number.isInteger(id) || id <= 0) {
@@ -7531,6 +7601,7 @@
           updateRecordTitle(record);
           checkFolio();
           await generateReport();
+          if (new URLSearchParams(location.search).get('vista') === 'dictamen') showReportView(record);
         } catch (error) {
           history.replaceState(null, '', '/');
           setRecordStatus(`No se pudo abrir el avalúo #${id}: ${error.message}`, 'error');
