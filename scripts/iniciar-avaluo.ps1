@@ -1,5 +1,8 @@
 ﻿# Abre el sistema de avalúos como una aplicación: enciende el servidor en segundo plano (si no está encendido)
 # y abre el formato en su propia ventana de Chrome o Edge. Lo usa el ícono "PERITIA" del escritorio.
+# Con -SoloServidor solo enciende el servidor, sin abrir ventana: lo usa el inicio automático de Windows
+# para que la app móvil encuentre PERITIA aunque nadie lo haya abierto.
+param([switch]$SoloServidor)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $url = 'http://localhost:3000'
@@ -46,6 +49,8 @@ if (-not (Test-Server)) {
     exit 1
   }
 }
+
+if ($SoloServidor) { exit 0 }
 
 # Ventana de aplicación (sin barras del navegador): Chrome si está instalado, si no Edge.
 $browsers = @(
