@@ -3431,11 +3431,15 @@
                   </select>
                 </label>
               </div>
+              <h4>Vacíos (tiempo desocupado)</h4>
+              <div class="row">
+                <label>Meses desocupado <input name="mesesVacios" type="number" min="0" step="0.5" value="1" /></label>
+                <label>En un periodo de (meses) <input name="periodoVacios" type="number" min="1" step="1" value="24" placeholder="12 = un año, 24 = dos años" /></label>
+              </div>
+              <p id="vacancyNote" class="technical-note" role="status"></p>
               <div id="fiscalDeductions">
                 <p class="technical-note">Se calcula por mes, como en el análisis fiscal: vacíos → ingresos brutos mensuales efectivos (IBME) → deducciones fiscales autorizadas o deducción opcional (la mayor) → base gravable → I.S.R. con la tarifa mensual. La depreciación y el seguro se calculan sobre el valor de las construcciones del enfoque físico y el predial sobre el valor físico.</p>
                 <div class="row">
-                  <label>Meses vacíos <input name="mesesVacios" type="number" min="0" step="0.5" value="1" /></label>
-                  <label>En un periodo de (meses) <input name="periodoVacios" type="number" min="1" step="1" value="24" /></label>
                   <label>Impuesto predial (al millar) <input name="predialAlMillar" type="number" min="0" step="0.01" value="2.34" /></label>
                   <label>Del % del valor físico <input name="predialBaseValorFisico" type="number" min="0" max="100" step="0.01" value="80" /></label>
                   <label>Gastos de administración (% del IBME) <input name="fiscalAdministracion" type="number" min="0" max="100" step="0.01" value="3" /></label>
@@ -3447,7 +3451,6 @@
               </div>
               <div id="manualDeductions" hidden>
               <div class="row">
-                <label>Vacíos (% de renta bruta) <input name="deduccionVacios" type="number" min="0" max="100" step="0.01" placeholder="Ejemplo: 8.33 = un mes al año" /></label>
                 <label>Conservación y mantenimiento (%) <input name="deduccionMantenimiento" type="number" min="0" max="100" step="0.01" /></label>
                 <label>Administración (%) <input name="deduccionAdministracion" type="number" min="0" max="100" step="0.01" /></label>
                 <label>Impuesto predial ($/año) <input name="deduccionPredial" type="number" min="0" step="0.01" /></label>
@@ -6159,6 +6162,28 @@
       }
 
       // Resultado del enfoque de ingresos en la captura, con avisos de datos que impiden el cálculo.
+      // Vacíos = meses desocupado ÷ meses del periodo, como porcentaje de la renta bruta.
+      function vacancyPercentFromMonths() {
+        const months = Number(form.elements.namedItem('mesesVacios').value) || 0;
+        const period = Number(form.elements.namedItem('periodoVacios').value) || 0;
+        return period > 0 ? months / period * 100 : 0;
+      }
+
+      function updateVacancyNote() {
+        const months = Number(form.elements.namedItem('mesesVacios').value) || 0;
+        const period = Number(form.elements.namedItem('periodoVacios').value) || 0;
+        const note = document.getElementById('vacancyNote');
+        if (!(period > 0)) {
+          note.textContent = 'Capture el periodo en meses (12 = un año, 24 = dos años).';
+        } else {
+          const percent = vacancyPercentFromMonths();
+          note.textContent = `${months} mes(es) desocupado en ${period} meses = ${percent.toFixed(2)} % de la renta bruta, que se descuenta por vacíos.${months > period ? ' ⚠ Los meses desocupado no pueden ser más que el periodo.' : ''}`;
+        }
+        note.classList.toggle('income-warning', months > period);
+      }
+      ['mesesVacios', 'periodoVacios'].forEach(name => form.elements.namedItem(name).addEventListener('input', updateVacancyNote));
+      updateVacancyNote();
+
       function updateDeductionMethod() {
         const fiscal = form.elements.namedItem('metodoDeducciones').value === 'fiscal';
         document.getElementById('fiscalDeductions').hidden = !fiscal;
@@ -6171,9 +6196,9 @@
         if (!message || !income) return;
         const warnings = [];
         const manual = income.deductionMethod !== 'fiscal';
-        if (manual) [['deduccionVacios', 'Vacíos'], ['deduccionMantenimiento', 'Conservación y mantenimiento'], ['deduccionAdministracion', 'Administración']].forEach(([name, label]) => {
+        if (manual) [['deduccionMantenimiento', 'Conservación y mantenimiento'], ['deduccionAdministracion', 'Administración']].forEach(([name, label]) => {
           const value = Number(form.elements.namedItem(name)?.value) || 0;
-          if (value > 100) warnings.push(`"${label}" tiene ${value} %, más del 100 % de la renta (un mes de vacíos al año es 8.33 %).`);
+          if (value > 100) warnings.push(`"${label}" tiene ${value} %, más del 100 % de la renta.`);
         });
         const smallAmounts = !manual ? [] : [['deduccionPredial', 'Impuesto predial'], ['deduccionAgua', 'Servicio de agua'], ['deduccionEnergia', 'Energía eléctrica'], ['deduccionSeguros', 'Seguros'], ['deduccionOtros', 'Otros gastos'], ['deduccionIsr', 'I.S.R.']]
           .filter(([name]) => { const value = Number(form.elements.namedItem(name)?.value) || 0; return value > 0 && value < 100; })
@@ -6301,7 +6326,7 @@
             ]);
           } else {
             appendTable(numbered('Deducciones anuales'), ['Concepto', '% de renta bruta anual', 'Importe anual'], [
-              ...income.deductions.map(item => ({ values: [item.label, percent(item.percent), amount(item.amount)] })),
+              ...income.deductions.map(item => ({ values: [item.key === 'vacancyPercent' && captured.periodoVacios ? `Vacíos: ${captured.mesesVacios || 0} mes(es) desocupado en ${captured.periodoVacios} meses` : item.label, percent(item.percent), amount(item.amount)] })),
               { values: ['Total de deducciones', percent(income.deductionsPercent), money(income.totalDeductions)], strong: true }
             ]);
           }
@@ -6740,7 +6765,7 @@
               rentableArea: Number(formData.get('superficieRentable')) || 0,
               unitMonthlyRent: Number(formData.get('rentaUnitariaMensual')) || 0,
               monthlyRent: Number(formData.get('rentaBrutaMensual')) || 0,
-              vacancyPercent: Number(formData.get('deduccionVacios')) || 0,
+              vacancyPercent: vacancyPercentFromMonths(),
               maintenancePercent: Number(formData.get('deduccionMantenimiento')) || 0,
               administrationPercent: Number(formData.get('deduccionAdministracion')) || 0,
               propertyTax: Number(formData.get('deduccionPredial')) || 0,
@@ -6878,7 +6903,7 @@
 
       const liveRecalculationFields = [
         'areaPrivativa', 'areaComun1', 'areaComun2', 'indiviso', 'superficieTerreno', 'superficieAplicable', 'topografia', 'panoramicas', 'datosEscritura', 'medidasColindancias', 'valorUnitarioTerreno',
-        'tipoRenta', 'fuenteRenta', 'superficieRentable', 'rentaUnitariaMensual', 'rentaBrutaMensual', 'deduccionVacios', 'deduccionMantenimiento', 'deduccionAdministracion',
+        'tipoRenta', 'fuenteRenta', 'superficieRentable', 'rentaUnitariaMensual', 'rentaBrutaMensual', 'deduccionMantenimiento', 'deduccionAdministracion',
         'deduccionPredial', 'deduccionAgua', 'deduccionEnergia', 'deduccionSeguros', 'deduccionOtros', 'deduccionIsr', 'capRate', 'justificacionTasa', 'metodoDeducciones',
         'mesesVacios', 'periodoVacios', 'predialAlMillar', 'predialBaseValorFisico', 'fiscalAdministracion', 'fiscalMantenimiento', 'fiscalSeguro', 'depreciacionFiscal', 'deduccionOpcional',
         'tasaEdad', 'tasaUso', 'tasaConservacion', 'tasaCalidadProyecto', 'tasaVidaProbable', 'tasaUbicacion', 'tasaZona',
@@ -7402,6 +7427,10 @@
           const fields = datos.fields || {};
           setNamedField(form.elements.namedItem('estado'), fields.estado);
           if (!('metodoDeducciones' in fields)) setNamedField(form.elements.namedItem('metodoDeducciones'), 'manual');
+          if (!('mesesVacios' in fields)) {
+            setNamedField(form.elements.namedItem('mesesVacios'), String(Number(((Number(fields.deduccionVacios) || 0) * 12 / 100).toFixed(2))));
+            setNamedField(form.elements.namedItem('periodoVacios'), '12');
+          }
           updateMunicipios();
           Object.entries(fields).forEach(([name, value]) => {
             const field = form.elements.namedItem(name);
@@ -7413,6 +7442,7 @@
           });
           vidaUtilTotalCustom.style.display = vidaUtilTotalSelect.value === 'custom' ? 'block' : 'none';
           updateDeductionMethod();
+          updateVacancyNote();
 
           restoreEditableRows(buildingRows, datos.buildingRows, addBuildingRow, updateBuildingRow);
           restoreEditableRows(accessoryRows, datos.accessoryRows, addAccessoryRow, updateAccessoryRow);
