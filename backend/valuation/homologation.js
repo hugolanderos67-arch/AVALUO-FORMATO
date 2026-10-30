@@ -46,7 +46,7 @@ function calculateHomologation(input) {
   const homologatedRent = roundCurrency(Number(rentComparables.averageUnitValue) || 0);
   const useHomologatedRent = !(Number(income.unitMonthlyRent) > 0) && !(Number(income.monthlyRent) > 0) && Number(income.rentableArea) > 0 && homologatedRent > 0;
   const incomeApproach = {
-    ...calculateIncomeApproach(useHomologatedRent ? { ...subject, income: { ...income, unitMonthlyRent: homologatedRent } } : subject),
+    ...calculateIncomeApproach({ ...subject, physicalValue: valorFisico, ...(useHomologatedRent ? { income: { ...income, unitMonthlyRent: homologatedRent } } : {}) }),
     unitRentSource: useHomologatedRent ? 'homologated' : Number(income.unitMonthlyRent) > 0 ? 'captured' : 'none',
     homologatedUnitRent: homologatedRent
   };

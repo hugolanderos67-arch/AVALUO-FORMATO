@@ -91,3 +91,51 @@ test('aplica la tasa de la tabla cuando no se captura la tasa y respeta la captu
   assert.equal(incomplete.value, 0);
   assert.match(incomplete.status, /califique los siete conceptos/);
 });
+
+test('calcula el I.S.R. con la tarifa mensual', () => {
+  const { calculateMonthlyIsr } = require('../backend/valuation/isr');
+  const isr = calculateMonthlyIsr(3153.33);
+  assert.equal(isr.lower, 578.53);
+  assert.equal(isr.fixedFee, 11.11);
+  assert.equal(Number(isr.marginalTax.toFixed(2)), 164.79);
+  assert.equal(Number(isr.tax.toFixed(2)), 175.9);
+  assert.equal(calculateMonthlyIsr(0).tax, 0);
+  assert.equal(calculateMonthlyIsr(400000).rate, 35);
+});
+
+test('desarrolla las deducciones fiscales, la base gravable y el I.S.R. como la hoja de cálculo', () => {
+  const result = calculateIncomeApproach({
+    capRate: 0.06714,
+    physicalConstructionValue: 1770696.31,
+    physicalValue: 2535840,
+    income: { monthlyRent: 13767.70, deductionMethod: 'fiscal' }
+  });
+  const fiscal = result.fiscal;
+  assert.equal(result.deductionMethod, 'fiscal');
+  assert.equal(fiscal.vacancyPercent, 4.17);
+  assert.equal(fiscal.vacancy, 573.65);
+  assert.equal(fiscal.ibme, 13194.05);
+  assert.equal(fiscal.depreciation, 7377.9);
+  assert.equal(fiscal.propertyTax, 395.59);
+  assert.equal(fiscal.administration, 395.82);
+  assert.equal(fiscal.maintenance, 395.82);
+  assert.equal(fiscal.insurance, 1475.58);
+  assert.equal(fiscal.authorizedDeductions, 10040.72);
+  assert.equal(fiscal.optionalDeduction, 4617.92);
+  assert.equal(fiscal.deductionUsed, 'authorized');
+  assert.equal(fiscal.taxableBase, 3153.33);
+  assert.equal(fiscal.isr.tax, 175.9);
+  assert.equal(fiscal.totalMonthlyDeductions, 3412.37);
+  assert.equal(fiscal.monthlyDeductionsPercent, 24.79);
+  assert.equal(fiscal.netMonthlyIncome, 10355.33);
+  // La hoja da 124,263.99 y 1,850,818.98; la diferencia de centavos viene del valor físico supuesto en la prueba.
+  assert.ok(Math.abs(result.netAnnualIncome - 124263.99) < 0.05);
+  assert.ok(Math.abs(result.value - 1850818.98) < 1);
+});
+
+test('usa la deducción opcional cuando es mayor que las autorizadas', () => {
+  const result = calculateIncomeApproach({ capRate: 0.08, income: { monthlyRent: 20000, deductionMethod: 'fiscal' } });
+  assert.equal(result.fiscal.deductionUsed, 'optional');
+  assert.ok(Math.abs(result.fiscal.taxableBase - result.fiscal.ibme * 0.65) < 0.01);
+  assert.match(result.status, /sin valor de construcciones/);
+});

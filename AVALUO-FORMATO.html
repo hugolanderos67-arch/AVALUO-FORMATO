@@ -3422,7 +3422,30 @@
                 <label>Renta unitaria mensual ($/m²) <input name="rentaUnitariaMensual" type="number" min="0" step="0.01" placeholder="Vacío = renta homologada de los comparables" /></label>
                 <label>Renta bruta mensual total ($) <input name="rentaBrutaMensual" type="number" min="0" step="0.01" placeholder="Solo si no se captura por m²" /></label>
               </div>
-              <h3>Deducciones anuales</h3>
+              <h3>Deducciones</h3>
+              <div class="row">
+                <label>Método de deducciones
+                  <select name="metodoDeducciones">
+                    <option value="fiscal">Análisis fiscal: deducciones autorizadas e I.S.R. (mensual)</option>
+                    <option value="manual">Captura directa de importes anuales</option>
+                  </select>
+                </label>
+              </div>
+              <div id="fiscalDeductions">
+                <p class="technical-note">Se calcula por mes, como en el análisis fiscal: vacíos → ingresos brutos mensuales efectivos (IBME) → deducciones fiscales autorizadas o deducción opcional (la mayor) → base gravable → I.S.R. con la tarifa mensual. La depreciación y el seguro se calculan sobre el valor de las construcciones del enfoque físico y el predial sobre el valor físico.</p>
+                <div class="row">
+                  <label>Meses vacíos <input name="mesesVacios" type="number" min="0" step="0.5" value="1" /></label>
+                  <label>En un periodo de (meses) <input name="periodoVacios" type="number" min="1" step="1" value="24" /></label>
+                  <label>Impuesto predial (al millar) <input name="predialAlMillar" type="number" min="0" step="0.01" value="2.34" /></label>
+                  <label>Del % del valor físico <input name="predialBaseValorFisico" type="number" min="0" max="100" step="0.01" value="80" /></label>
+                  <label>Gastos de administración (% del IBME) <input name="fiscalAdministracion" type="number" min="0" max="100" step="0.01" value="3" /></label>
+                  <label>Gastos de mantenimiento (% del IBME) <input name="fiscalMantenimiento" type="number" min="0" max="100" step="0.01" value="3" /></label>
+                  <label>Prima de seguro anual (% de las construcciones) <input name="fiscalSeguro" type="number" min="0" max="100" step="0.01" value="1" /></label>
+                  <label>Depreciación fiscal (% anual de las construcciones) <input name="depreciacionFiscal" type="number" min="0" max="100" step="0.01" value="5" /></label>
+                  <label>Deducción opcional (% del IBME) <input name="deduccionOpcional" type="number" min="0" max="100" step="0.01" value="35" /></label>
+                </div>
+              </div>
+              <div id="manualDeductions" hidden>
               <div class="row">
                 <label>Vacíos (% de renta bruta) <input name="deduccionVacios" type="number" min="0" max="100" step="0.01" placeholder="Ejemplo: 8.33 = un mes al año" /></label>
                 <label>Conservación y mantenimiento (%) <input name="deduccionMantenimiento" type="number" min="0" max="100" step="0.01" /></label>
@@ -3433,6 +3456,7 @@
                 <label>Seguros ($/año) <input name="deduccionSeguros" type="number" min="0" step="0.01" /></label>
                 <label>Otros gastos de operación ($/año) <input name="deduccionOtros" type="number" min="0" step="0.01" /></label>
                 <label>I.S.R. ($/año) <input name="deduccionIsr" type="number" min="0" step="0.01" /></label>
+              </div>
               </div>
               <h3>Capitalización</h3>
               <h4>Cálculo de la tasa de capitalización aplicable</h4>
@@ -6135,22 +6159,36 @@
       }
 
       // Resultado del enfoque de ingresos en la captura, con avisos de datos que impiden el cálculo.
+      function updateDeductionMethod() {
+        const fiscal = form.elements.namedItem('metodoDeducciones').value === 'fiscal';
+        document.getElementById('fiscalDeductions').hidden = !fiscal;
+        document.getElementById('manualDeductions').hidden = fiscal;
+      }
+      form.elements.namedItem('metodoDeducciones').addEventListener('change', updateDeductionMethod);
+
       function updateIncomeApproachResult(income) {
         const message = document.getElementById('incomeApproachResult');
         if (!message || !income) return;
         const warnings = [];
-        [['deduccionVacios', 'Vacíos'], ['deduccionMantenimiento', 'Conservación y mantenimiento'], ['deduccionAdministracion', 'Administración']].forEach(([name, label]) => {
+        const manual = income.deductionMethod !== 'fiscal';
+        if (manual) [['deduccionVacios', 'Vacíos'], ['deduccionMantenimiento', 'Conservación y mantenimiento'], ['deduccionAdministracion', 'Administración']].forEach(([name, label]) => {
           const value = Number(form.elements.namedItem(name)?.value) || 0;
           if (value > 100) warnings.push(`"${label}" tiene ${value} %, más del 100 % de la renta (un mes de vacíos al año es 8.33 %).`);
         });
-        const smallAmounts = [['deduccionPredial', 'Impuesto predial'], ['deduccionAgua', 'Servicio de agua'], ['deduccionEnergia', 'Energía eléctrica'], ['deduccionSeguros', 'Seguros'], ['deduccionOtros', 'Otros gastos'], ['deduccionIsr', 'I.S.R.']]
+        const smallAmounts = !manual ? [] : [['deduccionPredial', 'Impuesto predial'], ['deduccionAgua', 'Servicio de agua'], ['deduccionEnergia', 'Energía eléctrica'], ['deduccionSeguros', 'Seguros'], ['deduccionOtros', 'Otros gastos'], ['deduccionIsr', 'I.S.R.']]
           .filter(([name]) => { const value = Number(form.elements.namedItem(name)?.value) || 0; return value > 0 && value < 100; })
           .map(([, label]) => label);
         if (smallAmounts.length) warnings.push(`${smallAmounts.join(', ')}: estos campos son importes en pesos al año, no porcentajes; revise si capturó un porcentaje.`);
+        const fiscal = income.fiscal;
+        if (fiscal && income.grossMonthlyRent > 0) {
+          warnings.unshift(`IBME ${money(fiscal.ibme)}; base gravable ${money(fiscal.taxableBase)}; I.S.R. ${money(fiscal.isr.tax)}/mes; deducciones ${money(fiscal.totalMonthlyDeductions)}/mes (${fiscal.monthlyDeductionsPercent.toFixed(2)} %); producto líquido mensual ${money(fiscal.netMonthlyIncome)}.`);
+          if (!(fiscal.buildingsValue > 0)) warnings.push('Sin valor de construcciones del enfoque físico: la depreciación fiscal y el seguro quedan en cero.');
+        }
         const result = income.value > 0
           ? `Valor por capitalización: renta neta anual ${money(income.netAnnualIncome)} ÷ tasa ${(income.capRate * 100).toFixed(2)} % = ${money(income.value)}.`
           : income.status;
-        message.textContent = [result, ...warnings.map(text => `⚠ ${text}`)].join(' ');
+        const summaryLine = fiscal && income.grossMonthlyRent > 0 ? warnings.shift() : '';
+        message.textContent = [summaryLine, result, ...warnings.map(text => `⚠ ${text}`)].filter(Boolean).join(' ');
         message.classList.toggle('income-warning', warnings.length > 0 || !(income.value > 0));
 
         const matrix = income.capRateMatrix;
@@ -6217,9 +6255,12 @@
           container.replaceChildren();
           return;
         }
+        let section = 0;
+        const numbered = title => (income.grossAnnualRent > 0 ? `${++section}. ${title}` : title);
+        const fiscal = income.deductionMethod === 'fiscal' ? income.fiscal : null;
 
         if (income.grossAnnualRent > 0) {
-          appendTable('1. Renta bruta', ['Concepto', 'Base', 'Importe'], [
+          appendTable(numbered('Renta bruta'), ['Concepto', 'Base', 'Importe'], [
             { values: ['Tipo de renta', captured.tipoRenta || 'Sin especificar', '—'] },
             { values: ['Fuente de la renta', captured.fuenteRenta || 'Sin especificar', '—'] },
             ...(income.rentableArea > 0 && income.unitMonthlyRent > 0
@@ -6228,16 +6269,48 @@
             { values: ['Renta bruta anual', `${money(income.grossMonthlyRent)} × 12 meses`, money(income.grossAnnualRent)], strong: true }
           ]);
 
-          appendTable('2. Deducciones anuales', ['Concepto', '% de renta bruta anual', 'Importe anual'], [
-            ...income.deductions.map(item => ({ values: [item.label, percent(item.percent), amount(item.amount)] })),
-            { values: ['Total de deducciones', percent(income.deductionsPercent), money(income.totalDeductions)], strong: true }
-          ]);
+          if (fiscal) {
+            const pct = value => `${Number(value).toLocaleString('es-MX', { maximumFractionDigits: 2 })} %`;
+            appendTable(numbered('Ingresos brutos mensuales efectivos (IBME)'), ['Concepto', 'Cálculo', 'Importe mensual'], [
+              { values: ['Renta bruta mensual', '—', money(income.grossMonthlyRent)] },
+              { values: ['Vacíos', `${fiscal.vacancyMonths} mes(es) en un periodo de ${fiscal.vacancyPeriod} meses (${pct(fiscal.vacancyPercent)})`, `− ${money(fiscal.vacancy)}`] },
+              { values: ['Ingresos brutos mensuales efectivos (IBME)', `${money(income.grossMonthlyRent)} − ${money(fiscal.vacancy)}`, money(fiscal.ibme)], strong: true }
+            ]);
+            const usedAuthorized = fiscal.deductionUsed === 'authorized';
+            appendTable(numbered('Análisis de deducciones mensuales y obtención del I.S.R.'), ['Concepto', 'Cálculo', 'Importe mensual'], [
+              { values: ['Valor de las construcciones e instalaciones especiales', 'Enfoque físico', amount(fiscal.buildingsValue)] },
+              { values: ['Depreciación fiscal', `${pct(fiscal.depreciationPercent)} anual de las construcciones`, money(fiscal.depreciation)] },
+              { values: ['Impuesto predial', `${fiscal.propertyTaxPerThousand} al millar del ${pct(fiscal.propertyTaxBasePercent)} del valor físico (${money(fiscal.physicalValue)})`, money(fiscal.propertyTax)] },
+              { values: ['Gastos de administración', `${pct(fiscal.administrationPercent)} del IBME`, money(fiscal.administration)] },
+              { values: ['Gastos de mantenimiento', `${pct(fiscal.maintenancePercent)} del IBME`, money(fiscal.maintenance)] },
+              { values: ['Prima de seguro anual', `${pct(fiscal.insurancePercent)} de las construcciones`, money(fiscal.insurance)] },
+              { values: ['Suma de deducciones fiscales autorizadas', usedAuthorized ? 'Se aplica (es mayor que la opcional)' : 'No se aplica (es menor que la opcional)', money(fiscal.authorizedDeductions)], strong: usedAuthorized },
+              { values: ['Deducción opcional', `${pct(fiscal.optionalDeductionPercent)} del IBME${usedAuthorized ? '' : ' · se aplica (es mayor)'}`, money(fiscal.optionalDeduction)], strong: !usedAuthorized },
+              { values: ['Base gravable', `${money(fiscal.ibme)} − ${money(usedAuthorized ? fiscal.authorizedDeductions : fiscal.optionalDeduction)}`, money(fiscal.taxableBase)], strong: true },
+              { values: ['Cálculo del I.S.R.', fiscal.isr.bracketIndex >= 0 ? `(${money(fiscal.taxableBase)} − ${money(fiscal.isr.lower)}) × ${pct(fiscal.isr.rate)}` : 'Sin base gravable', money(fiscal.isr.marginalTax)] },
+              { values: ['I.S.R. mensual', `${money(fiscal.isr.marginalTax)} + cuota fija ${money(fiscal.isr.fixedFee)}`, money(fiscal.isr.tax)], strong: true }
+            ]);
+            appendTable(numbered('Tabla para el cálculo del I.S.R. (tarifa mensual)'), ['Límite inferior', 'Límite superior', 'Cuota fija', '% sobre excedente del límite inferior'],
+              fiscal.isrTable.map((row, index) => ({
+                values: [money(row.lower), row.upper ? money(row.upper) : 'En adelante', money(row.fixedFee), pct(row.rate)],
+                strong: index === fiscal.isr.bracketIndex
+              })));
+            appendTable(numbered('Importe de deducciones'), ['Concepto', 'Monto mensual', '% de la renta bruta'], [
+              ...income.deductions.map(item => ({ values: [item.label, amount(item.monthlyAmount), percent(item.percent)] })),
+              { values: ['Totales', money(fiscal.totalMonthlyDeductions), percent(fiscal.monthlyDeductionsPercent)], strong: true }
+            ]);
+          } else {
+            appendTable(numbered('Deducciones anuales'), ['Concepto', '% de renta bruta anual', 'Importe anual'], [
+              ...income.deductions.map(item => ({ values: [item.label, percent(item.percent), amount(item.amount)] })),
+              { values: ['Total de deducciones', percent(income.deductionsPercent), money(income.totalDeductions)], strong: true }
+            ]);
+          }
         }
 
         const matrix = income.capRateMatrix;
         if (matrix?.ratedCount > 0) {
           const heading = document.createElement('h5');
-          heading.textContent = `${income.grossAnnualRent > 0 ? '3. ' : ''}Cálculo de la tasa de capitalización aplicable`;
+          heading.textContent = numbered('Cálculo de la tasa de capitalización aplicable');
           const note = document.createElement('p');
           note.className = 'technical-note';
           note.textContent = 'Cada característica del inmueble se califica en una columna; las mejores características corresponden a una tasa menor (menor riesgo para el inversionista). La tasa aplicable es el promedio de las tasas de las columnas calificadas.';
@@ -6291,7 +6364,12 @@
 
         if (income.netAnnualIncome !== 0 || income.grossAnnualRent > 0) {
           const steps = [];
-          if (income.grossAnnualRent > 0) {
+          if (fiscal && income.grossAnnualRent > 0) {
+            steps.push({ values: ['Renta bruta mensual', '—', money(income.grossMonthlyRent)] });
+            steps.push({ values: ['Deducciones estimadas', 'Total del importe de deducciones', money(fiscal.totalMonthlyDeductions)] });
+            steps.push({ values: ['Producto líquido mensual', `${money(income.grossMonthlyRent)} − ${money(fiscal.totalMonthlyDeductions)}`, money(fiscal.netMonthlyIncome)] });
+            steps.push({ values: ['Producto líquido anual', 'Producto líquido mensual × 12 meses', money(income.netAnnualIncome)], strong: true });
+          } else if (income.grossAnnualRent > 0) {
             steps.push({ values: ['Producto líquido anual', `${money(income.grossAnnualRent)} − ${money(income.totalDeductions)}`, money(income.netAnnualIncome)], strong: true });
           } else {
             steps.push({ values: ['Producto líquido anual', income.rentSource, money(income.netAnnualIncome)], strong: true });
@@ -6304,7 +6382,7 @@
           if (income.valuePerRentableM2 > 0) {
             steps.push({ values: ['Valor unitario resultante', `${money(income.value)} / ${income.rentableArea.toFixed(2)} m² rentables`, `${money(income.valuePerRentableM2)}/m²`] });
           }
-          appendTable(income.grossAnnualRent > 0 ? `${matrix?.ratedCount > 0 ? '4' : '3'}. Producto líquido y capitalización` : 'Producto líquido y capitalización', ['Concepto', 'Cálculo', 'Resultado'], steps);
+          appendTable(numbered('Producto líquido y capitalización'), ['Concepto', 'Cálculo', 'Resultado'], steps);
         }
 
         const status = document.createElement('p');
@@ -6670,7 +6748,17 @@
               electricity: Number(formData.get('deduccionEnergia')) || 0,
               insurance: Number(formData.get('deduccionSeguros')) || 0,
               otherExpenses: Number(formData.get('deduccionOtros')) || 0,
-              incomeTax: Number(formData.get('deduccionIsr')) || 0
+              incomeTax: Number(formData.get('deduccionIsr')) || 0,
+              deductionMethod: formData.get('metodoDeducciones') || 'manual',
+              vacancyMonths: formData.get('mesesVacios') ?? '',
+              vacancyPeriod: formData.get('periodoVacios') ?? '',
+              propertyTaxPerThousand: formData.get('predialAlMillar') ?? '',
+              propertyTaxBasePercent: formData.get('predialBaseValorFisico') ?? '',
+              fiscalAdministrationPercent: formData.get('fiscalAdministracion') ?? '',
+              fiscalMaintenancePercent: formData.get('fiscalMantenimiento') ?? '',
+              insurancePercent: formData.get('fiscalSeguro') ?? '',
+              depreciationPercent: formData.get('depreciacionFiscal') ?? '',
+              optionalDeductionPercent: formData.get('deduccionOpcional') ?? ''
             },
             marketAdjustment: Number(formData.get('marketAdjustment')) || 1,
             unitLandValue: Number(formData.get('valorUnitarioTerreno')) || 0,
@@ -6791,7 +6879,8 @@
       const liveRecalculationFields = [
         'areaPrivativa', 'areaComun1', 'areaComun2', 'indiviso', 'superficieTerreno', 'superficieAplicable', 'topografia', 'panoramicas', 'datosEscritura', 'medidasColindancias', 'valorUnitarioTerreno',
         'tipoRenta', 'fuenteRenta', 'superficieRentable', 'rentaUnitariaMensual', 'rentaBrutaMensual', 'deduccionVacios', 'deduccionMantenimiento', 'deduccionAdministracion',
-        'deduccionPredial', 'deduccionAgua', 'deduccionEnergia', 'deduccionSeguros', 'deduccionOtros', 'deduccionIsr', 'capRate', 'justificacionTasa',
+        'deduccionPredial', 'deduccionAgua', 'deduccionEnergia', 'deduccionSeguros', 'deduccionOtros', 'deduccionIsr', 'capRate', 'justificacionTasa', 'metodoDeducciones',
+        'mesesVacios', 'periodoVacios', 'predialAlMillar', 'predialBaseValorFisico', 'fiscalAdministracion', 'fiscalMantenimiento', 'fiscalSeguro', 'depreciacionFiscal', 'deduccionOpcional',
         'tasaEdad', 'tasaUso', 'tasaConservacion', 'tasaCalidadProyecto', 'tasaVidaProbable', 'tasaUbicacion', 'tasaZona',
         'enfoqueValorFinal', 'justificacionValorFinal'
       ];
@@ -7312,6 +7401,7 @@
         try {
           const fields = datos.fields || {};
           setNamedField(form.elements.namedItem('estado'), fields.estado);
+          if (!('metodoDeducciones' in fields)) setNamedField(form.elements.namedItem('metodoDeducciones'), 'manual');
           updateMunicipios();
           Object.entries(fields).forEach(([name, value]) => {
             const field = form.elements.namedItem(name);
@@ -7322,6 +7412,7 @@
             if (field?.dataset) Object.assign(field.dataset, fieldFlags);
           });
           vidaUtilTotalCustom.style.display = vidaUtilTotalSelect.value === 'custom' ? 'block' : 'none';
+          updateDeductionMethod();
 
           restoreEditableRows(buildingRows, datos.buildingRows, addBuildingRow, updateBuildingRow);
           restoreEditableRows(accessoryRows, datos.accessoryRows, addAccessoryRow, updateAccessoryRow);
