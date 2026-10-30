@@ -1778,6 +1778,8 @@
       }
 
       #capRateMatrixResult.income-warning,
+      #grossRentResult.income-warning,
+      #rentComparablesResult.income-warning,
       #incomeApproachResult.income-warning {
         border-left-color: #b4232a;
         background: #fff4f2;
@@ -3422,6 +3424,7 @@
                 <label>Renta unitaria mensual ($/m²) <input name="rentaUnitariaMensual" type="number" min="0" step="0.01" placeholder="Vacío = renta homologada de los comparables" /></label>
                 <label>Renta bruta mensual total ($) <input name="rentaBrutaMensual" type="number" min="0" step="0.01" placeholder="Solo si no se captura por m²" /></label>
               </div>
+              <p id="grossRentResult" class="technical-note" role="status">Capture la superficie rentable para calcular la renta bruta mensual.</p>
               <h3>Deducciones</h3>
               <div class="row">
                 <label>Método de deducciones
@@ -5934,6 +5937,7 @@
           : captured <= 0 ? ` Se aplica automáticamente en "${fieldLabel}" porque ese campo está vacío.`
             : Math.abs(captured - average) > 0.01 ? ` Atención: en "${fieldLabel}" está capturado ${money(captured)}/m², y ese es el que se usa; bórrelo para aplicar el homologado.`
               : ` Aplicado en "${fieldLabel}".`;
+        message.classList.toggle('income-warning', !isLand && average > 0 && captured > 0 && Math.abs(captured - average) > 0.01);
         if (field) field.placeholder = average > 0 ? `Vacío = homologado ${money(average)}` : `Vacío = ${isLand ? 'valor homologado' : 'renta homologada'} de los comparables`;
         message.textContent = average > 0
           ? `${isLand ? 'Valor unitario de terreno homologado y ponderado' : 'Renta unitaria mensual homologada y ponderada'}: ${money(average)}/m² (${result.validCount} comparable(s) válido(s)).${marketWeightingNote(result)}${usage}`
@@ -6184,6 +6188,26 @@
       ['mesesVacios', 'periodoVacios'].forEach(name => form.elements.namedItem(name).addEventListener('input', updateVacancyNote));
       updateVacancyNote();
 
+      // Renta bruta del inmueble sujeto: superficie × renta por m² (la capturada o la homologada).
+      function updateGrossRentResult(income) {
+        const note = document.getElementById('grossRentResult');
+        const grossField = form.elements.namedItem('rentaBrutaMensual');
+        const byUnit = income.rentableArea > 0 && income.unitMonthlyRent > 0;
+        const homologated = Number(income.homologatedUnitRent) || 0;
+        const differs = byUnit && income.unitRentSource === 'captured' && homologated > 0 && Math.abs(income.unitMonthlyRent - homologated) > 0.01;
+        grossField.placeholder = byUnit ? `Calculada: ${money(income.grossMonthlyRent)}` : 'Solo si no se captura por m²';
+        if (byUnit) {
+          const source = income.unitRentSource === 'homologated' ? 'renta homologada de los comparables' : 'renta capturada';
+          note.textContent = `Renta bruta mensual = ${income.rentableArea.toLocaleString('es-MX', { maximumFractionDigits: 2 })} m² × ${money(income.unitMonthlyRent)}/m² (${source}) = ${money(income.grossMonthlyRent)}; renta bruta anual = ${money(income.grossAnnualRent)}.`
+            + (differs ? ` ⚠ La renta homologada de los comparables es ${money(homologated)}/m²; con ella la renta bruta mensual sería ${money(income.rentableArea * homologated)}. Borre "Renta unitaria mensual" para aplicarla.` : '');
+        } else if (income.grossMonthlyRent > 0) {
+          note.textContent = `Renta bruta mensual capturada ${money(income.grossMonthlyRent)}; renta bruta anual = ${money(income.grossAnnualRent)}.`;
+        } else {
+          note.textContent = 'Capture la superficie rentable y la renta por m² (o déjela vacía para usar la homologada), o la renta bruta mensual total.';
+        }
+        note.classList.toggle('income-warning', differs || !(income.grossMonthlyRent > 0));
+      }
+
       function updateDeductionMethod() {
         const fiscal = form.elements.namedItem('metodoDeducciones').value === 'fiscal';
         document.getElementById('fiscalDeductions').hidden = !fiscal;
@@ -6194,6 +6218,7 @@
       function updateIncomeApproachResult(income) {
         const message = document.getElementById('incomeApproachResult');
         if (!message || !income) return;
+        updateGrossRentResult(income);
         const warnings = [];
         const manual = income.deductionMethod !== 'fiscal';
         if (manual) [['deduccionMantenimiento', 'Conservación y mantenimiento'], ['deduccionAdministracion', 'Administración']].forEach(([name, label]) => {
@@ -6289,8 +6314,16 @@
             { values: ['Tipo de renta', captured.tipoRenta || 'Sin especificar', '—'] },
             { values: ['Fuente de la renta', captured.fuenteRenta || 'Sin especificar', '—'] },
             ...(income.rentableArea > 0 && income.unitMonthlyRent > 0
-              ? [{ values: [income.unitRentSource === 'homologated' ? 'Superficie rentable × renta mensual por m² homologada de los comparables de renta' : 'Superficie rentable × renta unitaria mensual', `${income.rentableArea.toFixed(2)} m² × ${money(income.unitMonthlyRent)}/m²`, money(income.grossMonthlyRent)] }]
-              : [{ values: ['Renta bruta mensual total capturada', '—', money(income.grossMonthlyRent)] }]),
+              ? [
+                { values: ['Renta unitaria mensual', income.unitRentSource === 'homologated'
+                  ? 'Homologada y ponderada de los comparables de renta (Paso 1)'
+                  : income.homologatedUnitRent > 0 && Math.abs(income.unitMonthlyRent - income.homologatedUnitRent) > 0.01
+                    ? `Capturada por el valuador (la homologada de los comparables es ${money(income.homologatedUnitRent)}/m²)`
+                    : 'Capturada por el valuador', `${money(income.unitMonthlyRent)}/m²`] },
+                { values: ['Superficie rentable', '—', `${income.rentableArea.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²`] },
+                { values: ['Renta bruta mensual', `${income.rentableArea.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m² × ${money(income.unitMonthlyRent)}/m²`, money(income.grossMonthlyRent)], strong: true }
+              ]
+              : [{ values: ['Renta bruta mensual total capturada', '—', money(income.grossMonthlyRent)], strong: true }]),
             { values: ['Renta bruta anual', `${money(income.grossMonthlyRent)} × 12 meses`, money(income.grossAnnualRent)], strong: true }
           ]);
 
