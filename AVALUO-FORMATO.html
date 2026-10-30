@@ -1777,6 +1777,7 @@
         color: #203649;
       }
 
+      #capRateMatrixResult.income-warning,
       #incomeApproachResult.income-warning {
         border-left-color: #b4232a;
         background: #fff4f2;
@@ -1794,6 +1795,47 @@
       .justification-actions .technical-note {
         margin: 0;
         flex: 1 1 260px;
+      }
+
+      .cap-rate-ratings select {
+        width: 100%;
+      }
+
+      .cap-rate-matrix {
+        min-width: 0;
+        width: 100%;
+        table-layout: fixed;
+      }
+
+      .cap-rate-matrix th:first-child,
+      .cap-rate-matrix td:first-child {
+        width: 28%;
+      }
+
+      .cap-rate-matrix td.cap-rate-selected {
+        font-weight: 700;
+        background: #e3f0fb;
+        color: #0f4c81;
+      }
+
+      .cap-rate-matrix tr.cap-rate-summary td {
+        background: #f6f9fc;
+        text-align: center;
+      }
+
+      .cap-rate-matrix tr.cap-rate-summary td:first-child,
+      .cap-rate-matrix tr.cap-rate-total td:first-child {
+        text-align: right;
+        font-weight: 600;
+      }
+
+      .cap-rate-matrix tr.cap-rate-total td {
+        font-weight: 700;
+      }
+
+      .cap-rate-matrix tr.cap-rate-total td:last-child {
+        text-align: center;
+        border: 2px solid #0f4c81;
       }
 
       .explain-box {
@@ -3393,8 +3435,83 @@
                 <label>I.S.R. ($/año) <input name="deduccionIsr" type="number" min="0" step="0.01" /></label>
               </div>
               <h3>Capitalización</h3>
+              <h4>Cálculo de la tasa de capitalización aplicable</h4>
+              <p class="technical-note">Califique cada característica del inmueble. Cada calificación corresponde a una tasa de 6 a 10 % y la tasa aplicable es el promedio de las siete.</p>
+              <div class="row cap-rate-ratings">
+                <label>1. Edad (años) o última reparación
+                  <select name="tasaEdad" data-cap-rate-concept="age">
+                    <option value="">Seleccione</option>
+                    <option value="0">0 a 10 (6 %)</option>
+                    <option value="1">10 a 20 (7 %)</option>
+                    <option value="2">20 a 30 (8 %)</option>
+                    <option value="3">30 a 40 (9 %)</option>
+                    <option value="4">40 o más (10 %)</option>
+                  </select>
+                </label>
+                <label>2. Uso
+                  <select name="tasaUso" data-cap-rate-concept="use">
+                    <option value="">Seleccione</option>
+                    <option value="0">Bueno (6 %)</option>
+                    <option value="1">Adecuado (7 %)</option>
+                    <option value="2">Regular (8 %)</option>
+                    <option value="3">Deficiente (9 %)</option>
+                    <option value="4">Malo (10 %)</option>
+                  </select>
+                </label>
+                <label>3. Estado de conservación
+                  <select name="tasaConservacion" data-cap-rate-concept="conservation">
+                    <option value="">Seleccione</option>
+                    <option value="0">Bueno (6 %)</option>
+                    <option value="1">Normal (7 %)</option>
+                    <option value="2">Regular (8 %)</option>
+                    <option value="3">Malo (9 %)</option>
+                    <option value="4">Ruinoso (10 %)</option>
+                  </select>
+                </label>
+                <label>4. Calidad de proyecto
+                  <select name="tasaCalidadProyecto" data-cap-rate-concept="projectQuality">
+                    <option value="">Seleccione</option>
+                    <option value="0">Muy bueno (6 %)</option>
+                    <option value="1">Bueno (7 %)</option>
+                    <option value="2">Regular (8 %)</option>
+                    <option value="3">Deficiente (9 %)</option>
+                    <option value="4">Malo (10 %)</option>
+                  </select>
+                </label>
+                <label>5. Vida probable (años)
+                  <select name="tasaVidaProbable" data-cap-rate-concept="probableLife">
+                    <option value="">Seleccione</option>
+                    <option value="0">Más de 35 (6 %)</option>
+                    <option value="1">30 a 35 (7 %)</option>
+                    <option value="2">25 a 30 (8 %)</option>
+                    <option value="3">20 a 25 (9 %)</option>
+                    <option value="4">Menos de 20 (10 %)</option>
+                  </select>
+                </label>
+                <label>6. Ubicación
+                  <select name="tasaUbicacion" data-cap-rate-concept="location">
+                    <option value="">Seleccione</option>
+                    <option value="0">Esquina comercial (6 %)</option>
+                    <option value="1">Esquina residencial (7 %)</option>
+                    <option value="2">Intermedio (8 %)</option>
+                    <option value="3">Interior comercial (9 %)</option>
+                    <option value="4">Interior (10 %)</option>
+                  </select>
+                </label>
+                <label>7. Zona de ubicación
+                  <select name="tasaZona" data-cap-rate-concept="zone">
+                    <option value="">Seleccione</option>
+                    <option value="0">Muy buena (6 %)</option>
+                    <option value="1">Buena (7 %)</option>
+                    <option value="2">Regular (8 %)</option>
+                    <option value="3">Deficiente (9 %)</option>
+                    <option value="4">Mala (10 %)</option>
+                  </select>
+                </label>
+              </div>
+              <p id="capRateMatrixResult" class="technical-note" role="status">Califique los siete conceptos para obtener la tasa de capitalización.</p>
               <div class="row">
-                <label>Tasa de capitalización (%) <input name="capRate" type="number" min="0" step="0.01" placeholder="Ejemplo: 8 para capturar 8%" /></label>
+                <label>Tasa de capitalización (%) <input name="capRate" type="number" min="0" step="0.01" placeholder="Vacío = tasa de la tabla" /></label>
                 <label>Justificación de la tasa <textarea name="justificacionTasa" placeholder="Método (mercado, sumatoria de riesgos, banda de inversión), fuentes y fecha"></textarea></label>
               </div>
               <p id="incomeApproachResult" class="technical-note" role="status">Capture la renta, las deducciones y la tasa para obtener el valor por capitalización.</p>
@@ -6035,6 +6152,23 @@
           : income.status;
         message.textContent = [result, ...warnings.map(text => `⚠ ${text}`)].join(' ');
         message.classList.toggle('income-warning', warnings.length > 0 || !(income.value > 0));
+
+        const matrix = income.capRateMatrix;
+        const matrixMessage = document.getElementById('capRateMatrixResult');
+        const capRateField = form.elements.namedItem('capRate');
+        if (!matrix || !matrixMessage) return;
+        const sum = matrix.rows.reduce((total, row) => total + row.column, 0);
+        if (matrix.complete) {
+          const formula = `Tasa = suma de las calificaciones (${sum}) ÷ ${matrix.conceptCount} conceptos = ${matrix.exactRate.toFixed(4)} % → ${matrix.rate.toFixed(2)} % en números redondos.`;
+          matrixMessage.textContent = income.capRateSource === 'captured'
+            ? `${formula} ⚠ Se está usando la tasa capturada abajo (${(income.capRate * 100).toFixed(2)} %); deje vacío ese campo para aplicar la de la tabla.`
+            : `${formula} Se aplica automáticamente.`;
+          capRateField.placeholder = `Vacío = tasa de la tabla ${matrix.rate.toFixed(2)} %`;
+        } else {
+          matrixMessage.textContent = `Califique los siete conceptos para obtener la tasa de capitalización (van ${matrix.ratedCount} de ${matrix.conceptCount}).`;
+          capRateField.placeholder = 'Vacío = tasa de la tabla';
+        }
+        matrixMessage.classList.toggle('income-warning', matrix.complete && income.capRateSource === 'captured');
       }
 
       function renderIncomeApproach(income, captured) {
@@ -6100,6 +6234,61 @@
           ]);
         }
 
+        const matrix = income.capRateMatrix;
+        if (matrix?.ratedCount > 0) {
+          const heading = document.createElement('h5');
+          heading.textContent = `${income.grossAnnualRent > 0 ? '3. ' : ''}Cálculo de la tasa de capitalización aplicable`;
+          const note = document.createElement('p');
+          note.className = 'technical-note';
+          note.textContent = 'Cada característica del inmueble se califica en una columna; las mejores características corresponden a una tasa menor (menor riesgo para el inversionista). La tasa aplicable es el promedio de las tasas de las columnas calificadas.';
+          const table = document.createElement('table');
+          table.className = 'capture-table cap-rate-matrix';
+          const cell = (tag, text, className) => {
+            const element = document.createElement(tag);
+            element.textContent = text;
+            if (className) element.className = className;
+            return element;
+          };
+          const head = document.createElement('thead');
+          const headRow = document.createElement('tr');
+          headRow.append(cell('th', 'Concepto'), ...matrix.columns.map(column => cell('th', `Tasa ${column} %`)));
+          head.appendChild(headRow);
+          const body = document.createElement('tbody');
+          matrix.rows.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.append(cell('td', row.label), ...row.options.map((option, index) => (index === row.index ? cell('td', `✔ ${option}`, 'cap-rate-selected') : cell('td', option))));
+            body.appendChild(tr);
+          });
+          const fmt = value => value ? value.toFixed(4) : '0.0000';
+          [['Calificaciones', matrix.counts.map(String)],
+            [`Factor (tasa ÷ ${matrix.conceptCount})`, matrix.factors.map(fmt)],
+            ['Tasa parcial (calificaciones × factor)', matrix.partials.map(fmt)]].forEach(([label, values]) => {
+            const tr = document.createElement('tr');
+            tr.className = 'cap-rate-summary';
+            tr.append(cell('td', label), ...values.map(value => cell('td', value)));
+            body.appendChild(tr);
+          });
+          const total = (label, value) => {
+            const tr = document.createElement('tr');
+            tr.className = 'cap-rate-total';
+            const labelCell = cell('td', label);
+            labelCell.colSpan = matrix.columns.length;
+            tr.append(labelCell, cell('td', value));
+            body.appendChild(tr);
+          };
+          if (matrix.complete) {
+            total('Tasa de interés por capitalización de acuerdo con las características', `${matrix.exactRate.toFixed(4)} %`);
+            total('Tasa de interés en números redondos', `${matrix.rate.toFixed(2)} %`);
+          } else {
+            total(`Tabla incompleta: ${matrix.ratedCount} de ${matrix.conceptCount} conceptos calificados`, '—');
+          }
+          table.append(head, body);
+          const wrapper = document.createElement('div');
+          wrapper.className = 'table-scroll';
+          wrapper.appendChild(table);
+          fragment.append(heading, note, wrapper);
+        }
+
         if (income.netAnnualIncome !== 0 || income.grossAnnualRent > 0) {
           const steps = [];
           if (income.grossAnnualRent > 0) {
@@ -6107,12 +6296,15 @@
           } else {
             steps.push({ values: ['Producto líquido anual', income.rentSource, money(income.netAnnualIncome)], strong: true });
           }
-          steps.push({ values: ['Tasa de capitalización', captured.justificacionTasa || 'Sin justificación capturada', percent(income.capRate * 100)] });
+          const rateBasis = income.capRateSource === 'matrix'
+            ? ['Tasa de capitalización obtenida en el cuadro anterior por calificación de características', captured.justificacionTasa].filter(Boolean).join('. ')
+            : captured.justificacionTasa || 'Sin justificación capturada';
+          steps.push({ values: ['Tasa de capitalización', rateBasis, percent(income.capRate * 100)] });
           steps.push({ values: ['Valor por capitalización de rentas', income.value > 0 ? `${money(income.netAnnualIncome)} / ${(income.capRate * 100).toFixed(2)}%` : '—', income.value > 0 ? money(income.value) : 'Pendiente'], strong: true });
           if (income.valuePerRentableM2 > 0) {
             steps.push({ values: ['Valor unitario resultante', `${money(income.value)} / ${income.rentableArea.toFixed(2)} m² rentables`, `${money(income.valuePerRentableM2)}/m²`] });
           }
-          appendTable(income.grossAnnualRent > 0 ? '3. Producto líquido y capitalización' : 'Producto líquido y capitalización', ['Concepto', 'Cálculo', 'Resultado'], steps);
+          appendTable(income.grossAnnualRent > 0 ? `${matrix?.ratedCount > 0 ? '4' : '3'}. Producto líquido y capitalización` : 'Producto líquido y capitalización', ['Concepto', 'Cálculo', 'Resultado'], steps);
         }
 
         const status = document.createElement('p');
@@ -6464,6 +6656,7 @@
             latitude: Number(formData.get('latitud')) || undefined,
             longitude: Number(formData.get('longitud')) || undefined,
             capRate: (Number(formData.get('capRate')) || 0) / 100,
+            capRateRatings: Object.fromEntries(Array.from(form.querySelectorAll('[data-cap-rate-concept]'), field => [field.dataset.capRateConcept, field.value])),
             finalApproach: formData.get('enfoqueValorFinal') || 'market',
             income: {
               rentableArea: Number(formData.get('superficieRentable')) || 0,
@@ -6599,6 +6792,7 @@
         'areaPrivativa', 'areaComun1', 'areaComun2', 'indiviso', 'superficieTerreno', 'superficieAplicable', 'topografia', 'panoramicas', 'datosEscritura', 'medidasColindancias', 'valorUnitarioTerreno',
         'tipoRenta', 'fuenteRenta', 'superficieRentable', 'rentaUnitariaMensual', 'rentaBrutaMensual', 'deduccionVacios', 'deduccionMantenimiento', 'deduccionAdministracion',
         'deduccionPredial', 'deduccionAgua', 'deduccionEnergia', 'deduccionSeguros', 'deduccionOtros', 'deduccionIsr', 'capRate', 'justificacionTasa',
+        'tasaEdad', 'tasaUso', 'tasaConservacion', 'tasaCalidadProyecto', 'tasaVidaProbable', 'tasaUbicacion', 'tasaZona',
         'enfoqueValorFinal', 'justificacionValorFinal'
       ];
       let liveRecalculationTimer;

@@ -1,3 +1,5 @@
+const { calculateCapRateMatrix } = require('./cap-rate');
+
 function roundCurrency(value) {
   return Number(value.toFixed(2));
 }
@@ -28,7 +30,12 @@ function calculateIncomeApproach(subject = {}) {
   const rentableArea = positive(income.rentableArea);
   const unitMonthlyRent = positive(income.unitMonthlyRent);
   const capturedMonthlyRent = positive(income.monthlyRent);
-  const capRate = positive(subject.capRate);
+  // Tasa: la capturada o, si se dejó vacía, la calculada con la tabla de calificación de características.
+  const capRateMatrix = calculateCapRateMatrix(subject.capRateRatings);
+  const capturedCapRate = positive(subject.capRate);
+  const capRate = capturedCapRate > 0 ? capturedCapRate : Number((capRateMatrix.rate / 100).toFixed(4));
+  const capRateSource = capturedCapRate > 0 ? 'captured' : capRateMatrix.complete ? 'matrix' : 'none';
+  const capRateFields = { capRate, capRateSource, capRateMatrix };
 
   // Compatibilidad: sin desglose de rentas se toma el ingreso anual neto capturado como producto líquido.
   if (!rentableArea && !unitMonthlyRent && !capturedMonthlyRent && positive(subject.annualIncome)) {
@@ -44,7 +51,7 @@ function calculateIncomeApproach(subject = {}) {
       totalDeductions: 0,
       deductionsPercent: 0,
       netAnnualIncome,
-      capRate,
+      ...capRateFields,
       value,
       valuePerRentableM2: 0,
       status: value > 0
@@ -78,9 +85,11 @@ function calculateIncomeApproach(subject = {}) {
     const overLimit = deductions.filter(item => PERCENT_DEDUCTIONS.some(({ key }) => key === item.key) && item.percent > 100);
     status = `Capitalización no aplicable: las deducciones (${totalDeductions.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}) igualan o superan la renta bruta anual (${grossAnnualRent.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}).${overLimit.length ? ` ${overLimit.map(item => `${item.label}: ${item.percent} %`).join(', ')} supera el 100 % de la renta.` : ''} Revise los importes.`;
   } else if (capRate <= 0) {
-    status = 'Capitalización pendiente: capture la tasa de capitalización aplicable y su justificación; no se estimó tasa.';
+    status = 'Capitalización pendiente: califique los siete conceptos de la tabla de la tasa de capitalización o capture la tasa aplicable con su justificación.';
   } else {
-    status = 'Capitalización calculada con rentas, deducciones y tasa capturadas; verificar contratos o comparables de renta, gastos y justificación de la tasa.';
+    status = capRateSource === 'matrix'
+      ? 'Capitalización calculada con rentas y deducciones capturadas y tasa obtenida por calificación de características; verificar contratos o comparables de renta y gastos.'
+      : 'Capitalización calculada con rentas, deducciones y tasa capturadas; verificar contratos o comparables de renta, gastos y justificación de la tasa.';
   }
 
   return {
@@ -93,7 +102,7 @@ function calculateIncomeApproach(subject = {}) {
     totalDeductions,
     deductionsPercent: grossAnnualRent > 0 ? roundCurrency(totalDeductions / grossAnnualRent * 100) : 0,
     netAnnualIncome,
-    capRate,
+    ...capRateFields,
     value,
     valuePerRentableM2: value > 0 && rentableArea > 0 ? roundCurrency(value / rentableArea) : 0,
     status
