@@ -1036,6 +1036,61 @@
         margin: 12px 0 18px;
       }
 
+      .rent-result {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: 6px 0 10px;
+      }
+
+      .rent-result-card {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 14px;
+        border: 1px solid #d0e5ff;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #edf5ff 0%, #f7fbff 100%);
+      }
+
+      .rent-result-card span {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #52667d;
+      }
+
+      .rent-result-card strong {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.35rem;
+        color: #0f4c81;
+      }
+
+      .rent-result-card small {
+        font-size: 0.72rem;
+        color: #52667d;
+      }
+
+      .rent-result-card.rent-result-main {
+        border: 2px solid #0f4c81;
+        background: #fff;
+      }
+
+      .rent-result-card.rent-result-main strong {
+        font-size: 1.7rem;
+      }
+
+      .rent-result.pending strong {
+        color: #8a99ab;
+      }
+
+      @media (max-width: 640px) {
+        .rent-result {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
       .mini-card {
         background: linear-gradient(180deg, #edf5ff 0%, #f7fbff 100%);
         border: 1px solid #d0e5ff;
@@ -3424,7 +3479,24 @@
                 <label>Renta unitaria mensual ($/m²) <input name="rentaUnitariaMensual" type="number" min="0" step="0.01" placeholder="Vacío = renta homologada de los comparables" /></label>
                 <label>Renta bruta mensual total ($) <input name="rentaBrutaMensual" type="number" min="0" step="0.01" placeholder="Solo si no se captura por m²" /></label>
               </div>
-              <p id="grossRentResult" class="technical-note" role="status">Capture la superficie rentable para calcular la renta bruta mensual.</p>
+              <div class="rent-result" aria-live="polite">
+                <div class="rent-result-card">
+                  <span>Renta unitaria aplicada</span>
+                  <strong id="grossRentUnit">—</strong>
+                  <small id="grossRentUnitSource">Pendiente</small>
+                </div>
+                <div class="rent-result-card rent-result-main">
+                  <span>Renta bruta mensual</span>
+                  <strong id="grossRentMonthly">—</strong>
+                  <small id="grossRentFormula">Superficie rentable × renta por m²</small>
+                </div>
+                <div class="rent-result-card">
+                  <span>Renta bruta anual</span>
+                  <strong id="grossRentAnnual">—</strong>
+                  <small>Renta bruta mensual × 12 meses</small>
+                </div>
+              </div>
+              <p id="grossRentResult" class="technical-note income-warning" role="status" hidden></p>
               <h3>Deducciones</h3>
               <div class="row">
                 <label>Método de deducciones
@@ -6196,16 +6268,20 @@
         const homologated = Number(income.homologatedUnitRent) || 0;
         const differs = byUnit && income.unitRentSource === 'captured' && homologated > 0 && Math.abs(income.unitMonthlyRent - homologated) > 0.01;
         grossField.placeholder = byUnit ? `Calculada: ${money(income.grossMonthlyRent)}` : 'Solo si no se captura por m²';
-        if (byUnit) {
-          const source = income.unitRentSource === 'homologated' ? 'renta homologada de los comparables' : 'renta capturada';
-          note.textContent = `Renta bruta mensual = ${income.rentableArea.toLocaleString('es-MX', { maximumFractionDigits: 2 })} m² × ${money(income.unitMonthlyRent)}/m² (${source}) = ${money(income.grossMonthlyRent)}; renta bruta anual = ${money(income.grossAnnualRent)}.`
-            + (differs ? ` ⚠ La renta homologada de los comparables es ${money(homologated)}/m²; con ella la renta bruta mensual sería ${money(income.rentableArea * homologated)}. Borre "Renta unitaria mensual" para aplicarla.` : '');
-        } else if (income.grossMonthlyRent > 0) {
-          note.textContent = `Renta bruta mensual capturada ${money(income.grossMonthlyRent)}; renta bruta anual = ${money(income.grossAnnualRent)}.`;
-        } else {
-          note.textContent = 'Capture la superficie rentable y la renta por m² (o déjela vacía para usar la homologada), o la renta bruta mensual total.';
-        }
-        note.classList.toggle('income-warning', differs || !(income.grossMonthlyRent > 0));
+        const hasRent = income.grossMonthlyRent > 0;
+        const area = income.rentableArea.toLocaleString('es-MX', { maximumFractionDigits: 2 });
+        document.getElementById('grossRentUnit').textContent = byUnit ? `${money(income.unitMonthlyRent)}/m²` : '—';
+        document.getElementById('grossRentUnitSource').textContent = byUnit
+          ? (income.unitRentSource === 'homologated' ? 'Homologada de los comparables' : 'Capturada por el valuador')
+          : hasRent ? 'No aplica (renta total capturada)' : 'Pendiente';
+        document.getElementById('grossRentMonthly').textContent = hasRent ? money(income.grossMonthlyRent) : '—';
+        document.getElementById('grossRentFormula').textContent = byUnit ? `${area} m² × ${money(income.unitMonthlyRent)}/m²` : hasRent ? 'Renta bruta mensual total capturada' : 'Superficie rentable × renta por m²';
+        document.getElementById('grossRentAnnual').textContent = hasRent ? money(income.grossAnnualRent) : '—';
+        document.querySelector('.rent-result').classList.toggle('pending', !hasRent);
+        note.textContent = differs
+          ? `⚠ La renta homologada de los comparables es ${money(homologated)}/m²; con ella la renta bruta mensual sería ${money(income.rentableArea * homologated)}. Borre "Renta unitaria mensual" para aplicarla.`
+          : !hasRent ? 'Capture la superficie rentable y la renta por m² (o déjela vacía para usar la homologada), o la renta bruta mensual total.' : '';
+        note.hidden = !note.textContent;
       }
 
       function updateDeductionMethod() {
